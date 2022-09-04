@@ -19,7 +19,7 @@ app.use(cors({
 
 app.use(express.json())
 
-app.use('/trip', tripRouter)
+app.use('/trips', tripRouter)
 
 // use error middleware last
 
