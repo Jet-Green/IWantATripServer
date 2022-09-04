@@ -1,10 +1,27 @@
+require('dotenv').config({ path: `.env.${process.env.NODE_ENV}` })
 const express = require('express');
+const cors = require('cors')
+
+// for jwt auth
+// const cookieParser = require('cookie-parser')
+
 const app = express();
 
-const tripsFunctions = require('./functions/trip')
+app.use(cors({
+    credentials: true,
+    origin: process.env.CLIENT_URL
+}))
+app.use(express.json())
 
-app.get('/trip/get-all', tripsFunctions.getAllTrips);
 
-const PORT = 3003;
 
-app.listen(PORT, () => { console.log(`App is running on  http://localhost:${PORT}`); })
+async function startServer() {
+    try {
+        // connect mongo here
+        app.listen(process.env.PORT, () => { console.log(`Server is running on http://localhost:${process.env.PORT}`); })
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+startServer()
