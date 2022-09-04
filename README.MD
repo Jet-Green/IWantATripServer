@@ -24,7 +24,7 @@ npm run production
 Будем использовать для блокировки некоторых методов, когда юзер не вошёл
 
 ## Файлы
-### ```.env.development```
+### ```development.env```
 Конфигурация для разработки
-### ```.env.production```
+### ```production.env```
 Конфигурация для production
