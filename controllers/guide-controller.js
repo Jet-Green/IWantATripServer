@@ -46,6 +46,19 @@ class GuideController {
             // next(err)
         }
     }
+
+    async createGuideElement(req, res, next) {
+        try {
+            let q = req.query;
+            console.log(req.body);
+            // вызвать сервис, который будет создавать
+            return res.status(200)
+        } catch (err) {
+            console.log(err);
+            // when api error enabled
+            // next(err)
+        }
+    }
 }
 
 module.exports = new GuideController();

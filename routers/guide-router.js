@@ -10,6 +10,7 @@ const router = Router()
 
 // here all routes
 router.get('/get-all-elements', guideController.getAllElements)
+router.post('/create-element', guideController.createGuideElement)
 
 
 
