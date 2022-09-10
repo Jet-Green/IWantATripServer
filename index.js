@@ -5,6 +5,7 @@ const cors = require('cors')
 
 // here all routes
 const tripRouter = require('./routers/trip-router')
+const guideRouter = require('./routers/guide-router')
 
 
 // for jwt auth
@@ -19,7 +20,8 @@ app.use(cors({
 
 app.use(express.json())
 
-app.use('/trips', tripRouter)
+app.use('/trips', tripRouter);
+app.use('/guide', guideRouter);
 
 // use error middleware last
 
