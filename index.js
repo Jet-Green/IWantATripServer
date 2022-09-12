@@ -1,5 +1,6 @@
-// here all imports
-require('dotenv').config({ path: `${process.env.NODE_ENV}.env` })
+// here all imports ${process.env.NODE_ENV}
+
+require('dotenv').config({ path: `${process.argv[process.argv.length - 1]}.env` })
 const express = require('express');
 const cors = require('cors')
 
@@ -21,6 +22,7 @@ app.use(cors({
 app.use(express.json())
 
 app.use('/trips', tripRouter);
+
 app.use('/guide', guideRouter);
 
 // use error middleware last

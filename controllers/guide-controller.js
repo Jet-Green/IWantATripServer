@@ -50,8 +50,7 @@ class GuideController {
     async createGuideElement(req, res, next) {
         try {
             let q = req.query;
-            console.log(req.body);
-            // вызвать сервис, который будет создавать
+            // вызвать сервис, который будет сохранять в БД
             return res.status(200)
         } catch (err) {
             console.log(err);
