@@ -15,8 +15,8 @@ const guideRouter = require('./routers/guide-router')
 const app = express();
 // here all .use
 app.use(cors({
-    credentials: true,
-    origin: ''
+    // credentials: true,
+    origin: '*'
     // process.env.CLIENT_URL
 }))
 
