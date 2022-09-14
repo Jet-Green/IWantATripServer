@@ -35,7 +35,7 @@ const data = {
     ]
 }
 
-class GuideController {
+module.exports = {
     async getAllElements(req, res, next) {
         try {
             let q = req.query;
@@ -45,7 +45,7 @@ class GuideController {
             // when api error enabled
             // next(err)
         }
-    }
+    },
 
     async createGuideElement(req, res, next) {
         try {
@@ -59,5 +59,3 @@ class GuideController {
         }
     }
 }
-
-module.exports = new GuideController();

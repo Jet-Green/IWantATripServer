@@ -54,7 +54,9 @@ let trips = [
         period: "август 2022",
     },
 ]
-class TripController {
+
+
+module.exports = {
     async getAll(req, res, next) {
         try {
             return res.json(trips)
@@ -65,5 +67,3 @@ class TripController {
         }
     }
 }
-
-module.exports = new TripController();
