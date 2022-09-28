@@ -1,5 +1,6 @@
 let trips = [
     {
+        _id: 'jvjnegjhdgnjegjkbjn',
         // первая - основная
         images: ["https://glazov-flash.ru/image/catalog/sol.jpg"],
         name: "СОЛЬ-ИЛЕЦК",
@@ -26,6 +27,7 @@ let trips = [
         period: "август 2022",
     },
     {
+        _id: 'fewhdwfqyuifdcvbcedhgyhvb',
         // первая - основная
         images: ["https://glazov-flash.ru/image/cache/catalog/tur/active/usva/splav_main-800x800.jpg", "https://glazov-flash.ru/image/cache/catalog/tur/active/usva/splav4-800x800.jpg", "https://glazov-flash.ru/image/cache/catalog/tur/active/usva/splav2-800x800.jpg"],
         name: "Сплав по реке",
@@ -54,6 +56,7 @@ let trips = [
         period: "август 2022",
     },
     {
+        _id: '31247t8ygu9ydgwfvy7yuhj',
         // первая - основная
         images: ["https://glazov-flash.ru/image/catalog/sol.jpg"],
         name: "СОЛЬ-ИЛЕЦК",
@@ -80,6 +83,7 @@ let trips = [
         period: "август 2022",
     },
     {
+        _id: 'dwqigbftrmkdcusagb3nref98gh3b4egdfug32mndfiuhb',
         // первая - основная
         images: ["https://glazov-flash.ru/image/cache/catalog/tur/active/usva/splav_main-800x800.jpg", "https://glazov-flash.ru/image/cache/catalog/tur/active/usva/splav4-800x800.jpg", "https://glazov-flash.ru/image/cache/catalog/tur/active/usva/splav2-800x800.jpg"],
         name: "Сплав по реке",
@@ -108,6 +112,7 @@ let trips = [
         period: "август 2022",
     },
     {
+        _id: 'errt4gtfdu89i',
         // первая - основная
         images: ["https://glazov-flash.ru/image/catalog/sol.jpg"],
         name: "СОЛЬ-ИЛЕЦК",
@@ -134,6 +139,7 @@ let trips = [
         period: "август 2022",
     },
     {
+        _id: '823974yrh483yr7hfudshd',
         // первая - основная
         images: ["https://glazov-flash.ru/image/cache/catalog/tur/active/usva/splav_main-800x800.jpg", "https://glazov-flash.ru/image/cache/catalog/tur/active/usva/splav4-800x800.jpg", "https://glazov-flash.ru/image/cache/catalog/tur/active/usva/splav2-800x800.jpg"],
         name: "Сплав по реке ",
@@ -172,6 +178,13 @@ module.exports = {
             console.log(err);
             // when api error enabled
             // next(err)
+        }
+    },
+    async getById(req, res, next) {
+        try {
+            return res.json(trips.find((trip) => trip._id == req.query._id))
+        } catch (error) {
+            console.log(error);
         }
     }
 }

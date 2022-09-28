@@ -10,7 +10,7 @@ const router = Router()
 
 // here all routes
 router.get('/get-all', tripController.getAll)
-
+router.get('/get-by-id', tripController.getById)
 
 
 
