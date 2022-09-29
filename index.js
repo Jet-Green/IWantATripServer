@@ -3,16 +3,22 @@
 require('dotenv').config({ path: `${process.argv[process.argv.length - 1]}.env` })
 const express = require('express');
 const cors = require('cors')
+const app = express()
 
 // here all routes
 const tripRouter = require('./routers/trip-router')
 const guideRouter = require('./routers/guide-router')
 
+app.use(express.static('dist'))
+
+app.get('/', (req, res) => {
+    res.send('hello world')
+  })
 
 // for jwt auth
 // const cookieParser = require('cookie-parser')
 
-const app = express();
+
 // here all .use
 app.use(cors({
     // credentials: true,
