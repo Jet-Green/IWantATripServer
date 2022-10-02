@@ -39,10 +39,12 @@ async function startServer() {
     try {
         // connect mongo here
         // console.log(process.env.MONGO_URL);
-        // await mongoose.connect(process.env.MONGO_URL, {
-        //     useNewUrlParser: true,
-        //     useUnifiedTopology: true
-        // })
+        await mongoose.connect('mongodb://localhost:27017/',
+            {
+                useNewUrlParser: true,
+                useUnifiedTopology: true
+            }
+        )
         app.listen(process.env.PORT, () => { console.log(`Server is running on http://localhost:${process.env.PORT}`); })
     } catch (err) {
         console.error('Error while starting server: ', err);
