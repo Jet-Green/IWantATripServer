@@ -11,7 +11,7 @@ const router = Router()
 
 // here all routes
 router.get('/get-all-elements', guideController.getAllElements)
-
+router.get('/get-by-id', guideController.getById)
 router.post('/create-element', upload.any(), guideController.createGuideElement)
 
 

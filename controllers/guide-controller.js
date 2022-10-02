@@ -1,6 +1,7 @@
 const data = {
     toWatch: [
         {
+            _id: 'fsjfjsdkjgfj',
             image: 'https://glazov-flash.ru/image/cache/catalog/gorod/poest/sochy/sochi-350x200.png',
             name: 'Кафе "Сочи"',
             address: 'Глазов, ул. Кирова, 11А',
@@ -9,6 +10,7 @@ const data = {
             description: 'Излюбленное кафе города с дизайнерским оформлением и отличной кухней.'
         },
         {
+            _id: '123yhfuhnvrf',
             image: 'https://glazov-flash.ru/image/cache/catalog/gorod/posmotret/idnakar/idnakar3-350x200.jpg',
             name: 'Историко-культурный музей «Иднакар»',
             address: 'ул. Советская, 27',
@@ -17,6 +19,7 @@ const data = {
             description: ''
         },
         {
+            _id: '123yhunvdufb',
             image: 'https://glazov-flash.ru/image/cache/catalog/gorod/posmotret/idnakar/idnakar3-350x200.jpg',
             name: 'Историко-культурный музей «Иднакар»',
             address: 'ул. Советская, 27',
@@ -25,6 +28,7 @@ const data = {
             description: ''
         },
         {
+            _id: '9132ujrfimvgk',
             image: 'https://glazov-flash.ru/image/cache/catalog/gorod/posmotret/idnakar/idnakar3-350x200.jpg',
             name: 'Историко-культурный музей «Иднакар»',
             address: 'ул. Советская, 27',
@@ -44,6 +48,14 @@ module.exports = {
             console.log(err);
             // when api error enabled
             // next(err)
+        }
+    },
+
+    async getById(req, res, next) {
+        try {
+            return res.json(data.toWatch.find((e) => e._id == req.query._id))
+        } catch (error) {
+            console.log(error);
         }
     },
 
