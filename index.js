@@ -39,7 +39,7 @@ async function startServer() {
     try {
         // connect mongo here
         // console.log(process.env.MONGO_URL);
-        await mongoose.connect('mongodb://localhost:27017/',
+        await mongoose.connect(process.env.MONGO_URL,
             {
                 useNewUrlParser: true,
                 useUnifiedTopology: true
