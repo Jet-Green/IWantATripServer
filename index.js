@@ -35,20 +35,26 @@ app.use('/guide', guideRouter);
 
 // use error middleware last
 
-async function startServer() {
+function startServer() {
     try {
-        // connect mongo here
-        // console.log(process.env.MONGO_URL);
-        await mongoose.connect(process.env.MONGO_URL,
-            {
-                useNewUrlParser: true,
-                useUnifiedTopology: true
-            }
-        )
         app.listen(process.env.PORT, () => { console.log(`Server is running on http://localhost:${process.env.PORT}`); })
     } catch (err) {
         console.error('Error while starting server: ', err);
     }
 }
+function mongoConnect() {
+    mongoose.connect(process.env.MONGO_URL,
+        {
+            useNewUrlParser: true,
+            useUnifiedTopology: true
+        }
+    )
+    const db = mongoose.connection;
+    db.on('error', console.error.bind(console, 'connection error:'));
+    db.once('open', function () {
+        console.log('connection')
+    });
+}
 
 startServer()
+mongoConnect()
