@@ -11,7 +11,7 @@ const router = Router()
 // here all routes
 router.get('/get-all', tripController.getAll)
 router.get('/get-by-id', tripController.getById)
-
-
+router.post('/create', tripController.create)
+// router.get('/clear', tripController.clear)
 
 module.exports = router

@@ -1,20 +1,20 @@
 const { Schema, model } = require('mongoose')
 
 const TripSchema = new Schema({
-    name: { type: String, required: true },
-    start: { type: String, required: true },
-    end: { type: String, required: true },
-    duration: { type: Number, required: true },
-    images: { type: Array, required: true },
-    tripRoute: { type: String, required: true },
-    distance: { type: String, required: true },
-    cost: { type: Array, required: true },
-    offer: { type: String, required: true },
-    description: { type: String, required: true },
-    location: { type: String, required: true },
-    tripType: { type: String, required: true },
-    fromAge: { type: String, required: true },
-    period: { type: String, required: true },
+    name: { type: String },
+    start: { type: String },
+    end: { type: String },
+    duration: { type: Number },
+    images: { type: Array },
+    tripRoute: { type: String },
+    distance: { type: String },
+    cost: { type: Array },
+    offer: { type: String },
+    description: { type: String },
+    location: { type: String },
+    tripType: { type: String },
+    fromAge: { type: String },
+    period: { type: String },
 })
 
 module.exports = model('Trip', TripSchema);

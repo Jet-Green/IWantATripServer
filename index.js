@@ -14,7 +14,7 @@ const history = require('connect-history-api-fallback');
 app.use(history())
 app.use(express.static('dist'))
 
-app.get('/IWantATrip/', (req, res) => {
+app.get('/', (req, res) => {
     res.send('hello world')
 })
 // for jwt auth
