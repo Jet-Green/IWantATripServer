@@ -5,17 +5,18 @@ const express = require('express');
 const cors = require('cors')
 const app = express()
 const mongoose = require('mongoose')
-
 // here all routes
 const tripRouter = require('./routers/trip-router')
 const guideRouter = require('./routers/guide-router')
 
+const history = require('connect-history-api-fallback');
+
+app.use(history())
 app.use(express.static('dist'))
 
-app.get('/', (req, res) => {
+app.get('/IWantATrip/', (req, res) => {
     res.send('hello world')
 })
-
 // for jwt auth
 // const cookieParser = require('cookie-parser')
 
