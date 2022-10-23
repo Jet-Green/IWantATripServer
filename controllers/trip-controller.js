@@ -42,8 +42,8 @@ module.exports = {
             for (let f of req.files) {
                 filenames.push(process.env.API_URL + '/images/' + f.originalname)
             }
-            let result = await TripService.updateTripImagesUrls(_id, filenames)
-            console.log(result);
+            await TripService.updateTripImagesUrls(_id, filenames)
+            res.send('OK')
         } catch (error) {
             // next(error)
         }
