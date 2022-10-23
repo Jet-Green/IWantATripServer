@@ -38,7 +38,7 @@ module.exports = {
         try {
             let filenames = []
             let _id = req.files[0].originalname.split('_')[0]
-
+            // http://localhost:3030/images/dfiifhgjngfdjnfgjkfdg_0.png
             for (let f of req.files) {
                 filenames.push(process.env.API_URL + '/images/' + f.originalname)
             }
