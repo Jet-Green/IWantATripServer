@@ -13,7 +13,8 @@ const history = require('connect-history-api-fallback');
 
 app.use(history())
 app.use(express.static('dist'))
-
+// serve images
+app.use('/images', express.static('uploads'))
 app.get('/', (req, res) => {
     res.send('hello world')
 })

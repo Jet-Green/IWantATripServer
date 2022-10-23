@@ -4,8 +4,8 @@ module.exports = {
     async getAll(req, res, next) {
         try {
             return res.json(await TripService.findMany())
-        } catch (err) {
-            console.log(err);
+        } catch (error) {
+            console.log(error);
             // when api error enabled
             // next(err)
         }
@@ -27,9 +27,25 @@ module.exports = {
     },
     async create(req, res, next) {
         try {
-            TripService.insertOne(req.body)
+            const tripCb = await TripService.insertOne(req.body)
+
+            return res.json({ _id: tripCb._id })
         } catch (error) {
             console.log(error);
+        }
+    },
+    async uploadImages(req, res, next) {
+        try {
+            let filenames = []
+            let _id = req.files[0].originalname.split('_')[0]
+
+            for (let f of req.files) {
+                filenames.push(process.env.API_URL + '/images/' + f.originalname)
+            }
+            let result = await TripService.updateTripImagesUrls(_id, filenames)
+            console.log(result);
+        } catch (error) {
+            // next(error)
         }
     }
 }
