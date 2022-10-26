@@ -5,8 +5,10 @@ const fs = require('fs')
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        let dir = `./uploads`;
-
+        let dir = './uploads';
+        if (file.fieldname.startsWith('guide')) {
+            dir += '/guide-elements'
+        }
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir, { recursive: true });
         }

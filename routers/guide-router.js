@@ -12,7 +12,7 @@ const router = Router()
 // here all routes
 router.get('/get-all-elements', guideController.getAllElements)
 router.get('/get-by-id', guideController.getById)
-router.post('/create-element', upload.any(), guideController.createGuideElement)
-
+router.post('/create-element', guideController.createGuideElement)
+router.post('/upload-image', upload.any(), guideController.uploadImages)
 
 module.exports = router

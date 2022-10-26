@@ -43,7 +43,8 @@ module.exports = {
                 filenames.push(process.env.API_URL + '/images/' + f.originalname)
             }
             await TripService.updateTripImagesUrls(_id, filenames)
-            res.send('OK')
+
+            res.status(200).send('Ok')
         } catch (error) {
             // next(error)
         }

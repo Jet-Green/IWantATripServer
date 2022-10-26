@@ -39,6 +39,8 @@ const data = {
     ]
 }
 
+const GuideService = require('../service/guide-service')
+
 module.exports = {
     async getAllElements(req, res, next) {
         try {
@@ -61,13 +63,24 @@ module.exports = {
 
     async createGuideElement(req, res, next) {
         try {
-            let q = req.query;
+            let guideCb = await GuideService.createElement(req.body)
             // вызвать сервис, который будет сохранять в БД
-            return res.status(200)
+            return res.json({ _id: guideCb._id })
         } catch (err) {
             console.log(err);
             // when api error enabled
             // next(err)
+        }
+    },
+    async uploadImages(req, res, next) {
+        try {
+            let _id = req.files[0].originalname.split('_')[0]
+            let filename = process.env.API_URL + '/images/guide-elements/' + _id + '_0';
+            await GuideService.updateGuideElementImage(_id, filename)
+
+            res.status(200).send('OK')
+        } catch (error) {
+            console.log(error);
         }
     }
 }
