@@ -1,0 +1,1 @@
+import{b as t,o as c,c as n,d as e,w as o,B as _,g as l}from"./index.33c433f1.js";const r=l("p",null,"\u0413\u0438\u0434\u044B",-1),f={__name:"Guides",setup(p){return(u,d)=>{const a=t("a-col"),s=t("a-row");return c(),n("div",null,[e(_),e(s,{type:"flex",justify:"center"},{default:o(()=>[e(a,{xs:22,lg:16},{default:o(()=>[r]),_:1})]),_:1})])}}};export{f as default};
