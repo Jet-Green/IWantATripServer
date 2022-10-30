@@ -14,5 +14,6 @@ router.get('/get-all-elements', guideController.getAllElements)
 router.get('/get-by-id', guideController.getById)
 router.post('/create-element', guideController.createGuideElement)
 router.post('/upload-image', upload.any(), guideController.uploadImages)
+router.get('/clear', guideController.clear)
 
 module.exports = router

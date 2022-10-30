@@ -15,6 +15,7 @@ app.use(history())
 app.use(express.static('dist'))
 // serve images
 app.use('/images', express.static('uploads'))
+app.use('/guide-elements', express.static('uploads/guide-elements/'))
 app.get('/', (req, res) => {
     res.send('hello world')
 })

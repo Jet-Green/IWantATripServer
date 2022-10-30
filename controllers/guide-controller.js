@@ -44,15 +44,14 @@ const GuideService = require('../service/guide-service')
 module.exports = {
     async getAllElements(req, res, next) {
         try {
-            let q = req.query;
-            return res.json(data[q.name])
+            let r = await GuideService.getAllElements(req.query.name)
+            return res.json(r)
         } catch (err) {
             console.log(err);
             // when api error enabled
             // next(err)
         }
     },
-
     async getById(req, res, next) {
         try {
             return res.json(data.toWatch.find((e) => e._id == req.query._id))
@@ -60,7 +59,6 @@ module.exports = {
             console.log(error);
         }
     },
-
     async createGuideElement(req, res, next) {
         try {
             let guideCb = await GuideService.createElement(req.body)
@@ -75,12 +73,19 @@ module.exports = {
     async uploadImages(req, res, next) {
         try {
             let _id = req.files[0].originalname.split('_')[0]
-            let filename = process.env.API_URL + '/images/guide-elements/' + _id + '_0';
+            let filename = process.env.API_URL + '/guide-elements/' + _id + '_0.png';
             await GuideService.updateGuideElementImage(_id, filename)
 
             res.status(200).send('OK')
         } catch (error) {
             console.log(error);
         }
-    }
+    },
+    async clear() {
+        try {
+            await GuideService.clear()
+        } catch (error) {
+            console.log(error);
+        }
+    },
 }
