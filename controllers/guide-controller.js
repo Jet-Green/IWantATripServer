@@ -73,7 +73,7 @@ module.exports = {
     async uploadImages(req, res, next) {
         try {
             let _id = req.files[0].originalname.split('_')[0]
-            let filename = process.env.API_URL + '/guide-elements/' + _id + '_0.png';
+            let filename = '/guide-elements/' + _id + '_0.png';
             await GuideService.updateGuideElementImage(_id, filename)
 
             res.status(200).send('OK')
