@@ -23,5 +23,30 @@ module.exports = {
                 fullname: user.fullname,
             }
         }
-    }
+    },
+    async login(email, password) {
+        const user = await UserModel.findOne({ email })
+
+        if (!user) {
+            throw ApiError.BadRequest('Пользователь с таким email не найден')
+        }
+
+        const isPassEquals = await bcrypt.compare(password, user.password)
+
+        if (!isPassEquals) {
+            throw ApiError.BadRequest('Неверный пароль')
+        }
+
+        const tokens = tokenService.generateTokens({ email, 'password': user.password })
+        await tokenService.saveToken(user._id, tokens.refreshToken);
+        return {
+            ...tokens,
+            // pass the data to client
+            'user': {
+                email: user.email,
+                fullname: user.fullname
+            }
+        }
+    },
+
 }
