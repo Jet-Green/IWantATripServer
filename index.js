@@ -5,9 +5,12 @@ const express = require('express');
 const cors = require('cors')
 const app = express()
 const mongoose = require('mongoose')
+const cookieParser = require('cookie-parser')
 // here all routes
 const tripRouter = require('./routers/trip-router')
 const guideRouter = require('./routers/guide-router')
+const authRouter = require('./routers/auth-router')
+const errorMiddleware = require('./middleware/error-middleware')
 
 const history = require('connect-history-api-fallback');
 
@@ -25,18 +28,19 @@ app.get('/', (req, res) => {
 
 // here all .use
 app.use(cors({
-    // credentials: true,
+    credentials: true,
     origin: '*'
     // process.env.CLIENT_URL
 }))
-
+app.use(cookieParser())
 app.use(express.json())
 
+app.use('/auth', authRouter)
 app.use('/trips', tripRouter);
-
 app.use('/guide', guideRouter);
 
 // use error middleware last
+app.use(errorMiddleware)
 
 function startServer() {
     try {
