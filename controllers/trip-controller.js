@@ -21,7 +21,7 @@ module.exports = {
     async deleteById(req, res, next) {
         try {
             const _id = req.body._id
-            console.log(_id)
+    
             TripService.deleteOne(_id);
         } catch (error) {
             console.log(error);
