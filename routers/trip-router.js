@@ -12,6 +12,7 @@ const router = Router()
 // here all routes
 router.get('/get-all', tripController.getAll)
 router.get('/get-by-id', tripController.getById)
+router.post('/delete-by-id', tripController.deleteById)
 router.post('/create', tripController.create)
 router.post('/upload-images', upload.any(), tripController.uploadImages)
 router.get('/clear', tripController.clear)

@@ -12,6 +12,9 @@ module.exports = {
     async deleteMany() {
         return TripModel.deleteMany({})
     },
+    async deleteOne(_id) {
+        return TripModel.deleteOne({_id: _id})
+    },
     async findMany() {
         return TripModel.find({}).exec()
     },
