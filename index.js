@@ -15,7 +15,7 @@ const errorMiddleware = require('./middleware/error-middleware')
 const history = require('connect-history-api-fallback');
 
 
-app.use(history())
+// app.use(history())
 
 
 // here all .use

@@ -1,6 +1,13 @@
 const UserService = require('../service/user-service')
 
 module.exports = {
+    async clearUsers() {
+        try {
+            UserService.clearUsers()
+        } catch (error) {
+
+        }
+    },
     async registration(req, res, next) {
         try {
             const { email, password, fullname } = req.body;

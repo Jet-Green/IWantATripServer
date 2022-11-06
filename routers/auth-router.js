@@ -8,4 +8,6 @@ router.post('/registration', userController.registration)
 router.post('/login', userController.login)
 router.get('/refresh', userController.refresh)
 
+router.get('/clear-users', userController.clearUsers)
+
 module.exports = router

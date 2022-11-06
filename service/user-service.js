@@ -4,6 +4,11 @@ const tokenService = require('../service/token-service')
 const ApiError = require('../exceptions/api-error');
 
 module.exports = {
+    async clearUsers() {
+        console.log(
+            await UserModel.deleteMany({})
+        );
+    },
     async registration(email, password, fullname) {
         const candidate = await UserModel.findOne({ email })
         if (candidate) {
