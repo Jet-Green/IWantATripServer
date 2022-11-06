@@ -14,7 +14,18 @@ const errorMiddleware = require('./middleware/error-middleware')
 
 const history = require('connect-history-api-fallback');
 
+
 app.use(history())
+
+
+// here all .use
+app.use(cors({
+    origin: process.env.CLIENT_URL,
+    credentials: true
+}))
+app.use(express.json())
+app.use(cookieParser())
+
 app.use(express.static('dist'))
 // serve images
 app.use('/images', express.static('uploads'))
@@ -22,18 +33,6 @@ app.use('/guide-elements', express.static('uploads/guide-elements/'))
 app.get('/', (req, res) => {
     res.send('hello world')
 })
-// for jwt auth
-// const cookieParser = require('cookie-parser')
-
-
-// here all .use
-app.use(cors({
-    credentials: true,
-    origin: '*'
-    // process.env.CLIENT_URL
-}))
-app.use(cookieParser())
-app.use(express.json())
 
 app.use('/auth', authRouter)
 app.use('/trips', tripRouter);

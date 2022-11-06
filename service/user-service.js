@@ -13,7 +13,7 @@ module.exports = {
         const hashPassword = await bcrypt.hash(password, 3)
         const user = await UserModel.create({ email, password: hashPassword, fullname })
 
-        const tokens = tokenService.generateTokens({ email, hashPassword })
+        const tokens = tokenService.generateTokens({ email, hashPassword, _id: user._id })
         await tokenService.saveToken(user._id, tokens.refreshToken);
 
         return {
@@ -37,7 +37,32 @@ module.exports = {
             throw ApiError.BadRequest('Неверный пароль')
         }
 
-        const tokens = tokenService.generateTokens({ email, 'password': user.password })
+        const tokens = tokenService.generateTokens({ email, password: user.password, _id: user._id })
+
+        await tokenService.saveToken(user._id, tokens.refreshToken);
+        return {
+            ...tokens,
+            // pass the data to client
+            'user': {
+                email: user.email,
+                fullname: user.fullname
+            }
+        }
+    },
+    async refresh(refreshToken) {
+        if (!refreshToken) {
+            throw ApiError.UnauthorizedError();
+        }
+        const userData = tokenService.validateRefreshToken(refreshToken);
+        const tokenFromDb = await tokenService.findToken(refreshToken);
+
+        if (!userData || !tokenFromDb) {
+            throw ApiError.UnauthorizedError();
+        }
+
+        const user = await UserModel.findById(userData._id)
+
+        const tokens = tokenService.generateTokens({ email: user.email, password: user.password, _id: user._id })
         await tokenService.saveToken(user._id, tokens.refreshToken);
         return {
             ...tokens,

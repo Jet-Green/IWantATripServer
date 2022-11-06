@@ -6,5 +6,6 @@ const router = Router()
 
 router.post('/registration', userController.registration)
 router.post('/login', userController.login)
+router.get('/refresh', userController.refresh)
 
 module.exports = router
