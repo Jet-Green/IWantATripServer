@@ -15,6 +15,10 @@ const TripSchema = new Schema({
     tripType: { type: String },
     fromAge: { type: String },
     period: { type: String },
+    // меняет только пользователь
+    isHidden: { type: Boolean, default: false },
+    // меняет модератор
+    isModerated: { type: Boolean, default: true },
 })
 
 module.exports = model('Trip', TripSchema);
