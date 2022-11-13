@@ -21,7 +21,7 @@ module.exports = {
     async deleteById(req, res, next) {
         try {
             const _id = req.body._id
-    
+
             TripService.deleteOne(_id);
         } catch (error) {
             console.log(error);
@@ -49,7 +49,7 @@ module.exports = {
             let _id = req.files[0].originalname.split('_')[0]
             // http://localhost:3030/images/dfiifhgjngfdjnfgjkfdg_0.png
             for (let f of req.files) {
-                filenames.push(process.env.API_URL + `/trips/${f.originalname}`)
+                filenames.push(process.env.API_URL + `/images/trips/${f.originalname}`)
             }
             await TripService.updateTripImagesUrls(_id, filenames)
 

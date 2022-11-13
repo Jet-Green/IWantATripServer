@@ -37,13 +37,21 @@ module.exports = {
             const { refreshToken } = req.cookies;
 
             const userData = await UserService.refresh(refreshToken)
-
             res.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
+            // const newUser = await UserService.update(userData)
+
             return res.json(userData);
         } catch (error) {
-            console.log(error);
             // попадаем в middleware с обработкой ошибок
             next(error)
         }
     },
+    async update(req, res, next) {
+        try {
+            const newUser = await UserService.update(req.body)
+            return res.json(newUser)
+        } catch (error) {
+            next(error)
+        }
+    }
 }

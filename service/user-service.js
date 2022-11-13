@@ -72,11 +72,10 @@ module.exports = {
         return {
             ...tokens,
             // pass the data to client
-            'user': {
-                email: user.email,
-                fullname: user.fullname
-            }
+            'user': user
         }
     },
-
+    async update(user) {
+        return await UserModel.findOneAndUpdate({ email: user.email }, user)
+    },
 }
