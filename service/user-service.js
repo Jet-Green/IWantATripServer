@@ -75,6 +75,11 @@ module.exports = {
             'user': user
         }
     },
+    async logout(refreshToken) {
+        const token = await tokenService.removeToken(refreshToken);
+
+        return token;
+    },
     async update(user) {
         return await UserModel.findOneAndUpdate({ email: user.email }, user, {
             new: true

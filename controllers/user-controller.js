@@ -46,6 +46,18 @@ module.exports = {
             next(error)
         }
     },
+    async logout(req, res, next) {
+        try {
+            const { refreshToken } = req.cookies;
+            const token = await UserService.logout(refreshToken)
+            res.clearCookie('refreshToken')
+
+            return res.json(token);
+        } catch (error) {
+            // попадаем в middleware с обработкой ошибок
+            next(error)
+        }
+    },
     async update(req, res, next) {
         try {
             const newUser = await UserService.update(req.body)
