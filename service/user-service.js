@@ -23,10 +23,7 @@ module.exports = {
 
         return {
             ...tokens,
-            user: {
-                email: user.email,
-                fullname: user.fullname,
-            }
+            user
         }
     },
     async login(email, password) {
@@ -48,10 +45,7 @@ module.exports = {
         return {
             ...tokens,
             // pass the data to client
-            'user': {
-                email: user.email,
-                fullname: user.fullname
-            }
+            user
         }
     },
     async refresh(refreshToken) {
@@ -72,7 +66,7 @@ module.exports = {
         return {
             ...tokens,
             // pass the data to client
-            'user': user
+            user
         }
     },
     async logout(refreshToken) {
