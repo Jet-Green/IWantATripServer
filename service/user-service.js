@@ -76,6 +76,8 @@ module.exports = {
         }
     },
     async update(user) {
-        return await UserModel.findOneAndUpdate({ email: user.email }, user)
+        return await UserModel.findOneAndUpdate({ email: user.email }, user, {
+            new: true
+        })
     },
 }
