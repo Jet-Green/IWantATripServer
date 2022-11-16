@@ -5,7 +5,8 @@ const UserSchema = new Schema({
     password: { type: String, required: true },
     fullname: { type: String, required: true },
     fullinfo: {
-        type: Object
+        type: Object,
+        default: {}
     },
     trips: { type: Array },
     guideElements: { type: Array }
