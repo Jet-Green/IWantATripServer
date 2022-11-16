@@ -59,6 +59,15 @@ module.exports = {
             console.log(error);
         }
     },
+    async deleteById(req, res, next) {
+        try {
+            const _id = req.body._id
+
+            GuideService.deleteOne(_id);
+        } catch (error) {
+            console.log(error);
+        }
+    },
     async createGuideElement(req, res, next) {
         try {
             let guideCb = await GuideService.createElement(req.body)

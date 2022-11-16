@@ -12,6 +12,9 @@ module.exports = {
         element.image = filename
         return element.save()
     },
+    async deleteOne(_id) {
+        return GuideModel.deleteOne({_id: _id})
+    },
     async getAllElements(type) {
         return GuideModel.find({ 'type': type }).exec()
     }
