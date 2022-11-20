@@ -7,12 +7,23 @@ module.exports = {
     async updateOne(trip) {
         let _id = trip._id
         delete trip._id
+
         return TripModel.findByIdAndUpdate(_id, trip)
     },
     async updateTripImagesUrls(_id, filenames) {
         const trip = await TripModel.findById(_id)
-        for (let f of filenames)
-            trip.images.push(f)
+        for (let f of filenames) {
+            let isUnique = true;
+            for (let i = 0; i < filenames.length; i++) {
+                if (filenames[i] == f) {
+                    isUnique = false
+                    break
+                }
+            }
+            if (isUnique) {
+                trip.images.push(f)
+            }
+        }
         return trip.save()
     },
     async deleteMany() {
