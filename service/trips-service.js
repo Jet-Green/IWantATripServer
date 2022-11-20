@@ -4,9 +4,15 @@ module.exports = {
     async insertOne(trip) {
         return TripModel.create(trip)
     },
+    async updateOne(trip) {
+        let _id = trip._id
+        delete trip._id
+        return TripModel.findByIdAndUpdate(_id, trip)
+    },
     async updateTripImagesUrls(_id, filenames) {
         const trip = await TripModel.findById(_id)
-        trip.images = filenames
+        for (let f of filenames)
+            trip.images.push(f)
         return trip.save()
     },
     async deleteMany() {

@@ -41,6 +41,15 @@ module.exports = {
             next(error)
         }
     },
+    async update(req, res, next) {
+        try {
+            const tripCb = await TripService.updateOne(req.body)
+
+            return res.json({ _id: tripCb._id })
+        } catch (error) {
+            next(error)
+        }
+    },
     async hideTrip(req, res, next) {
         try {
             await TripService.hide(req.query._id, req.query.v)
@@ -58,6 +67,7 @@ module.exports = {
             for (let f of req.files) {
                 filenames.push(process.env.API_URL + `/images/trips/${f.originalname}`)
             }
+            console.log(filenames);
             await TripService.updateTripImagesUrls(_id, filenames)
 
             res.status(200).send('Ok')
