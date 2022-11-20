@@ -4,6 +4,7 @@ const TripSchema = new Schema({
     name: { type: String },
     start: { type: String },
     end: { type: String },
+    maxPeople: { type: Number },
     duration: { type: Number },
     images: { type: Array },
     tripRoute: { type: String },
