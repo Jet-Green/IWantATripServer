@@ -5,9 +5,7 @@ module.exports = {
         try {
             return res.json(await TripService.findMany())
         } catch (error) {
-            console.log(error);
-            // when api error enabled
-            // next(err)
+            next(error)
         }
     },
     async getById(req, res, next) {
@@ -15,7 +13,7 @@ module.exports = {
             const _id = req.query._id
             return res.json(await TripService.findById(_id));
         } catch (error) {
-            console.log(error);
+            next(error)
         }
     },
     async deleteById(req, res, next) {
@@ -24,7 +22,7 @@ module.exports = {
 
             TripService.deleteOne(_id);
         } catch (error) {
-            console.log(error);
+            next(error)
         }
     },
     async clear(req, res, next) {
@@ -40,7 +38,16 @@ module.exports = {
 
             return res.json({ _id: tripCb._id })
         } catch (error) {
+            next(error)
+        }
+    },
+    async hideTrip(req, res, next) {
+        try {
+            await TripService.hide(req.query._id, req.query.v)
+            return res.json('OK')
+        } catch (error) {
             console.log(error);
+            next(error)
         }
     },
     async uploadImages(req, res, next) {
