@@ -10,7 +10,25 @@ module.exports = {
         let _id = trip._id
         delete trip._id
 
-        return TripModel.findByIdAndUpdate(_id, trip)
+        let oldTrip = await TripModel.findById(_id)
+
+        let imagesToDelete = []
+        for (let oldImg of oldTrip.images) {
+            let isOldImg = true
+            for (let newImg of trip.images) {
+                if (newImg == oldImg) {
+                    isOldImg = false
+                }
+            }
+            if (isOldImg) {
+                imagesToDelete.push(oldImg)
+            }
+        }
+        multer.deleteImages(imagesToDelete)
+
+        oldTrip.overwrite(trip)
+
+        return await oldTrip.save()
     },
     async updateTripImagesUrls(_id, filenames) {
         const trip = await TripModel.findById(_id)
