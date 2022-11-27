@@ -68,7 +68,6 @@ module.exports = {
             for (let f of req.files) {
                 filenames.push(process.env.API_URL + `/images/trips/${f.originalname}`)
             }
-            console.log(filenames);
             await TripService.updateTripImagesUrls(_id, filenames)
 
             res.status(200).send('Ok')
