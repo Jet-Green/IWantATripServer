@@ -75,7 +75,9 @@ module.exports = {
         return token;
     },
     async update(user) {
-        return await UserModel.findOneAndUpdate({ email: user.email }, user, {
+        let email = user.email;
+        delete user.email
+        return await UserModel.findOneAndUpdate({ email }, user, {
             new: true
         })
     },

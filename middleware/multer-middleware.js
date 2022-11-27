@@ -25,4 +25,14 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage })
 
-module.exports = upload
+// images: [http://localhost:3030/images/******* ]
+function deleteImages(images) {
+    for (let i of images) {
+        let filename = './uploads/' + i.replace(process.env.API_URL + '/images/', '')
+        try {
+            fs.unlink(filename, (err) => {
+            })
+        } catch (err) { }
+    }
+}
+module.exports = { upload, deleteImages }

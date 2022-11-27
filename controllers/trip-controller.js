@@ -20,7 +20,7 @@ module.exports = {
         try {
             const _id = req.body._id
 
-            TripService.deleteOne(_id);
+            return TripService.deleteOne(_id);
         } catch (error) {
             next(error)
         }
@@ -29,7 +29,7 @@ module.exports = {
         try {
             TripService.deleteMany()
         } catch (error) {
-            console.log(error);
+            next(error)
         }
     },
     async create(req, res, next) {
@@ -38,7 +38,6 @@ module.exports = {
 
             return res.json({ _id: tripCb._id })
         } catch (error) {
-            console.log(error);
             next(error)
         }
     },
@@ -48,7 +47,6 @@ module.exports = {
 
             return res.json({ _id: tripCb._id })
         } catch (error) {
-            console.log(error);
             next(error)
         }
     },
@@ -72,8 +70,7 @@ module.exports = {
 
             res.status(200).send('Ok')
         } catch (error) {
-            console.log(error);
-            // next(error)
+            next(error)
         }
     }
 }

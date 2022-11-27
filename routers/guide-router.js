@@ -1,6 +1,7 @@
 // here all imports
 const Router = require('express').Router
-const upload = require('../middleware/multer-middleware')
+const multer = require('../middleware/multer-middleware')
+const upload = multer.upload
 
 // here all controllers
 const guideController = require('../controllers/guide-controller')

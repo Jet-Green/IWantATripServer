@@ -1,4 +1,6 @@
 const TripModel = require('../models/trip-model.js');
+const multer = require('../middleware/multer-middleware')
+const UserService = require('./user-service')
 
 module.exports = {
     async insertOne(trip) {
@@ -30,7 +32,13 @@ module.exports = {
         return TripModel.deleteMany({})
     },
     async deleteOne(_id) {
-        return TripModel.deleteOne({ _id: _id })
+        UserService.update({ $pull: { trips: _id } })
+
+        let trip = await TripModel.findById(_id)
+        let images = trip.images
+        multer.deleteImages(images)
+
+        return trip.remove()
     },
     async findMany() {
         return TripModel.find({}).exec()
@@ -40,5 +48,5 @@ module.exports = {
     },
     async findById(_id) {
         return TripModel.findById(_id).exec()
-    }
+    },
 }

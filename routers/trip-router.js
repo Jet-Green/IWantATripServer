@@ -6,8 +6,8 @@ const tripController = require('../controllers/trip-controller')
 
 const authMiddleware = require('../middleware/auth-middleware')
 
-const upload = require('../middleware/multer-middleware')
-
+const multer = require('../middleware/multer-middleware')
+const upload = multer.upload
 const router = Router()
 
 
