@@ -38,6 +38,7 @@ module.exports = {
 
             return res.json({ _id: tripCb._id })
         } catch (error) {
+            console.log(error);
             next(error)
         }
     },
@@ -47,6 +48,7 @@ module.exports = {
 
             return res.json({ _id: tripCb._id })
         } catch (error) {
+            console.log(error);
             next(error)
         }
     },
@@ -55,7 +57,6 @@ module.exports = {
             await TripService.hide(req.query._id, req.query.v)
             return res.json('OK')
         } catch (error) {
-            console.log(error);
             next(error)
         }
     },
@@ -72,6 +73,7 @@ module.exports = {
 
             res.status(200).send('Ok')
         } catch (error) {
+            console.log(error);
             // next(error)
         }
     }

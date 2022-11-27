@@ -14,8 +14,8 @@ module.exports = {
         const trip = await TripModel.findById(_id)
         for (let f of filenames) {
             let isUnique = true;
-            for (let i = 0; i < filenames.length; i++) {
-                if (filenames[i] == f) {
+            for (let i = 0; i < trip.images.length; i++) {
+                if (trip.images[i] == f) {
                     isUnique = false
                     break
                 }
