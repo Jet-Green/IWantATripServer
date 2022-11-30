@@ -64,6 +64,9 @@ module.exports = {
     async hide(_id, v) {
         return TripModel.findByIdAndUpdate(_id, { isHidden: v })
     },
+    async moderate(_id, v) {
+        return TripModel.findByIdAndUpdate(_id, { isModerated: v })
+    },
     async findById(_id) {
         return TripModel.findById(_id).exec()
     },

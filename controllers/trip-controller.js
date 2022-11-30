@@ -58,6 +58,14 @@ module.exports = {
             next(error)
         }
     },
+    async moderateTrip(req, res, next) {
+        try {
+            await TripService.moderate(req.query._id, req.query.v)
+            return res.json('OK')
+        } catch (error) {
+            next(error)
+        }
+    },
     async uploadImages(req, res, next) {
         try {
             let filenames = []

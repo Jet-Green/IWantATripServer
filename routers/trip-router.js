@@ -18,6 +18,7 @@ router.post('/delete-by-id', tripController.deleteById)
 router.post('/create', authMiddleware, tripController.create)
 router.post('/update', authMiddleware, tripController.update)
 router.get('/hide', authMiddleware, tripController.hideTrip)
+router.get('/moderate', authMiddleware, tripController.moderateTrip)
 
 router.post('/upload-images', upload.any(), tripController.uploadImages)
 router.get('/clear', tripController.clear)
