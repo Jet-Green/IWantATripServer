@@ -61,7 +61,6 @@ module.exports = {
     async update(req, res, next) {
         try {
             const newUser = await UserService.update(req.body)
-            console.log(newUser);
             return res.json(newUser)
         } catch (error) {
             next(error)
