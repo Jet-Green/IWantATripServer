@@ -10,6 +10,8 @@ const cookieParser = require('cookie-parser')
 const tripRouter = require('./routers/trip-router')
 const guideRouter = require('./routers/guide-router')
 const authRouter = require('./routers/auth-router')
+const appStateRouter = require('./routers/app-state-router')
+
 const errorMiddleware = require('./middleware/error-middleware')
 
 const history = require('connect-history-api-fallback');
@@ -37,6 +39,7 @@ app.get('/', (req, res) => {
 app.use('/auth', authRouter)
 app.use('/trips', tripRouter);
 app.use('/guide', guideRouter);
+app.use('/app-state', appStateRouter)
 
 // use error middleware last
 app.use(errorMiddleware)
