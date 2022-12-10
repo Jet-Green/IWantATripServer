@@ -8,6 +8,14 @@ module.exports = {
             next(error)
         }
     },
+    async search(req, res, next) {
+        try {
+            let query = req.query.query
+            return res.json(await TripService.findForSearch(query))
+        } catch (error) {
+            next(error)
+        }
+    },
     async getById(req, res, next) {
         try {
             const _id = req.query._id

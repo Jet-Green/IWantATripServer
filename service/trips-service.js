@@ -61,6 +61,9 @@ module.exports = {
     async findMany() {
         return TripModel.find({}).exec()
     },
+    async findForSearch(query) {
+        return TripModel.find({name:{ $regex: query, $options: 'i' }}).exec();
+    },
     async hide(_id, v) {
         return TripModel.findByIdAndUpdate(_id, { isHidden: v })
     },
