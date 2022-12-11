@@ -1,5 +1,4 @@
 // here all imports ${process.env.NODE_ENV}
-
 require('dotenv').config({ path: `${process.argv[process.argv.length - 1]}.env` })
 const express = require('express');
 const cors = require('cors')
@@ -12,9 +11,7 @@ const guideRouter = require('./routers/guide-router')
 const authRouter = require('./routers/auth-router')
 const appStateRouter = require('./routers/app-state-router')
 const companionRouter = require('./routers/companion-router')
-
 const errorMiddleware = require('./middleware/error-middleware')
-
 const history = require('connect-history-api-fallback');
 
 
@@ -28,8 +25,9 @@ app.use(cors({
 }))
 app.use(express.json())
 app.use(cookieParser())
-
 app.use(express.static('dist'))
+
+
 // serve images
 app.use('/images', express.static('uploads'))
 app.use('/guide-elements', express.static('uploads/guide-elements/'))
@@ -37,6 +35,8 @@ app.get('/', (req, res) => {
     res.send('hello world')
 })
 
+
+// routes
 app.use('/auth', authRouter)
 app.use('/trips', tripRouter);
 app.use('/guide', guideRouter);
@@ -45,6 +45,7 @@ app.use('/companion', companionRouter)
 
 // use error middleware last
 app.use(errorMiddleware)
+
 
 function startServer() {
     try {
