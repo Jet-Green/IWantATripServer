@@ -7,7 +7,7 @@ module.exports = {
         } catch (error) {
             next(error)
         }
-    },  
+    },
     async create(req, res, next) {
         try {
             const companionCb = await СompanionService.insertOne(req.body)
@@ -16,5 +16,5 @@ module.exports = {
             next(error)
         }
     },
-   
+
 }

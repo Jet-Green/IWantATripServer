@@ -49,6 +49,15 @@ module.exports = {
             next(error)
         }
     },
+    async booking(req, res, next) {
+        try {
+            const tripCb = await TripService.booking(req.body)
+
+            return res.json({ _id: tripCb._id })
+        } catch (error) {
+            next(error)
+        }
+    },
     async update(req, res, next) {
         try {
             const tripCb = await TripService.updateOne(req.body)
