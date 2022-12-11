@@ -11,6 +11,7 @@ const tripRouter = require('./routers/trip-router')
 const guideRouter = require('./routers/guide-router')
 const authRouter = require('./routers/auth-router')
 const appStateRouter = require('./routers/app-state-router')
+const companionRouter = require('./routers/companion-router')
 
 const errorMiddleware = require('./middleware/error-middleware')
 
@@ -40,6 +41,7 @@ app.use('/auth', authRouter)
 app.use('/trips', tripRouter);
 app.use('/guide', guideRouter);
 app.use('/app-state', appStateRouter)
+app.use('/companion', companionRouter)
 
 // use error middleware last
 app.use(errorMiddleware)
