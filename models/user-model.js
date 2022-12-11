@@ -9,7 +9,8 @@ const UserSchema = new Schema({
         default: {}
     },
     trips: { type: Array },
-    guideElements: { type: Array }
+    guideElements: { type: Array },
+    companionRequests: { type: Array }
 })
 
 module.exports = model('User', UserSchema);

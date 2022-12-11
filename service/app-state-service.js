@@ -5,7 +5,7 @@ module.exports = {
         return AppStateModel.find({})
     },
     update(newState) {
-        return AppStateModel.updateMany({}, { $set: newState })
+        return AppStateModel.updateOne({}, { $set: newState })
     },
     createState() {
         return AppStateModel.create({})
