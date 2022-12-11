@@ -1,10 +1,13 @@
 const СompanionModel = require('../models/companion-model');
 
 module.exports = {
-    async insertOne(companion) {
+    insertOne(companion) {
         return СompanionModel.create(companion)
     },
-    async findMany() {
+    findById(_id) {
+        return СompanionModel.findById(_id)
+    },
+    findMany() {
         return СompanionModel.find({}).exec()
     },
 }
