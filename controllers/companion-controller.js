@@ -25,5 +25,12 @@ module.exports = {
             next(error)
         }
     },
+    async clear(req, res, next) {
+        try {
+            СompanionService.deleteMany()
+        } catch (error) {
+            next(error)
+        }
+    },
 
 }

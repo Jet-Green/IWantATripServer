@@ -10,4 +10,9 @@ module.exports = {
     findMany() {
         return СompanionModel.find({}).exec()
     },
+    async deleteMany() {
+        return СompanionModel.deleteMany({})
+    },
+  
+ 
 }

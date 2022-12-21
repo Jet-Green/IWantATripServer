@@ -9,7 +9,8 @@ const CompanionSchema = new Schema({
     end: { type: String, required: true },
     age: { type: String, required: true },
     gender: { type: String, required: true },
-    type: [{ type: String, required: true }],
+    // type: [{ type: String, required: true }],
+    direction: { type: String, required: true },
     description: { type: String, required: true },
 })
 

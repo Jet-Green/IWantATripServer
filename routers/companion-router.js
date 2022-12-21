@@ -11,6 +11,7 @@ const router = Router()
 // here all routes
 router.get('/get-all', СompanionController.getAll)
 router.get('/get-by-id', СompanionController.getById)
+router.get('/clear', СompanionController.clear)
 router.post('/create', authMiddleware, СompanionController.create)
 
 
