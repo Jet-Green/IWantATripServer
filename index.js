@@ -13,6 +13,7 @@ const appStateRouter = require('./routers/app-state-router')
 const companionRouter = require('./routers/companion-router')
 const errorMiddleware = require('./middleware/error-middleware')
 const history = require('connect-history-api-fallback');
+const bookingRouter = require('./routers/booking-router');
 
 
 // app.use(history())
@@ -42,6 +43,7 @@ app.use('/trips', tripRouter);
 app.use('/guide', guideRouter);
 app.use('/app-state', appStateRouter)
 app.use('/companion', companionRouter)
+app.use('/booking', bookingRouter)
 
 // use error middleware last
 app.use(errorMiddleware)
