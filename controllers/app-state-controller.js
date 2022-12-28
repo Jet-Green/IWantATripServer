@@ -21,5 +21,12 @@ module.exports = {
         } catch (err) {
             next(err)
         }
+    },
+    async deleteMPMById(req, res, next) {
+        try {
+            res.json(await AppStateService.deleteMPMById(req.query.index))
+        } catch (error) {
+            next(error)
+        }
     }
 }

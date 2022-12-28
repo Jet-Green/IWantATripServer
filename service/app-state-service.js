@@ -9,5 +9,8 @@ module.exports = {
     },
     createState() {
         return AppStateModel.create({})
+    },
+    deleteMPMById(index) {
+        return AppStateModel.findOneAndUpdate({}, { $pull: { 'mainPageMesssages': index } })
     }
 }
