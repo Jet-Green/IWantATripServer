@@ -61,8 +61,82 @@ module.exports = {
     async findMany() {
         return TripModel.find({}).exec()
     },
-    async findForSearch(query) {
-        return TripModel.find({name:{ $regex: query, $options: 'i' }}).exec();
+    async findForSearch(s) {
+        const { query, place, when } = s
+        const allTrips = await TripModel.find({})
+        let filtered = []
+        let strRegex;
+        for (let trip of allTrips) {
+            let start = new Date(trip.start).getTime()
+            let end = new Date(trip.end).getTime()
+
+            if (query && when.start && place) {
+                strRegex = new RegExp(query, 'i')
+                if (strRegex.test(trip.name) ||
+                    strRegex.test(trip.description) ||
+                    place == trip.location ||
+                    (start <= when.start && end >= when.end)
+                ) {
+                    filtered.push(trip)
+                }
+
+            }
+
+            if (!query && place && when.start) {
+                if (place == trip.location ||
+                    (start <= when.start && end >= when.end)
+                ) {
+                    filtered.push(trip)
+                }
+
+            }
+
+            if (query && !place && when.start) {
+                strRegex = new RegExp(query, 'i')
+                if (strRegex.test(trip.name) ||
+                    strRegex.test(trip.description) ||
+                    (start <= when.start && end >= when.end)
+                ) {
+                    filtered.push(trip)
+                }
+            }
+
+            if (query && place && !when.start) {
+                strRegex = new RegExp(query, 'i')
+                if (place == trip.location ||
+                    strRegex.test(trip.name) ||
+                    strRegex.test(trip.description)
+                ) {
+                    filtered.push(trip)
+                }
+            }
+
+            if (!query && !place && when.start) {
+                if (start <= when.start && end >= when.end)
+                    filtered.push(trip)
+            }
+
+            if (!query && place && !when.start) {
+                if (trip.location == place)
+                    filtered.push(trip)
+            }
+
+            if (query && !place && !when.start) {
+                strRegex = new RegExp(query, 'i')
+                if (strRegex.test(trip.name) ||
+                    strRegex.test(trip.description)
+                ) {
+                    filtered.push(trip)
+                }
+            }
+
+            if (!query && !place && !when.start) {
+                return allTrips
+            }
+
+        }
+
+        return filtered;
     },
     async hide(_id, v) {
         return TripModel.findByIdAndUpdate(_id, { isHidden: v })

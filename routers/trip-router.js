@@ -13,7 +13,7 @@ const router = Router()
 
 // here all routes
 router.get('/get-all', tripController.getAll)
-router.get('/search', tripController.search)
+router.post('/search', tripController.search)
 router.get('/get-by-id', tripController.getById)
 router.post('/delete-by-id', tripController.deleteById)
 router.post('/create', authMiddleware, tripController.create)

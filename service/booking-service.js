@@ -1,7 +1,6 @@
 const BookingModel = require('../models/booking-model.js');
 
-export default {
-
+module.exports = {
     async createBookingElement(element) {
         return BookingModel.create(element)
     },

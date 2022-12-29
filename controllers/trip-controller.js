@@ -10,9 +10,10 @@ module.exports = {
     },
     async search(req, res, next) {
         try {
-            let query = req.query.query
-            return res.json(await TripService.findForSearch(query))
+            let s = req.body
+            return res.json(await TripService.findForSearch(s))
         } catch (error) {
+            console.log(error);
             next(error)
         }
     },
