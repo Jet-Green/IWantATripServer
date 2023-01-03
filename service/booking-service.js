@@ -1,7 +1,7 @@
-const BookingModel = require('../models/booking-model.js');
+const BookingModel = require('../models/booking-model');
 
 module.exports = {
-    async createBookingElement(element) {
-        return BookingModel.create(element)
+    insertOne(booking) {
+        return BookingModel.create(booking)
     },
 }
