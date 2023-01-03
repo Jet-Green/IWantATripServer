@@ -63,7 +63,8 @@ module.exports = {
     },
     async findForSearch(s) {
         const { query, place, when } = s
-        const allTrips = await TripModel.find({})
+        // убираем спрятанные туры и туры без модерациии
+        const allTrips = await TripModel.find({ isHidden: false, isModerated: true })
         let filtered = []
         let strRegex;
         for (let trip of allTrips) {
