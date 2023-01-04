@@ -63,32 +63,58 @@ module.exports = {
     },
     async findForSearch(s) {
         const { query, place, when } = s
-        // console.log(when)
-        // убираем спрятанные туры и туры без модерациии
-        const allTrips = await TripModel.find({ isHidden: false, isModerated: true })
+        let filter;
+
         // если пустой фильтр
         if (!query && !place && !when.start) {
-            return allTrips
+            filter = {
+                isHidden: false, isModerated: true
+            }
+        } else if (when.start == null) {
+            filter = {
+                $and: [
+                    {
+                        $or: [
+                            { name: { $regex: query, $options: 'i' } },
+                            { description: { $regex: query, $options: 'i' } },
+                            { location: { $regex: query, $options: 'i' } },
+                        ]
+                    },
+                    {
+                        $or: [
+                            { location: { $regex: place, $options: 'i' } },
+                        ]
+                    }
+                ]
+            }
+        } else {
+            filter = {
+                $and: [
+                    {
+                        $or: [
+                            { name: { $regex: query, $options: 'i' } },
+                            { description: { $regex: query, $options: 'i' } },
+                            { location: { $regex: query, $options: 'i' } },
+                        ]
+                    },
+                    {
+                        $or: [
+                            { location: { $regex: place, $options: 'i' } },
+                        ]
+                    },
+                    {
+                        $and: [
+                            { start: { $gte: when.start } },
+                            { end: { $lte: when.end } },
+                        ]
+                    },
+                    {
+                        isHidden: false, isModerated: true
+                    }
+                ]
+            }
         }
-        return TripModel.find({
-            $and: [
-                {
-                    $or: [
-                        { name: { $regex: query, $options: 'i' } },
-                        { description: { $regex: query, $options: 'i' } },
-                        { location: { $regex: query, $options: 'i' } },
-                    ]
-                },
-                {
-                    $or: [
-                        { location: { $regex: place, $options: 'i' } },
-                    ]
-                },
-                {
-                    isHidden: false, isModerated: true
-                }
-            ]
-        }).exec();
+        return TripModel.find(filter);
 
     },
     async hide(_id, v) {
