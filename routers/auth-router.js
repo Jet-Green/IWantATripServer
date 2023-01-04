@@ -4,6 +4,8 @@ const userController = require('../controllers/user-controller')
 
 const router = Router()
 
+router.post('/buy-trip', userController.buyTrip)
+
 router.post('/registration', userController.registration)
 router.post('/login', userController.login)
 router.get('/refresh', userController.refresh)

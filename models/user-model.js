@@ -11,6 +11,7 @@ const UserSchema = new Schema({
     trips: { type: Array },
     guideElements: { type: Array },
     companionRequests: { type: Array },
+    boughtTrips: Array
 })
 
 module.exports = model('User', UserSchema);

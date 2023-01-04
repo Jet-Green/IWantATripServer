@@ -4,6 +4,9 @@ const tokenService = require('../service/token-service')
 const ApiError = require('../exceptions/api-error');
 
 module.exports = {
+    async buyTrip(_id, userEmail) {
+        return UserModel.findOneAndUpdate({ email: userEmail }, { $push: { boughtTrips: _id } })
+    },
     async clearUsers() {
         console.log(
             await UserModel.deleteMany({})

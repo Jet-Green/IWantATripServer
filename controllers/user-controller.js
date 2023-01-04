@@ -1,6 +1,15 @@
 const UserService = require('../service/user-service')
 
 module.exports = {
+    async buyTrip(req, res, next) {
+        try {
+            const _id = req.body._id
+            const userEmail = req.body.userEmail
+            return res.json(await UserService.buyTrip(_id, userEmail))
+        } catch (error) {
+            next(error)
+        }
+    },
     async clearUsers() {
         try {
             UserService.clearUsers()
