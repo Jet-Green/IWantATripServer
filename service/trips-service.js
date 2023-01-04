@@ -63,81 +63,33 @@ module.exports = {
     },
     async findForSearch(s) {
         const { query, place, when } = s
+        // console.log(when)
         // убираем спрятанные туры и туры без модерациии
         const allTrips = await TripModel.find({ isHidden: false, isModerated: true })
-        let filtered = []
-        let strRegex;
-        for (let trip of allTrips) {
-            let start = new Date(trip.start).getTime()
-            let end = new Date(trip.end).getTime()
-
-            if (query && when.start && place) {
-                strRegex = new RegExp(query, 'i')
-                if (strRegex.test(trip.name) ||
-                    strRegex.test(trip.description) ||
-                    place == trip.location ||
-                    (start <= when.start && end >= when.end)
-                ) {
-                    filtered.push(trip)
-                }
-
-            }
-
-            if (!query && place && when.start) {
-                if (place == trip.location ||
-                    (start <= when.start && end >= when.end)
-                ) {
-                    filtered.push(trip)
-                }
-
-            }
-
-            if (query && !place && when.start) {
-                strRegex = new RegExp(query, 'i')
-                if (strRegex.test(trip.name) ||
-                    strRegex.test(trip.description) ||
-                    (start <= when.start && end >= when.end)
-                ) {
-                    filtered.push(trip)
-                }
-            }
-
-            if (query && place && !when.start) {
-                strRegex = new RegExp(query, 'i')
-                if (place == trip.location ||
-                    strRegex.test(trip.name) ||
-                    strRegex.test(trip.description)
-                ) {
-                    filtered.push(trip)
-                }
-            }
-
-            if (!query && !place && when.start) {
-                if (start <= when.start && end >= when.end)
-                    filtered.push(trip)
-            }
-
-            if (!query && place && !when.start) {
-                if (trip.location == place)
-                    filtered.push(trip)
-            }
-
-            if (query && !place && !when.start) {
-                strRegex = new RegExp(query, 'i')
-                if (strRegex.test(trip.name) ||
-                    strRegex.test(trip.description)
-                ) {
-                    filtered.push(trip)
-                }
-            }
-
-            if (!query && !place && !when.start) {
-                return allTrips
-            }
-
+        // если пустой фильтр
+        if (!query && !place && !when.start) {
+            return allTrips
         }
+        return TripModel.find({
+            $and: [
+                {
+                    $or: [
+                        { name: { $regex: query, $options: 'i' } },
+                        { description: { $regex: query, $options: 'i' } },
+                        { location: { $regex: query, $options: 'i' } },
+                    ]
+                },
+                {
+                    $or: [
+                        { location: { $regex: place, $options: 'i' } },
+                    ]
+                },
+                {
+                    isHidden: false, isModerated: true
+                }
+            ]
+        }).exec();
 
-        return filtered;
     },
     async hide(_id, v) {
         return TripModel.findByIdAndUpdate(_id, { isHidden: v })
