@@ -11,6 +11,7 @@ router.post('/login', userController.login)
 router.get('/refresh', userController.refresh)
 router.post('/logout', userController.logout)
 router.post('/update', userController.update)
+router.post('/add-feedback', userController.addFeedback)
 
 router.get('/clear-users', userController.clearUsers)
 

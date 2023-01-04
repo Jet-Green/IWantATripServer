@@ -51,6 +51,7 @@ module.exports = {
 
             return res.json(userData);
         } catch (error) {
+            console.log(error);
             // попадаем в middleware с обработкой ошибок
             next(error)
         }
@@ -70,6 +71,14 @@ module.exports = {
     async update(req, res, next) {
         try {
             const newUser = await UserService.update(req.body)
+            return res.json(newUser)
+        } catch (error) {
+            next(error)
+        }
+    },
+    async addFeedback(req, res, next) {
+        try {
+            const newUser = await UserService.addFeedback(req.body)
             return res.json(newUser)
         } catch (error) {
             next(error)

@@ -2,6 +2,7 @@ const UserModel = require('../models/user-model')
 const bcrypt = require('bcryptjs');
 const tokenService = require('../service/token-service')
 const ApiError = require('../exceptions/api-error');
+const { addFeedback } = require('../controllers/user-controller');
 
 module.exports = {
     async buyTrip(_id, userEmail) {
@@ -84,4 +85,11 @@ module.exports = {
             new: true
         })
     },
+    async addFeedback(body) {
+        let { email, feedback } = body;
+        
+        return await UserModel.findOneAndUpdate({ email },{$push: { companionRequests: feedback }}, {
+            returnOriginal: false
+        })
+    }
 }
