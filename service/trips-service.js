@@ -1,8 +1,20 @@
 const TripModel = require('../models/trip-model.js');
+const UserModel = require('../models/user-model.js')
 const multer = require('../middleware/multer-middleware')
 const UserService = require('./user-service')
 
 module.exports = {
+    async buyTrip(req) {
+        let tripId = req.query._id
+        let bill = req.body
+
+        await TripModel.findOneAndUpdate({ _id: tripId }, { $push: { billsList: bill } })
+
+        let { userId } = bill
+        delete bill.userId
+
+        return await UserModel.findOneAndUpdate({ _id: userId }, { $push: { boughtTrips: { tripId, ...bill } } })
+    },
     async insertOne(trip) {
         return TripModel.create(trip)
     },

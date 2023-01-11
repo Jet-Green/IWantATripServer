@@ -8,12 +8,19 @@ module.exports = {
             next(error)
         }
     },
+    async buyTrip(req, res, next) {
+        try {
+            return res.json(await TripService.buyTrip(req))
+        } catch (error) {
+            console.log(error);
+            next(error)
+        }
+    },
     async search(req, res, next) {
         try {
             let s = req.body
             return res.json(await TripService.findForSearch(s))
         } catch (error) {
-            console.log(error);
             next(error)
         }
     },
