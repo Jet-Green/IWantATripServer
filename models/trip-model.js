@@ -20,6 +20,7 @@ const TripSchema = new Schema({
     isHidden: { type: Boolean, default: false },
     // меняет модератор
     isModerated: { type: Boolean, default: true },
+    billsList: { type: Array, default: [] }
 })
 
 module.exports = model('Trip', TripSchema);
