@@ -1,5 +1,7 @@
 const TripModel = require('../models/trip-model.js');
 const UserModel = require('../models/user-model.js')
+
+const ApiError = require('../exceptions/api-error.js')
 const multer = require('../middleware/multer-middleware')
 const UserService = require('./user-service')
 
@@ -62,13 +64,20 @@ module.exports = {
         return TripModel.deleteMany({})
     },
     async deleteOne(_id) {
-        UserService.update({ $pull: { trips: _id } })
+        let tripToDelete = await TripModel.findById(_id)
 
-        let trip = await TripModel.findById(_id)
-        let images = trip.images
+        // if bought by user
+        if (tripToDelete.billsList.length > 0) {
+            throw ApiError.BadRequest('Нельзя удалять купленные туры')
+        }
+
+        await UserService.update({ $pull: { trips: _id } })
+
+        let images = tripToDelete.images
         multer.deleteImages(images)
 
-        return trip.remove()
+        return tripToDelete.remove()
+
     },
     async findMany() {
         return TripModel.find({}).exec()

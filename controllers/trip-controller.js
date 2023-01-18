@@ -36,7 +36,7 @@ module.exports = {
         try {
             const _id = req.body._id
 
-            return TripService.deleteOne(_id);
+            return await TripService.deleteOne(_id);
         } catch (error) {
             next(error)
         }
