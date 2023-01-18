@@ -2,7 +2,6 @@ const UserModel = require('../models/user-model')
 const bcrypt = require('bcryptjs');
 const tokenService = require('../service/token-service')
 const ApiError = require('../exceptions/api-error');
-const { addFeedback } = require('../controllers/user-controller');
 
 module.exports = {
     async buyTrip(_id, userEmail) {
