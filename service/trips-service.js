@@ -6,6 +6,26 @@ const multer = require('../middleware/multer-middleware')
 const UserService = require('./user-service')
 
 module.exports = {
+    async getCustomers(customersIds) {
+        let query = []
+
+        for (let cid of customersIds) {
+            query.push({ _id: cid })
+        }
+
+        let customersFromDB = await UserModel.find({ $or: query })
+
+        let usersToSend = []
+        for (let user of customersFromDB) {
+            usersToSend.push({
+                fullname: user.fullinfo.fullname,
+                type: user.fullinfo.type,
+                phone: user.fullinfo.phone
+            })
+        }
+
+        return usersToSend
+    },
     async buyTrip(req) {
         let tripId = req.query._id
         let bill = req.body
@@ -121,6 +141,6 @@ module.exports = {
         return TripModel.findByIdAndUpdate(_id, { isModerated: v })
     },
     async findById(_id) {
-        return TripModel.findById(_id).exec()
+        return TripModel.findById(_id)
     },
 }

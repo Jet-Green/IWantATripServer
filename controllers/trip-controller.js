@@ -1,6 +1,13 @@
 const TripService = require('../service/trips-service.js')
 
 module.exports = {
+    async getCustomers(req, res, next) {
+        try {
+            return res.json(await TripService.getCustomers(req.body))
+        } catch (error) {
+            next(error)
+        }
+    },
     async getAll(req, res, next) {
         try {
             return res.json(await TripService.findMany())
