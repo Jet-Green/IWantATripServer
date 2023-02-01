@@ -1,10 +1,25 @@
 const TripService = require('../service/trips-service.js')
 
 module.exports = {
+    async getCustomers(req, res, next) {
+        try {
+            return res.json(await TripService.getCustomers(req.body))
+        } catch (error) {
+            next(error)
+        }
+    },
     async getAll(req, res, next) {
         try {
             return res.json(await TripService.findMany())
         } catch (error) {
+            next(error)
+        }
+    },
+    async buyTrip(req, res, next) {
+        try {
+            return res.json(await TripService.buyTrip(req))
+        } catch (error) {
+            console.log(error);
             next(error)
         }
     },
@@ -13,7 +28,6 @@ module.exports = {
             let s = req.body
             return res.json(await TripService.findForSearch(s))
         } catch (error) {
-            console.log(error);
             next(error)
         }
     },
@@ -29,7 +43,7 @@ module.exports = {
         try {
             const _id = req.body._id
 
-            return TripService.deleteOne(_id);
+            return await TripService.deleteOne(_id);
         } catch (error) {
             next(error)
         }
