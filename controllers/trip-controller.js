@@ -12,6 +12,7 @@ let s3 = new EasyYandexS3({
     debug: false, // Дебаг в консоли
 });
 
+const mailer = require('../middleware/mailer')
 
 module.exports = {
     async getCustomers(req, res, next) {
@@ -70,9 +71,32 @@ module.exports = {
     },
     async create(req, res, next) {
         try {
-            const tripCb = await TripService.insertOne(req.body)
+            const t = await TripService.insertOne(req.body)
 
-            return res.json({ _id: tripCb._id })
+            let HTML = `
+            <div>
+                <h1>${t.name}</h1>
+                <h2>${t.description}</h2>           
+                <h2>Продолжительность: ${t.duration}</h2>           
+                <h2>Направление: ${t.tripRoute}</h2>           
+            </div>
+
+            `
+            let details = {
+                from: 'qbit.mailing@gmail.com',
+                to: 'grishadzyin@gmail.com',
+                subject: 'Создана поездка',
+                html: HTML
+            }
+
+            try {
+                let r = await mailer.sendMail(details)
+            } catch (error) {
+                console.log(error);
+            }
+
+
+            return res.json({ _id: t._id })
         } catch (error) {
             next(error)
         }
@@ -121,10 +145,12 @@ module.exports = {
                 buffers.push({ buffer: file.buffer, name: file.originalname, });    // Буфер загруженного файла
             }
 
-            let uploadResult = await s3.Upload(buffers, '/iwat/');
+            if (buffers.length) {
+                let uploadResult = await s3.Upload(buffers, '/iwat/');
 
-            for (let upl of uploadResult) {
-                filenames.push(upl.Location)
+                for (let upl of uploadResult) {
+                    filenames.push(upl.Location)
+                }
             }
 
             await TripService.updateTripImagesUrls(_id, filenames)
