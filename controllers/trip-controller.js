@@ -1,5 +1,18 @@
 const TripService = require('../service/trips-service.js')
 
+let EasyYandexS3 = require('easy-yandex-s3').default;
+
+// Указываем аутентификацию в Yandex Object Storage
+let s3 = new EasyYandexS3({
+    auth: {
+        accessKeyId: process.env.YC_KEY_ID,
+        secretAccessKey: process.env.YC_SECRET,
+    },
+    Bucket: process.env.YC_BUCKET_NAME, // Название бакета
+    debug: false, // Дебаг в консоли
+});
+
+
 module.exports = {
     async getCustomers(req, res, next) {
         try {
@@ -101,18 +114,6 @@ module.exports = {
     async uploadImages(req, res, next) {
         try {
             let _id = req.files[0].originalname.split('_')[0]
-
-            let EasyYandexS3 = require('easy-yandex-s3').default;
-
-            // Указываем аутентификацию в Yandex Object Storage
-            let s3 = new EasyYandexS3({
-                auth: {
-                    accessKeyId: process.env.YC_KEY_ID,
-                    secretAccessKey: process.env.YC_SECRET,
-                },
-                Bucket: process.env.YC_BUCKET_NAME, // Название бакета
-                debug: false, // Дебаг в консоли
-            });
 
             let filenames = []
             let buffers = []
