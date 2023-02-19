@@ -20,7 +20,15 @@ module.exports = {
     async create(req, res, next) {
         try {
             const companionCb = await СompanionService.insertOne(req.body)
+
             return res.json({ _id: companionCb._id })
+        } catch (error) {
+            next(error)
+        }
+    },
+    async addFeedback(req, res, next) {
+        try {
+            return res.json(await СompanionService.addFeedback(req.body, req.query.companion_id))
         } catch (error) {
             next(error)
         }

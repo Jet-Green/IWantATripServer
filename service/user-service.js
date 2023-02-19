@@ -83,13 +83,5 @@ module.exports = {
         return await UserModel.findOneAndUpdate({ email }, user, {
             new: true
         })
-    },
-    async addFeedback(body) {
-        let feedback  = body;
-        const userEmail = await UserModel.findById(userData.email)
-        
-        return UserModel.findOneAndUpdate({ userEmail },{$push: { companionRequests: feedback }}, {
-            returnOriginal: false
-        })
     }
 }
