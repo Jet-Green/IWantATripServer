@@ -1,6 +1,12 @@
 const TripService = require('../service/trips-service.js')
 
 let EasyYandexS3 = require('easy-yandex-s3').default;
+const Handlebars = require('handlebars')
+
+const createTripHead = require('../templates/create-trip-head')
+
+const fs = require('fs')
+const path = require('path')
 
 // Указываем аутентификацию в Yandex Object Storage
 let s3 = new EasyYandexS3({
@@ -71,32 +77,29 @@ module.exports = {
     },
     async create(req, res, next) {
         try {
-            const t = await TripService.insertOne(req.body)
+            const tripFromDB = await TripService.insertOne(req.body)
 
-            let HTML = `
-            <div>
-                <h1>${t.name}</h1>
-                <h2>${t.description}</h2>           
-                <h2>Продолжительность: ${t.duration}</h2>           
-                <h2>Направление: ${t.tripRoute}</h2>           
-            </div>
+            let trip = Object.assign({}, tripFromDB._doc)
 
-            `
+            let emailTemplateSource = fs.readFileSync(path.join('templates', 'create-trip.hbs')).toString()
+
+            const template = Handlebars.compile(emailTemplateSource)
+
+            const htmlToSend = template(trip)
+
+            // console.log(createTripHead[0] + htmlToSend + createTripHead[1]);
+
             let details = {
                 from: 'qbit.mailing@gmail.com',
                 to: 'grishadzyin@gmail.com',
                 subject: 'Создана поездка',
-                html: HTML
+                html: '<p>For clients that do not support AMP4EMAIL or amp content is not valid</p>',
+                amp: createTripHead[0] + htmlToSend + createTripHead[1]
             }
 
-            try {
-                let r = await mailer.sendMail(details)
-            } catch (error) {
-                console.log(error);
-            }
+            let r = await mailer.sendMail(details)
 
-
-            return res.json({ _id: t._id })
+            return res.json({ _id: trip._id })
         } catch (error) {
             next(error)
         }
