@@ -85,6 +85,9 @@ module.exports = {
 
             const template = Handlebars.compile(emailTemplateSource)
 
+            trip.start = new Date(Number(trip.start)).toLocaleDateString("ru-RU")
+            trip.end = new Date(Number(trip.end)).toLocaleDateString("ru-RU")
+
             const htmlToSend = template(trip)
 
             // console.log(createTripHead[0] + htmlToSend + createTripHead[1]);
@@ -93,8 +96,7 @@ module.exports = {
                 from: 'qbit.mailing@gmail.com',
                 to: 'grishadzyin@gmail.com',
                 subject: 'Создана поездка',
-                html: '<p>For clients that do not support AMP4EMAIL or amp content is not valid</p>',
-                amp: createTripHead[0] + htmlToSend + createTripHead[1]
+                html: createTripHead[0] + htmlToSend + createTripHead[1],
             }
 
             let r = await mailer.sendMail(details)
