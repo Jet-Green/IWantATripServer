@@ -1,0 +1,58 @@
+<div class="outer">
+  <div class="row">
+    <h1>{{name}}</h1>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <span class="mdi mdi-24px mdi-map-marker-distance"></span> {{tripRoute}}
+    </div>
+    <div class="col">
+      <span class="mdi mdi-24px mdi-map-marker"></span> {{location}}
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      {{offer}}
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <span class="mdi mdi-24px mdi-information-outline"></span> Описание:
+      {{{description}}}
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <span class="mdi mdi-24px mdi-calendar-arrow-right"></span> с {{start}} <span class="mdi mdi-24px mdi-calendar-arrow-right"></span> по {{end}}
+      
+      <span class="mdi mdi-24px mdi-calendar-multiselect"></span>
+      <b>
+        {{duration}} д.
+      </b>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <span class="mdi mdi-24px mdi-train-car"></span> Тип тура: {{tripType}}
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <span class="mdi mdi-24px mdi-account-group"> С {{fromAge}} лет
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      </span>Цены: <br/>
+      {{#each cost}}
+        <div class="cost-item">
+          <span class="mdi mdi-24px mdi-account"></span> {{first}} <span class="mdi mdi-24px mdi-cash" style="margin-left: 12px;"></span> {{price}} руб.
+        </div>
+      {{/each}}
+    </div>
+  </div>
+</div>
