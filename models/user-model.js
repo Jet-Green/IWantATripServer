@@ -10,7 +10,7 @@ const UserSchema = new Schema({
     },
     trips: { type: Array },
     guideElements: { type: Array },
-    companionRequests: { type: Array },
+    createdCompanions: { type: Array },
     boughtTrips: Array
 })
 

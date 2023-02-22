@@ -1,5 +1,19 @@
 const TripService = require('../service/trips-service.js')
 
+let EasyYandexS3 = require('easy-yandex-s3').default;
+
+// Указываем аутентификацию в Yandex Object Storage
+let s3 = new EasyYandexS3({
+    auth: {
+        accessKeyId: process.env.YC_KEY_ID,
+        secretAccessKey: process.env.YC_SECRET,
+    },
+    Bucket: process.env.YC_BUCKET_NAME, // Название бакета
+    debug: false, // Дебаг в консоли
+});
+
+const mailer = require('../middleware/mailer')
+
 module.exports = {
     async getCustomers(req, res, next) {
         try {
@@ -57,9 +71,32 @@ module.exports = {
     },
     async create(req, res, next) {
         try {
-            const tripCb = await TripService.insertOne(req.body)
+            const t = await TripService.insertOne(req.body)
 
-            return res.json({ _id: tripCb._id })
+            let HTML = `
+            <div>
+                <h1>${t.name}</h1>
+                <h2>${t.description}</h2>           
+                <h2>Продолжительность: ${t.duration}</h2>           
+                <h2>Направление: ${t.tripRoute}</h2>           
+            </div>
+
+            `
+            let details = {
+                from: 'qbit.mailing@gmail.com',
+                to: 'grishadzyin@gmail.com',
+                subject: 'Создана поездка',
+                html: HTML
+            }
+
+            try {
+                let r = await mailer.sendMail(details)
+            } catch (error) {
+                console.log(error);
+            }
+
+
+            return res.json({ _id: t._id })
         } catch (error) {
             next(error)
         }
@@ -100,12 +137,22 @@ module.exports = {
     },
     async uploadImages(req, res, next) {
         try {
-            let filenames = []
             let _id = req.files[0].originalname.split('_')[0]
-            // http://localhost:3030/images/dfiifhgjngfdjnfgjkfdg_0.png
-            for (let f of req.files) {
-                filenames.push(process.env.API_URL + `/images/trips/${f.originalname}`)
+
+            let filenames = []
+            let buffers = []
+            for (let file of req.files) {
+                buffers.push({ buffer: file.buffer, name: file.originalname, });    // Буфер загруженного файла
             }
+
+            if (buffers.length) {
+                let uploadResult = await s3.Upload(buffers, '/iwat/');
+
+                for (let upl of uploadResult) {
+                    filenames.push(upl.Location)
+                }
+            }
+
             await TripService.updateTripImagesUrls(_id, filenames)
 
             res.status(200).send('Ok')

@@ -75,13 +75,5 @@ module.exports = {
         } catch (error) {
             next(error)
         }
-    },
-    async addFeedback(req, res, next) {
-        try {
-            const newUser = await UserService.addFeedback(req.body)
-            return res.json(newUser)
-        } catch (error) {
-            next(error)
-        }
     }
 }
