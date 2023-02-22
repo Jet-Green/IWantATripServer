@@ -94,7 +94,7 @@ module.exports = {
 
             let details = {
                 from: 'qbit.mailing@gmail.com',
-                to: 'grishadzyin@gmail.com',
+                to: ['grishadzyin@gmail.com', 'grachevrv@yandex.ru'],
                 subject: 'Создана поездка',
                 html: createTripHead[0] + htmlToSend + createTripHead[1],
             }
