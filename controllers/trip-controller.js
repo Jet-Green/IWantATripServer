@@ -1,12 +1,7 @@
 const TripService = require('../service/trips-service.js')
 
 let EasyYandexS3 = require('easy-yandex-s3').default;
-const Handlebars = require('handlebars')
-
-const createTripHead = require('../templates/create-trip-head')
-
-const fs = require('fs')
-const path = require('path')
+const { sendMail } = require('../middleware/mailer')
 
 // Указываем аутентификацию в Yandex Object Storage
 let s3 = new EasyYandexS3({
@@ -81,25 +76,11 @@ module.exports = {
 
             let trip = Object.assign({}, tripFromDB._doc)
 
-            let emailTemplateSource = fs.readFileSync(path.join('templates', 'create-trip.hbs')).toString()
-
-            const template = Handlebars.compile(emailTemplateSource)
-
+            // format to send the mail
             trip.start = new Date(Number(trip.start)).toLocaleDateString("ru-RU")
             trip.end = new Date(Number(trip.end)).toLocaleDateString("ru-RU")
 
-            const htmlToSend = template(trip)
-
-            // console.log(createTripHead[0] + htmlToSend + createTripHead[1]);
-
-            let details = {
-                from: 'qbit.mailing@gmail.com',
-                to: ['grishadzyin@gmail.com', 'grachevrv@yandex.ru'],
-                subject: 'Создана поездка',
-                html: createTripHead[0] + htmlToSend + createTripHead[1],
-            }
-
-            let r = await mailer.sendMail(details)
+            sendMail(trip, 'create-trip.hbs')
 
             return res.json({ _id: trip._id })
         } catch (error) {
