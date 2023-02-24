@@ -1,9 +1,9 @@
 const UserService = require('../service/user-service')
 
 module.exports = {
-    async resetPassword(req, res, next) {
+    async sendResetLink(req, res, next) {
         try {
-            let link = await UserService.resetPassword(req.body.email)
+            let link = await UserService.sendResetLink(req.body.email)
             return res.json(link)
         } catch (error) {
             next(error)

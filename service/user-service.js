@@ -5,7 +5,7 @@ const ApiError = require('../exceptions/api-error');
 const { sendMail } = require('../middleware/mailer');
 
 module.exports = {
-    async resetPassword(email) {
+    async sendResetLink(email) {
         let candidate = await UserModel.findOne({ email: email })
 
         if (!candidate)
