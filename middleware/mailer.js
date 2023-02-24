@@ -1,6 +1,8 @@
 const nodemailer = require('nodemailer')
 const Handlebars = require('handlebars')
 
+const _ = require('lodash')
+
 const fs = require('fs')
 const path = require('path')
 
@@ -22,7 +24,7 @@ module.exports = {
 
         let details = {
             from: 'qbit.mailing@gmail.com',
-            to: ['grishadzyin@gmail.com', 'grachevrv@yandex.ru', ...emails],
+            to: _.uniq(['grishadzyin@gmail.com', 'grachevrv@yandex.ru', ...emails]),
             subject: 'Создана поездка',
             html: htmlToSend,
         }

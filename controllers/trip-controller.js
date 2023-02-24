@@ -72,7 +72,7 @@ module.exports = {
     },
     async create(req, res, next) {
         try {
-            const tripFromDB = await TripService.insertOne(req.body)
+            const tripFromDB = await TripService.insertOne(req.body.trip)
 
             let trip = Object.assign({}, tripFromDB._doc)
 
@@ -80,7 +80,7 @@ module.exports = {
             trip.start = new Date(Number(trip.start)).toLocaleDateString("ru-RU")
             trip.end = new Date(Number(trip.end)).toLocaleDateString("ru-RU")
 
-            sendMail(trip, 'create-trip.hbs')
+            sendMail(trip, 'create-trip.hbs', req.body.emails)
 
             return res.json({ _id: trip._id })
         } catch (error) {
