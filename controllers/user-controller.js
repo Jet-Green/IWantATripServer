@@ -1,6 +1,14 @@
 const UserService = require('../service/user-service')
 
 module.exports = {
+    async resetPassword(req, res, next) {
+        try {
+            let link = await UserService.resetPassword(req.body.email)
+            return res.json(link)
+        } catch (error) {
+            next(error)
+        }
+    },
     async buyTrip(req, res, next) {
         try {
             const _id = req.body._id

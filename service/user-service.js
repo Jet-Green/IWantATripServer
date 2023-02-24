@@ -2,8 +2,30 @@ const UserModel = require('../models/user-model')
 const bcrypt = require('bcryptjs');
 const tokenService = require('../service/token-service')
 const ApiError = require('../exceptions/api-error');
+const { sendMail } = require('../middleware/mailer');
 
 module.exports = {
+    async resetPassword(email) {
+        let candidate = await UserModel.findOne({ email: email })
+
+        if (!candidate)
+            throw ApiError.BadRequest('Пользователь с таким email не найден')
+
+        // ну вот так
+        const secret = process.env.JWT_RESET_SECRET + candidate.password
+        const payload = {
+            email: candidate.email,
+            _id: candidate._id
+        }
+
+        const token = tokenService.createResetToken(payload, secret)
+
+        const link = process.env.CLIENT_URL + `/forgot-password?user_id=${candidate._id}&token=${token}`
+
+        sendMail({ link: link }, 'reset-password.hbs', [candidate.email], 'single')
+
+        return link
+    },
     async buyTrip(_id, userEmail) {
         return UserModel.findOneAndUpdate({ email: userEmail }, { $push: { boughtTrips: _id } })
     },
