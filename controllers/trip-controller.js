@@ -123,7 +123,7 @@ module.exports = {
     },
     async uploadImages(req, res, next) {
         try {
-            let _id = req.files[0].originalname.split('_')[0]
+            let _id = req.files[0]?.originalname.split('_')[0]
 
             let filenames = []
             let buffers = []
@@ -138,8 +138,8 @@ module.exports = {
                     filenames.push(upl.Location)
                 }
             }
-
-            await TripService.updateTripImagesUrls(_id, filenames)
+            if (filenames.length)
+                await TripService.updateTripImagesUrls(_id, filenames)
 
             res.status(200).send('Ok')
         } catch (error) {
