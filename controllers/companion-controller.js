@@ -8,6 +8,14 @@ module.exports = {
             next(error)
         }
     },
+    async search(req, res, next) {
+        try {
+            let s = req.body
+            return res.json(await СompanionService.findForSearch(s))
+        } catch (error) {
+            next(error)
+        }
+    },
     async getById(req, res, next) {
         try {
             const _id = req.query._id
