@@ -14,6 +14,7 @@ router.post('/search', СompanionController.search)
 router.get('/get-by-id', СompanionController.getById)
 router.get('/clear', СompanionController.clear)
 router.post('/create', authMiddleware, СompanionController.create)
+router.post('/add-feedback', authMiddleware, СompanionController.addFeedback)
 
 
 module.exports = router

@@ -71,6 +71,7 @@ module.exports = {
 
             return res.json(userData);
         } catch (error) {
+            console.log(error);
             // попадаем в middleware с обработкой ошибок
             next(error)
         }

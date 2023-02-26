@@ -139,5 +139,5 @@ module.exports = {
         return await UserModel.findOneAndUpdate({ email }, user, {
             new: true
         })
-    },
+    }
 }
