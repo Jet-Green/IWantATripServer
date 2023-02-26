@@ -14,13 +14,12 @@ module.exports = {
         const { find,
             gender,
             age,
-            time } = s.query
-         const start = time[0].toString()   
-         const end = time[1].toString() 
-
+            end,
+            start
+        } = s.query
         // если пустой фильтр
-        if (!find && !gender && time.length && !age.start && !age.end) {
-            return await СompanionModel.find({}.exec())
+        if (!find && !gender && !age.start && !age.end && !end && !start) {
+            return await СompanionModel.find({})
         }
         let filter = {
             $and: [
@@ -45,13 +44,13 @@ module.exports = {
         if (age.end) {
             filter.$and.push({ age: { $lte: age.end } })
         }
-        if (time.length) {
-            filter.$and.push({
-                $and: [
-                    { start: { $gte: start } },
-                    { end: { $lte: end } },
-                ]
-            })
+        if (start) {
+            filter.$and.push({ start: { $gte: start } },
+            )
+        }
+        if (end) {
+            filter.$and.push({ end: { $lte: end } },
+            )
         }
         return СompanionModel.find(filter);
 
