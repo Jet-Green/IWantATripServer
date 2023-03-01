@@ -100,7 +100,7 @@ module.exports = {
 
     },
     async findMany() {
-        return TripModel.find({}).exec()
+        return TripModel.find({ start: { $gt: Date.now() } })
     },
     async findForSearch(s) {
         const { query, place, when } = s
