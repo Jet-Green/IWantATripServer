@@ -3,11 +3,33 @@ const tokenModel = require('../models/token-model');
 
 
 module.exports = {
-    generateTokens(payload) {
-        const accessToken = jwt.sign(payload, process.env.JWT_ACCESS_SECRET, { expiresIn: '60m' });
-        const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET, { expiresIn: '30d' });
+    validateResetToken(token, secret) {
+        try {
+            let payload = jwt.verify(token, secret);
+            return payload
+        } catch (error) {
+            return null
+        }
+    },
 
-        return { accessToken, refreshToken };
+    createResetToken(payload, secret) {
+        try {
+            let result = jwt.sign(payload, secret, { expiresIn: '15m' })
+            return result
+        } catch (error) {
+            return null
+        }
+    },
+
+    generateTokens(payload) {
+        try {
+            const accessToken = jwt.sign(payload, process.env.JWT_ACCESS_SECRET, { expiresIn: '60m' });
+            const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET, { expiresIn: '30d' });
+
+            return { accessToken, refreshToken };
+        } catch (error) {
+            return { accessToken: null, refreshToken: null }
+        }
     },
 
     validateAccessToken(token) {

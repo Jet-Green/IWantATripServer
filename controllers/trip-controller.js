@@ -1,12 +1,7 @@
 const TripService = require('../service/trips-service.js')
 
 let EasyYandexS3 = require('easy-yandex-s3').default;
-const Handlebars = require('handlebars')
-
-const createTripHead = require('../templates/create-trip-head')
-
-const fs = require('fs')
-const path = require('path')
+const { sendMail } = require('../middleware/mailer')
 
 // Указываем аутентификацию в Yandex Object Storage
 let s3 = new EasyYandexS3({
@@ -77,29 +72,15 @@ module.exports = {
     },
     async create(req, res, next) {
         try {
-            const tripFromDB = await TripService.insertOne(req.body)
+            const tripFromDB = await TripService.insertOne(req.body.trip)
 
             let trip = Object.assign({}, tripFromDB._doc)
 
-            let emailTemplateSource = fs.readFileSync(path.join('templates', 'create-trip.hbs')).toString()
-
-            const template = Handlebars.compile(emailTemplateSource)
-
+            // format to send the mail
             trip.start = new Date(Number(trip.start)).toLocaleDateString("ru-RU")
             trip.end = new Date(Number(trip.end)).toLocaleDateString("ru-RU")
 
-            const htmlToSend = template(trip)
-
-            // console.log(createTripHead[0] + htmlToSend + createTripHead[1]);
-
-            let details = {
-                from: 'qbit.mailing@gmail.com',
-                to: 'grishadzyin@gmail.com',
-                subject: 'Создана поездка',
-                html: createTripHead[0] + htmlToSend + createTripHead[1],
-            }
-
-            let r = await mailer.sendMail(details)
+            sendMail(trip, 'create-trip.hbs', req.body.emails)
 
             return res.json({ _id: trip._id })
         } catch (error) {
@@ -142,7 +123,7 @@ module.exports = {
     },
     async uploadImages(req, res, next) {
         try {
-            let _id = req.files[0].originalname.split('_')[0]
+            let _id = req.files[0]?.originalname.split('_')[0]
 
             let filenames = []
             let buffers = []
@@ -157,8 +138,8 @@ module.exports = {
                     filenames.push(upl.Location)
                 }
             }
-
-            await TripService.updateTripImagesUrls(_id, filenames)
+            if (filenames.length)
+                await TripService.updateTripImagesUrls(_id, filenames)
 
             res.status(200).send('Ok')
         } catch (error) {

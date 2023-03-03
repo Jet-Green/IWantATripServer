@@ -1,6 +1,25 @@
 const UserService = require('../service/user-service')
 
 module.exports = {
+    async resetPassword(req, res, next) {
+        try {
+            const userData = await UserService.resetPassword(req.body)
+
+            // добавить флаг secure: true чтобы активировать https
+            res.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
+            return res.json(userData)
+        } catch (error) {
+            next(error)
+        }
+    },
+    async sendResetLink(req, res, next) {
+        try {
+            let link = await UserService.sendResetLink(req.body.email)
+            return res.json(link)
+        } catch (error) {
+            next(error)
+        }
+    },
     async buyTrip(req, res, next) {
         try {
             const _id = req.body._id
@@ -51,7 +70,6 @@ module.exports = {
 
             return res.json(userData);
         } catch (error) {
-            console.log(error);
             // попадаем в middleware с обработкой ошибок
             next(error)
         }

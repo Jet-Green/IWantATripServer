@@ -5,6 +5,8 @@ const cors = require('cors')
 const app = express()
 const mongoose = require('mongoose')
 const cookieParser = require('cookie-parser')
+var bodyParser = require('body-parser');
+
 // here all routes
 const tripRouter = require('./routers/trip-router')
 const guideRouter = require('./routers/guide-router')
@@ -26,6 +28,9 @@ app.use(cors({
 }))
 app.use(express.json())
 app.use(cookieParser())
+app.use(bodyParser.urlencoded({
+    extended: true
+}));
 //app.use(express.static('dist'))
 
 
