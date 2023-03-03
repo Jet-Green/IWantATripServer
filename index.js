@@ -18,7 +18,7 @@ const history = require('connect-history-api-fallback');
 const bookingRouter = require('./routers/booking-router');
 
 
-// app.use(history())
+app.use(history())
 
 
 // here all .use
@@ -31,7 +31,7 @@ app.use(cookieParser())
 app.use(bodyParser.urlencoded({
     extended: true
 }));
-//app.use(express.static('dist'))
+app.use(express.static('dist'))
 
 
 // serve images
