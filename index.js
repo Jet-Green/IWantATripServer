@@ -18,12 +18,12 @@ const history = require('connect-history-api-fallback');
 const bookingRouter = require('./routers/booking-router');
 
 
-// app.use(history())
+app.use(history())
 
 
 // here all .use
 app.use(cors({
-    origin: [process.env.CLIENT_URL, "http://localhost:5174"],
+    origin: [process.env.CLIENT_URL, "http://localhost:5174", "http://localhost:5173"],
     credentials: true
 }))
 app.use(express.json())
@@ -31,7 +31,7 @@ app.use(cookieParser())
 app.use(bodyParser.urlencoded({
     extended: true
 }));
-//app.use(express.static('dist'))
+app.use(express.static('dist'))
 
 
 // serve images
