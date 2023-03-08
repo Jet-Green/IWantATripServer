@@ -15,7 +15,6 @@ const TripSchema = new Schema({
     location: { type: String },
     tripType: { type: String },
     fromAge: { type: String },
-    period: { type: String },
     // меняет только пользователь
     isHidden: { type: Boolean, default: false },
     // меняет модератор
