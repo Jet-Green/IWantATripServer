@@ -31,5 +31,14 @@ module.exports = {
         } catch (error) {
             next(error)
         }
-    }
+    },
+    async addTripType(req, res, next) {
+        try {
+            res.json(await AppStateService.update(req.body))
+        } catch (err) {
+            next(err)
+        }
+    },
+
+    
 }

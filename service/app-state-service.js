@@ -27,5 +27,8 @@ module.exports = {
         await UserModel.deleteMany({})
         await TripModel.deleteMany({})
         return 'ok'
-    }
+    },
+    update(newState) {
+        return AppStateModel.updateOne({}, { $set: newState })
+    },
 }
