@@ -39,6 +39,11 @@ module.exports = {
             next(err)
         }
     },
-
-    
+    async setTripType(req, res, next) {
+        try {
+            res.json(await AppStateService.setTripType(req.body.type))
+        } catch (err) {
+            next(err)
+        }
+    },
 }

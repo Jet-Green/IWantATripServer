@@ -28,7 +28,12 @@ module.exports = {
         await TripModel.deleteMany({})
         return 'ok'
     },
-    update(newState) {
-        return AppStateModel.updateOne({}, { $set: newState })
+
+    setTripType(type) {
+        return AppStateModel.updateOne({}, { $push: { tripType: type } })
     },
+
+
+
+
 }
