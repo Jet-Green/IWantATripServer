@@ -31,6 +31,7 @@ module.exports = {
 
             return res.json({ _id: companionCb._id })
         } catch (error) {
+            console.log(error);
             next(error)
         }
     },
