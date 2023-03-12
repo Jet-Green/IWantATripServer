@@ -5,6 +5,8 @@ const ApiError = require('../exceptions/api-error.js')
 const multer = require('../middleware/multer-middleware')
 const UserService = require('./user-service')
 
+const _ = require('lodash')
+
 module.exports = {
     async getCustomers(customersIds) {
         let query = []
@@ -100,7 +102,8 @@ module.exports = {
 
     },
     async findMany() {
-        return TripModel.find({ start: { $gt: Date.now() } })
+        let tripsFromDB = await TripModel.find({ start: { $gt: Date.now() } })
+        return _.sortBy(tripsFromDB, [function (o) { return Number(o.start) }])
     },
     async findForSearch(s) {
         const { query, place, when } = s
@@ -132,7 +135,10 @@ module.exports = {
                 ]
             })
         }
-        return TripModel.find(filter);
+
+        let tripsFromDB = await TripModel.find(filter);
+
+        return _.sortBy(tripsFromDB, [function (o) { return Number(o.start) }])
     },
     async hide(_id, v) {
         return TripModel.findByIdAndUpdate(_id, { isHidden: v })
