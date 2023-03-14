@@ -21,7 +21,6 @@ module.exports = {
             const _id = req.query._id
             return res.json(await СompanionService.findById(_id));
         } catch (error) {
-            console.log(error);
             next(error)
         }
     },
