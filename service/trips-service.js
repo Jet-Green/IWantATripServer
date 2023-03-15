@@ -101,17 +101,17 @@ module.exports = {
         return tripToDelete.remove()
 
     },
-    async findMany() {
-        let tripsFromDB = await TripModel.find({ start: { $gt: Date.now() } })
-        return _.sortBy(tripsFromDB, [function (o) { return Number(o.start) }])
-    },
-    async findForSearch(s) {
-        const { query, place, when } = s
-
-        // если пустой фильтр
-        if (!query && !place && !when.start) {
-            return await TripModel.find({ isHidden: false, isModerated: true })
+    async findMany(query, cursor) {
+        if (!query) {
+            let tripsFromDB = await TripModel.find({}).limit(5).skip(cursor)
+            return _.filter(_.sortBy(tripsFromDB, [function (o) { return Number(o.start) }]), (o) => o.start >= Date.now())
         }
+        if (query.when || query.where || query.place) {
+            return await this.filterTrips(query, cursor)
+        }
+    },
+    async filterTrips(s, cursor) {
+        const { query, place, when } = s
         let filter = {
             $and: [
                 {
@@ -121,11 +121,13 @@ module.exports = {
                         { location: { $regex: query, $options: 'i' } },
                     ]
                 },
-                { location: { $regex: place, $options: 'i' } },
                 {
                     isHidden: false, isModerated: true
                 }
             ]
+        }
+        if (place) {
+            filter['$and'].push({ location: { $regex: place, $options: 'i' } })
         }
         if (when.start && when.end) {
             filter.$and.push({
@@ -135,10 +137,7 @@ module.exports = {
                 ]
             })
         }
-
-        let tripsFromDB = await TripModel.find(filter);
-
-        return _.sortBy(tripsFromDB, [function (o) { return Number(o.start) }])
+        return TripModel.find(filter).limit(5).skip(cursor)
     },
     async hide(_id, v) {
         return TripModel.findByIdAndUpdate(_id, { isHidden: v })
