@@ -101,9 +101,9 @@ module.exports = {
         return tripToDelete.remove()
 
     },
-    async findMany(query, cursor) {
+    async findMany(query, cursor, limit) {
         if (!query) {
-            let tripsFromDB = await TripModel.find({}).limit(5).skip(cursor)
+            let tripsFromDB = await TripModel.find({}).limit(limit).skip(cursor)
             return _.filter(_.sortBy(tripsFromDB, [function (o) { return Number(o.start) }]), (o) => o.start >= Date.now())
         }
         if (query.when || query.where || query.place) {
