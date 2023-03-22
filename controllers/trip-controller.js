@@ -25,7 +25,7 @@ module.exports = {
     },
     async fetchTrips(req, res, next) {
         try {
-            return res.json(await TripService.findMany(req.body.query, req.query.cursor))
+            return res.json(await TripService.findMany(req.body.query, req.query.cursor, req.query.limit))
         } catch (error) {
             console.log(error);
             next(error)
