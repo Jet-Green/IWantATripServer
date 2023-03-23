@@ -1,4 +1,5 @@
 const СompanionModel = require('../models/companion-model');
+const _ = require('lodash')
 
 module.exports = {
     insertOne(companion) {
@@ -7,19 +8,27 @@ module.exports = {
     findById(_id) {
         return СompanionModel.findById(_id)
     },
-    findMany() {
+    async findMany(query, cursor, limit) {
+        if (!query) {
+            let companionsFromDB = await СompanionModel.find({}).limit(limit).skip(cursor)
+            return companionsFromDB
+        }
+        if (query.find || query.gender || query.age || query.end || query.start) {
+            return await this.filterCompanions(query, cursor, limit)
+        }
         return СompanionModel.find({}).exec()
     },
-    async findForSearch(s) {
+    async filterCompanions(s, cursor, limit) {
         const { find,
             gender,
             age,
             end,
-            start
-        } = s.query
+            start,
+        } = s
         // если пустой фильтр
         if (!find && !gender && !age.start && !age.end && !end && !start) {
-            return await СompanionModel.find({})
+            let companionsFromDB = await СompanionModel.find({}).limit(limit).skip(cursor)
+            return companionsFromDB
         }
         let filter = {
             $and: [
@@ -52,7 +61,7 @@ module.exports = {
             filter.$and.push({ end: { $lte: end } },
             )
         }
-        return СompanionModel.find(filter);
+        return СompanionModel.find(filter).limit(limit).skip(cursor)
 
     },
 
