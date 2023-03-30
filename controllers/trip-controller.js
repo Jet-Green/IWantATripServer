@@ -23,11 +23,10 @@ module.exports = {
             next(error)
         }
     },
-    async fetchTrips(req, res, next) {
+    async getAll(req, res, next) {
         try {
-            return res.json(await TripService.findMany(req.body.query, req.query.cursor))
+            return res.json(await TripService.findMany())
         } catch (error) {
-            console.log(error);
             next(error)
         }
     },
@@ -148,5 +147,5 @@ module.exports = {
         }
     },
 
-
+    
 }
