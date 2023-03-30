@@ -104,7 +104,7 @@ module.exports = {
     async findMany(query, cursor) {
         if (!query) {
             let tripsFromDB = await TripModel.find({}).limit(limit).skip(cursor)
-            return tripsFromDB
+            return _.filter(_.sortBy(tripsFromDB, [function (o) { return Number(o.start) }]), (o) => o.start >= Date.now())
         }
         if (query.when || query.where || query.place) {
             return await this.filterTrips(query, cursor)

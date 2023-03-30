@@ -9,8 +9,8 @@ const router = Router()
 
 
 // here all routes
-router.post('/fetch-companions', СompanionController.fetchCompanions)
-// router.post('/search', СompanionController.search)
+router.get('/get-all', СompanionController.getAll)
+router.post('/search', СompanionController.search)
 router.get('/get-by-id', СompanionController.getById)
 router.get('/clear', СompanionController.clear)
 router.post('/create', authMiddleware, СompanionController.create)

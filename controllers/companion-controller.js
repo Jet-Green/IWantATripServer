@@ -1,38 +1,21 @@
 const СompanionService = require('../service/companion-service')
 
 module.exports = {
-    async fetchCompanions(req, res, next) {
+    async getAll(req, res, next) {
         try {
-            return res.json(await СompanionService.findMany(req.body, req.query.cursor, req.query.limit))
+            return res.json(await СompanionService.findMany())
         } catch (error) {
-
-
-
-
-            console.log(error);
-
-
-
-
-
-
-
-
-
-
-
-
             next(error)
         }
     },
-    // async search(req, res, next) {
-    //     try {
-    //         let s = req.body
-    //         return res.json(await СompanionService.findForSearch(s))
-    //     } catch (error) {
-    //         next(error)
-    //     }
-    // },
+    async search(req, res, next) {
+        try {
+            let s = req.body
+            return res.json(await СompanionService.findForSearch(s))
+        } catch (error) {
+            next(error)
+        }
+    },
     async getById(req, res, next) {
         try {
             const _id = req.query._id
