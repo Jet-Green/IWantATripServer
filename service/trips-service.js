@@ -101,7 +101,7 @@ module.exports = {
         return tripToDelete.remove()
 
     },
-    async findMany(query, cursor, limit) {
+    async findMany(query, cursor) {
         if (!query) {
             let tripsFromDB = await TripModel.find({}).limit(limit).skip(cursor)
             return tripsFromDB
