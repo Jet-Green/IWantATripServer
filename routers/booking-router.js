@@ -11,6 +11,7 @@ const router = Router()
 // here all routes
 
 router.post('/create', bookingController.create)
+router.post('/findByUserId', bookingController.findByUserId)
 
 
 module.exports = router

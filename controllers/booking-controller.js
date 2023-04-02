@@ -5,13 +5,18 @@ module.exports = {
     async create(req, res, next) {
         try {
             const bookingCb = await BookingService.insertOne(req.body)
-            console.log(req.body, req)
-
             return res.json({ _id: bookingCb._id })
-
         } catch (err) {
             console.log(err);
 
+        }
+    },
+    async findByUserId(req, res, next) {
+        try {
+
+            return res.json(await BookingService.findByUserId(req.body._id))
+        } catch (error) {
+            next(error)
         }
     },
 }
