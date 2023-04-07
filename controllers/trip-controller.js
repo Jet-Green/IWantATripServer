@@ -25,7 +25,7 @@ module.exports = {
     },
     async getAll(req, res, next) {
         try {
-            return res.json(await TripService.findMany())
+            return res.json(await TripService.findMany(req.query.cursor))
         } catch (error) {
             next(error)
         }
@@ -147,5 +147,5 @@ module.exports = {
         }
     },
 
-    
+
 }

@@ -101,9 +101,9 @@ module.exports = {
         return tripToDelete.remove()
 
     },
-    async findMany() {
-        let tripsFromDB = await TripModel.find({ start: { $gt: Date.now() } })
-        return _.sortBy(tripsFromDB, [function (o) { return Number(o.start) }])
+    async findMany(cursor) {
+        let tripsFromDB = await TripModel.find({ start: { $gt: Date.now() } }, null, { sort: 'start' }).skip(cursor ? cursor : 0).limit(7)
+        return tripsFromDB
     },
     async findForSearch(s) {
         const { query, place, when } = s
@@ -136,9 +136,8 @@ module.exports = {
             })
         }
 
-        let tripsFromDB = await TripModel.find(filter);
-
-        return _.sortBy(tripsFromDB, [function (o) { return Number(o.start) }])
+        filter.$and.push({ start: { $gt: Date.now() } })
+        return await TripModel.find(filter, null, { sort: 'start' })
     },
     async hide(_id, v) {
         return TripModel.findByIdAndUpdate(_id, { isHidden: v })
