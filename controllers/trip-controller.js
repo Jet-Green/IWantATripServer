@@ -146,7 +146,7 @@ module.exports = {
             next(error)
         }
     },
-    async uploadPdfs(req, res, next) {
+    async uploadPdf(req, res, next) {
         try {
             let _id = req.files[0]?.originalname.split('_')[0]
 
