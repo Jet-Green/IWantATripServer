@@ -25,7 +25,7 @@ module.exports = {
         let sendTo;
         switch (type) {
             case 'multiple':
-                sendTo = _.uniq(['grishadzyin@gmail.com', 'grachevrv@yandex.ru', ...emails])
+                sendTo = _.uniq(['grishadzyin@gmail.com', 'grachevrv@yandex.ru', ...emails]) //
                 break
             case 'single':
                 sendTo = emails[0]
@@ -40,6 +40,9 @@ module.exports = {
                 break;
             case 'create-trip.hbs':
                 emailSubject = 'Создана поездка'
+                break;
+            case 'booking-trip.hbs':
+                emailSubject = 'Заказан тур'
                 break;
         }
 

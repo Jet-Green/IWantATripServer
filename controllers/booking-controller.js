@@ -5,6 +5,7 @@ module.exports = {
     async create(req, res, next) {
         try {
             const bookingCb = await BookingService.insertOne(req.body)
+            sendMail(trip, 'booking-trip.hbs', req.body.emails)
             return res.json({ _id: bookingCb._id })
         } catch (err) {
             console.log(err);

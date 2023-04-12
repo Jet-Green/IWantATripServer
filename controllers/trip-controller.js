@@ -90,7 +90,7 @@ module.exports = {
     async booking(req, res, next) {
         try {
             const tripCb = await TripService.booking(req.body)
-
+            sendMail(trip, 'booking-trip.hbs', req.body.emails)
             return res.json({ _id: tripCb._id })
         } catch (error) {
             next(error)
