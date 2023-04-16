@@ -1,4 +1,5 @@
 const TripService = require('../service/trips-service.js')
+const LocationService = require('../service/location-service.js')
 
 let EasyYandexS3 = require('easy-yandex-s3').default;
 const { sendMail } = require('../middleware/mailer')
@@ -72,6 +73,10 @@ module.exports = {
     },
     async create(req, res, next) {
         try {
+            const location = await LocationService.insertOne(req.body.trip.startLocation)
+            console.log(location);
+            req.body.trip.startLocation = location
+            console.log(req.body.trip);
             const tripFromDB = await TripService.insertOne(req.body.trip)
 
             let trip = Object.assign({}, tripFromDB._doc)
@@ -84,6 +89,7 @@ module.exports = {
 
             return res.json({ _id: trip._id })
         } catch (error) {
+            console.log(error);
             next(error)
         }
     },
