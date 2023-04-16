@@ -41,7 +41,7 @@ module.exports = {
     async search(req, res, next) {
         try {
             let s = req.body
-            return res.json(await TripService.findForSearch(s))
+            return res.json(await TripService.findForSearch(s, req.query.cursor))
         } catch (error) {
             next(error)
         }

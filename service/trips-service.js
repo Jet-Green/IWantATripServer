@@ -105,7 +105,7 @@ module.exports = {
         let tripsFromDB = await TripModel.find({ start: { $gt: Date.now() } }, null, { sort: 'start' }).skip(cursor ? cursor : 0).limit(7)
         return tripsFromDB
     },
-    async findForSearch(s) {
+    async findForSearch(s, cursor) {
         const { query, place, when } = s
 
         // если пустой фильтр
@@ -137,7 +137,7 @@ module.exports = {
         }
 
         filter.$and.push({ start: { $gt: Date.now() } })
-        return await TripModel.find(filter, null, { sort: 'start' })
+        return await TripModel.find(filter, null, { sort: 'start' }).skip(cursor ? cursor : 0).limit(7)
     },
     async hide(_id, v) {
         return TripModel.findByIdAndUpdate(_id, { isHidden: v })
