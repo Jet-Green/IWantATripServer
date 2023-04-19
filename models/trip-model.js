@@ -13,7 +13,7 @@ const TripSchema = new Schema({
     cost: { type: Array },
     offer: { type: String },
     description: { type: String },
-    startLocation: { type:String},
+    startLocation: { type:Array},
     location: { type: String },
     tripType: { type: String },
     fromAge: { type: String },
@@ -22,7 +22,7 @@ const TripSchema = new Schema({
     // меняет модератор
     isModerated: { type: Boolean, default: true },
     billsList: { type: Array, default: [] },
-    creatorId:{ type:String }
+    creatorForm:{ type:Array }
 })
 
 module.exports = model('Trip', TripSchema);
