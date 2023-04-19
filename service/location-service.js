@@ -1,7 +1,13 @@
 const LocationModel = require('../models/location-model.js')
 
 module.exports = {
-    insertOne(loc) {
-        return LocationModel.create(loc)
+    async insertOne(loc) {
+        let candidate = await LocationModel.find(loc)
+
+        if (candidate) {
+            return candidate
+        } else {
+            return LocationModel.create(loc)
+        }
     },
 }
