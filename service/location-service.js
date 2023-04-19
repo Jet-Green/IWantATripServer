@@ -10,4 +10,16 @@ module.exports = {
             return LocationModel.create(loc)
         }
     },
+    isNearPlace(basePlaceGeo, placeGeo) {
+        let y = placeGeo.geo_lat
+        let x = placeGeo.geo_lon
+        let y0 = basePlaceGeo.geo_lat
+        let x0 = basePlaceGeo.geo_lon
+        // в градусах в нашей полосе примерно 120 км
+        let R = 2
+        if (((x - x0) * (x - x0)) + ((y - y0) * (y - y0)) <= (R * R)) {
+            return true
+        }
+        return false
+    }
 }
