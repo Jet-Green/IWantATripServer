@@ -21,5 +21,8 @@ module.exports = {
             return true
         }
         return false
-    }
+    },
+    async getLocations() {
+        return LocationModel.find({}).exec()
+    },
 }

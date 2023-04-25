@@ -4,6 +4,7 @@ module.exports = {
     dropDatabase(req, res, next) {
         return res.json(AppStateService.dropDatabase())
     },
+    
     async getState(req, res, next) {
         try {
             return res.send(await AppStateService.getState())

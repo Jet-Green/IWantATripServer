@@ -14,7 +14,8 @@ let s3 = new EasyYandexS3({
     debug: false, // Дебаг в консоли
 });
 
-const mailer = require('../middleware/mailer')
+const mailer = require('../middleware/mailer');
+const locationService = require('../service/location-service.js');
 
 module.exports = {
     async getCustomers(req, res, next) {
@@ -76,7 +77,6 @@ module.exports = {
             let location = await LocationService.createLocation(req.body.trip.startLocation)
             req.body.trip.startLocation = location
             const tripFromDB = await TripService.insertOne(req.body.trip)
-
             let trip = Object.assign({}, tripFromDB._doc)
 
             // format to send the mail
