@@ -1,7 +1,7 @@
 const { Schema, model } = require('mongoose')
 
 const LocationSchema = new Schema({
-    name: { type: String, unique: true },
+    name: String,
     shortName: String,
     geo_lat: { type: String, unique: true },
     geo_lon: { type: String, unique: true },

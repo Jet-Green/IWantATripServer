@@ -7,13 +7,13 @@ const TripSchema = new Schema({
     maxPeople: { type: Number },
     duration: { type: Number },
     images: { type: Array },
-    pdfs: { type: Array},
+    pdfs: { type: Array },
     tripRoute: { type: String },
     distance: { type: String },
     cost: { type: Array },
     offer: { type: String },
     description: { type: String },
-    startLocation: { type:String},
+    startLocation: { type: Object },
     location: { type: String },
     tripType: { type: String },
     fromAge: { type: String },
@@ -22,7 +22,7 @@ const TripSchema = new Schema({
     // меняет модератор
     isModerated: { type: Boolean, default: true },
     billsList: { type: Array, default: [] },
-    creatorId:{ type:String }
+    creatorId: { type: String }
 })
 
 module.exports = model('Trip', TripSchema);
