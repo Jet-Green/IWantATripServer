@@ -2,13 +2,14 @@ const LocationModel = require('../models/location-model.js')
 
 module.exports = {
     async createLocation(loc) {
-        let candidate = await LocationModel.find(loc)
+        let candidate = await LocationModel.find({ geo_lat: loc.geo_lat, geo_lon: loc.geo_lon })
 
-        if (candidate) {
+        if (candidate.length == 1) {
             return candidate
         } else {
             return LocationModel.create(loc)
         }
+
     },
     isNearPlace(basePlaceGeo, placeGeo) {
         let y = placeGeo.geo_lat
