@@ -1,6 +1,11 @@
 const LocationModel = require('../models/location-model.js')
 
 module.exports = {
+    searchLocation(name) {
+        return LocationModel.find(
+            { name: { $regex: name, $options: 'i' } },
+        )
+    },
     async createLocation(loc) {
         let candidate = await LocationModel.find({ geo_lat: loc.geo_lat, geo_lon: loc.geo_lon })
 

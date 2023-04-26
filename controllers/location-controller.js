@@ -1,7 +1,7 @@
 const LocationService = require('../service/location-service')
 
 module.exports = {
-    searchLocation(req, res, next) {
-
+    async searchLocation(req, res, next) {
+        return res.json(await LocationService.searchLocation(req.query.name))
     }
 }

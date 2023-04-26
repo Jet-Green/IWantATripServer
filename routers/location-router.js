@@ -1,4 +1,9 @@
 const Router = require('express').Router
+
 const locationController = require('../controllers/location-controller')
 
-router.get('/search', guideController.getAllElements)
+const router = Router()
+
+router.get('/search', locationController.searchLocation)
+
+module.exports = router
