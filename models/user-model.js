@@ -4,6 +4,7 @@ const UserSchema = new Schema({
     email: { type: String, unique: true, required: true },
     password: { type: String, required: true },
     fullname: { type: String, required: true },
+    location:{type: Object, required: true},
     fullinfo: {
         type: Object,
         default: {}
@@ -11,7 +12,8 @@ const UserSchema = new Schema({
     trips: { type: Array },
     guideElements: { type: Array },
     createdCompanions: { type: Array },
-    boughtTrips: Array
+    boughtTrips: Array,
+    fullLocation :{type: Object,},
 })
 
 module.exports = model('User', UserSchema);
