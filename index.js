@@ -18,6 +18,7 @@ const history = require('connect-history-api-fallback');
 const bookingRouter = require('./routers/booking-router');
 const locationRouter = require('./routers/location-router');
 
+
 app.use(history())
 
 
