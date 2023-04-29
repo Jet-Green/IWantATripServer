@@ -102,7 +102,7 @@ module.exports = {
 
     },
     async findMany(cursor) {
-        let tripsFromDB = await TripModel.find({ start: { $gt: Date.now() } }, null, { sort: 'start' }).skip(cursor ? cursor : 0).limit(7)
+        let tripsFromDB = await TripModel.find({ start: { $gt: Date.now() } }, null, { sort: 'start' }).skip(cursor ? cursor : 0).limit(20)
         return tripsFromDB
     },
     async findForSearch(s, cursor) {
@@ -137,7 +137,7 @@ module.exports = {
         }
 
         filter.$and.push({ start: { $gt: Date.now() } })
-        return await TripModel.find(filter, null, { sort: 'start' }).skip(cursor ? cursor : 0).limit(7)
+        return await TripModel.find(filter, null, { sort: 'start' }).skip(cursor ? cursor : 0).limit(20)
     },
     async hide(_id, v) {
         return TripModel.findByIdAndUpdate(_id, { isHidden: v })
