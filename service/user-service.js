@@ -1,6 +1,7 @@
 const UserModel = require('../models/user-model')
 const bcrypt = require('bcryptjs');
 const TokenService = require('../service/token-service')
+const RoleModel = require('../models/role-model')
 const ApiError = require('../exceptions/api-error');
 const { sendMail } = require('../middleware/mailer');
 
@@ -69,13 +70,21 @@ module.exports = {
         );
     },
     async registration(email, password, fullname, userLocation) {
+        try {
+            let defaultUser = new RoleModel()
+            let managerUser = new RoleModel({ value: 'manager' })
+            let adminUser = new RoleModel({ value: 'super_admin' })
+            await defaultUser.save()
+            await adminUser.save()
+        } catch (err) { }
+
         const candidate = await UserModel.findOne({ email })
         if (candidate) {
             throw ApiError.BadRequest(`Пользователь с почтой ${email} уже существует`)
         }
 
         const hashPassword = await bcrypt.hash(password, 3)
-        const user = await UserModel.create({ email, password: hashPassword, fullname, userLocation })
+        const user = await UserModel.create({ email, password: hashPassword, fullname, userLocation, roles: [adminUserRole.value], })
 
         const tokens = TokenService.generateTokens({ email, hashPassword, _id: user._id })
         await TokenService.saveToken(user._id, tokens.refreshToken);
