@@ -1,4 +1,5 @@
 const LocationModel = require('../models/location-model.js')
+const UserModel = require('../models/user-model.js')
 
 module.exports = {
     searchLocation(name) {
@@ -27,5 +28,8 @@ module.exports = {
             return true
         }
         return false
+    },
+    selectUserLocation(userId, location) {
+        return UserModel.findByIdAndUpdate(userId, { userLocation: location })
     }
 }
