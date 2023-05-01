@@ -38,8 +38,8 @@ module.exports = {
     },
     async registration(req, res, next) {
         try {
-            const { email, password, fullname } = req.body;
-            const userData = await UserService.registration(email, password, fullname)
+            const { email, password, fullname, userLocation } = req.body;
+            const userData = await UserService.registration(email, password, fullname, userLocation)
 
             // добавить флаг secure: true чтобы активировать https
             res.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });

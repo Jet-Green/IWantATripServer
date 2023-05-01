@@ -68,14 +68,14 @@ module.exports = {
             await UserModel.deleteMany({})
         );
     },
-    async registration(email, password, fullname) {
+    async registration(email, password, fullname, userLocation) {
         const candidate = await UserModel.findOne({ email })
         if (candidate) {
             throw ApiError.BadRequest(`Пользователь с почтой ${email} уже существует`)
         }
 
         const hashPassword = await bcrypt.hash(password, 3)
-        const user = await UserModel.create({ email, password: hashPassword, fullname })
+        const user = await UserModel.create({ email, password: hashPassword, fullname, userLocation })
 
         const tokens = TokenService.generateTokens({ email, hashPassword, _id: user._id })
         await TokenService.saveToken(user._id, tokens.refreshToken);
