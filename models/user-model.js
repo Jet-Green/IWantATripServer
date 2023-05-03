@@ -15,7 +15,7 @@ const UserSchema = new Schema({
     createdCompanions: { type: Array },
     boughtTrips: Array,
 
-
+    roles: { type: Array, default: ['user'] },
     userLocation: {
         type: Object,
         default: {}

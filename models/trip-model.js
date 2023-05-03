@@ -20,7 +20,7 @@ const TripSchema = new Schema({
     // меняет только пользователь
     isHidden: { type: Boolean, default: false },
     // меняет модератор
-    isModerated: { type: Boolean, default: true },
+    isModerated: { type: Boolean, default: false },
     billsList: { type: Array, default: [] },
     creatorForm:{ type:Array }
 })

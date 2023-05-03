@@ -5,6 +5,8 @@ const ApiError = require('../exceptions/api-error.js')
 const multer = require('../middleware/multer-middleware')
 const UserService = require('./user-service')
 
+const LocationService = require('./location-service.js')
+
 const _ = require('lodash')
 
 module.exports = {
@@ -101,9 +103,15 @@ module.exports = {
         return tripToDelete.remove()
 
     },
-    async findMany(cursor) {
-        let tripsFromDB = await TripModel.find({ start: { $gt: Date.now() } }, null, { sort: 'start' }).skip(cursor ? cursor : 0).limit(20)
-        return tripsFromDB
+    async findMany(cursor, geo_lat, geo_lon) {
+        let tripsFromDB = await TripModel.find({ $and: [{ start: { $gt: Date.now() } }, { isModerated: true }] }, null, { sort: 'start' }).skip(cursor ? cursor : 0).limit(20)
+        let toSend = []
+        for (let trip of tripsFromDB) {
+            if (LocationService.isNearPlace({ geo_lat, geo_lon }, trip.startLocation)) {
+                toSend.push(trip)
+            }
+        }
+        return toSend
     },
     async findForSearch(s, cursor) {
         const { query, place, when } = s
@@ -141,6 +149,9 @@ module.exports = {
     },
     async hide(_id, v) {
         return TripModel.findByIdAndUpdate(_id, { isHidden: v })
+    },
+    async findForModeration() {
+        return TripModel.find({ isModerated: false })
     },
     async moderate(_id, v) {
         return TripModel.findByIdAndUpdate(_id, { isModerated: v })
