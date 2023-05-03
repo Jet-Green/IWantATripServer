@@ -69,22 +69,29 @@ module.exports = {
             await UserModel.deleteMany({})
         );
     },
-    async registration(email, password, fullname, userLocation) {
-        try {
-            let defaultUser = new RoleModel()
-            let managerUser = new RoleModel({ value: 'manager' })
-            let adminUser = new RoleModel({ value: 'super_admin' })
-            await defaultUser.save()
-            await adminUser.save()
-        } catch (err) { }
+    async registration(body) {
+        const { email, password, fullname, userLocation } = body;
+
+        let candidateUser = await RoleModel.findOne({ value: 'user' })
+        let candidateManager = await RoleModel.findOne({ value: 'manager' })
+        let candidateAdmin = await RoleModel.findOne({ value: 'admin' })
+
+        if (!candidateUser) {
+            candidateUser = await RoleModel.create({ value: 'user' })
+        }
+        if (!candidateAdmin) {
+            candidateAdmin = await RoleModel.create({ value: 'admin' })
+        }
+        if (!candidateManager) {
+            candidateManager = await RoleModel.create({ value: 'manager' })
+        }
 
         const candidate = await UserModel.findOne({ email })
         if (candidate) {
             throw ApiError.BadRequest(`Пользователь с почтой ${email} уже существует`)
         }
-
         const hashPassword = await bcrypt.hash(password, 3)
-        const user = await UserModel.create({ email, password: hashPassword, fullname, userLocation, roles: [adminUserRole.value], })
+        const user = await UserModel.create({ email, password: hashPassword, fullname, userLocation, roles: [candidateAdmin.value], })
 
         const tokens = TokenService.generateTokens({ email, hashPassword, _id: user._id })
         await TokenService.saveToken(user._id, tokens.refreshToken);
