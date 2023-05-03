@@ -104,8 +104,7 @@ module.exports = {
 
     },
     async findMany(cursor, geo_lat, geo_lon) {
-
-        let tripsFromDB = await TripModel.find({ start: { $gt: Date.now() } }, null, { sort: 'start' }).skip(cursor ? cursor : 0).limit(20)
+        let tripsFromDB = await TripModel.find({ $and: [{ start: { $gt: Date.now() } }, { isModerated: true }] }, null, { sort: 'start' }).skip(cursor ? cursor : 0).limit(20)
         let toSend = []
         for (let trip of tripsFromDB) {
             if (LocationService.isNearPlace({ geo_lat, geo_lon }, trip.startLocation)) {
@@ -150,6 +149,9 @@ module.exports = {
     },
     async hide(_id, v) {
         return TripModel.findByIdAndUpdate(_id, { isHidden: v })
+    },
+    async findForModeration() {
+        return TripModel.find({ isModerated: false })
     },
     async moderate(_id, v) {
         return TripModel.findByIdAndUpdate(_id, { isModerated: v })
