@@ -2,6 +2,10 @@ const LocationModel = require('../models/location-model.js')
 const UserModel = require('../models/user-model.js')
 
 module.exports = {
+    findMany() {
+  
+        return LocationModel.find({}).exec()
+    },
     searchLocation(name) {
         return LocationModel.find(
             { name: { $regex: name, $options: 'i' } },
