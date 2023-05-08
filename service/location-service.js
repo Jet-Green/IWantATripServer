@@ -14,12 +14,10 @@ module.exports = {
     async createLocation(loc) {
         let candidate = await LocationModel.findOne({ geo_lat: loc.geo_lat, geo_lon: loc.geo_lon })
 
-        if (candidate) {
-            return candidate
-        } else {
+        if (!candidate) {
             return await LocationModel.create(loc)
         }
-
+        return candidate
     },
     isNearPlace(userPlaceGeo, placeGeo) {
         // когда нет локации
