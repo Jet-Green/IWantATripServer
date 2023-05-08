@@ -1,6 +1,7 @@
 const UserModel = require('../models/user-model')
 const bcrypt = require('bcryptjs');
 const TokenService = require('../service/token-service')
+const LocationService = require('../service/location-service')
 const RoleModel = require('../models/role-model')
 const ApiError = require('../exceptions/api-error');
 const { sendMail } = require('../middleware/mailer');
@@ -91,7 +92,9 @@ module.exports = {
             throw ApiError.BadRequest(`Пользователь с почтой ${email} уже существует`)
         }
         const hashPassword = await bcrypt.hash(password, 3)
-        const user = await UserModel.create({ email, password: hashPassword, fullname, userLocation, roles: [candidateAdmin.value], })
+
+        const locationFromDb = await LocationService.createLocation(userLocation)
+        const user = await UserModel.create({ email, password: hashPassword, fullname, userLocation: locationFromDb, roles: [candidateAdmin.value], })
 
         const tokens = TokenService.generateTokens({ email, hashPassword, _id: user._id })
         await TokenService.saveToken(user._id, tokens.refreshToken);
