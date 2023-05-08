@@ -22,7 +22,12 @@ const TripSchema = new Schema({
     // меняет модератор
     isModerated: { type: Boolean, default: false },
     billsList: { type: Array, default: [] },
-    creatorId: { type: String }
+    creatorId: { type: String },
+
+    moderation: {
+        isModerated: Boolean,
+        message: String
+    }
 })
 
 module.exports = model('Trip', TripSchema);
