@@ -49,6 +49,7 @@ module.exports = {
         delete trip._id
 
         let oldTrip = await TripModel.findById(_id)
+        trip.startLocation = await LocationService.createLocation(trip.startLocation)
 
         let imagesToDelete = []
         for (let oldImg of oldTrip.images) {
