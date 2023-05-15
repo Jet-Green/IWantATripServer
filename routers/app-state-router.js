@@ -10,6 +10,7 @@ router.post('/update', appStateController.update)
 router.get('/delete-mpm-by-id', appStateController.deleteMPMById)
 router.get('/drop', appStateController.dropDatabase)
 router.post('/set-trip-type', appStateController.setTripType)
+router.post('/delete-trip-type', appStateController.deleteTripType)
 
 
 module.exports = router

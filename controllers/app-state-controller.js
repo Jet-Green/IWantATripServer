@@ -4,7 +4,14 @@ module.exports = {
     dropDatabase(req, res, next) {
         return res.json(AppStateService.dropDatabase())
     },
-    
+
+    async deleteTripType(req, res, next) {
+        try {
+            return res.json(await AppStateService.deleteTripType(req.body.name))
+        } catch (error) {
+            next(error)
+        }
+    },
     async getState(req, res, next) {
         try {
             return res.send(await AppStateService.getState())

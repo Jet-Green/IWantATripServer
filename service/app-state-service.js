@@ -8,6 +8,9 @@ const TripModel = require('../models/trip-model')
 const { getLocations } = require('../controllers/app-state-controller')
 
 module.exports = {
+    deleteTripType(name) {
+        return AppStateModel.findOneAndUpdate({}, { $pull: { 'tripType': name } })
+    },
     getState() {
         return AppStateModel.find({})
     },
