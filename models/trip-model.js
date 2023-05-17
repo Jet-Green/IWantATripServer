@@ -24,7 +24,7 @@ const TripSchema = new Schema({
     billsList: { type: Array, default: [] },
     creatorForm: { type: Array },
 
-    moderationMessage: String
+    moderationMessage: { type: String, default: '' }
 })
 
 module.exports = model('Trip', TripSchema);
