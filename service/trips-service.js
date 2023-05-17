@@ -157,6 +157,9 @@ module.exports = {
     async moderate(_id, v) {
         return TripModel.findByIdAndUpdate(_id, { isModerated: v })
     },
+    async sendModerationMessage(tripId, msg) {
+        return TripModel.findByIdAndUpdate(tripId, { isModerated: false, moderationMessage: msg })
+    },
     async findById(_id) {
         return TripModel.findById(_id)
     },

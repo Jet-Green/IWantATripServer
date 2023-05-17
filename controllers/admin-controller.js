@@ -14,5 +14,12 @@ module.exports = {
         } catch (error) {
             next(error)
         }
+    },
+    async sendModerationMessage(req, res, next) {
+        try {
+            return res.json(await tripsService.sendModerationMessage(req.query.tripId, req.body.msg))
+        } catch (error) {
+            next(error)
+        }
     }
 }
