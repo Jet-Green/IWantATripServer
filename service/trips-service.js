@@ -115,10 +115,10 @@ module.exports = {
         return toSend
     },
     async findForSearch(s, cursor) {
-        const { query, place, when } = s
+        const { query, when } = s
 
         // если пустой фильтр
-        if (!query && !place && !when.start) {
+        if (!query  && !when.start) {
             return await TripModel.find({ isHidden: false, isModerated: true })
         }
         let filter = {
@@ -127,10 +127,10 @@ module.exports = {
                     $or: [
                         { name: { $regex: query, $options: 'i' } },
                         { description: { $regex: query, $options: 'i' } },
-                        { location: { $regex: query, $options: 'i' } },
+                       
                     ]
                 },
-                { location: { $regex: place, $options: 'i' } },
+            
                 {
                     isHidden: false, isModerated: true
                 }

@@ -14,7 +14,6 @@ const TripSchema = new Schema({
     offer: { type: String },
     description: { type: String },
     startLocation: { type: Object },
-    location: { type: String },
     tripType: { type: String },
     fromAge: { type: String },
     // меняет только пользователь
