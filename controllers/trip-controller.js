@@ -75,7 +75,6 @@ module.exports = {
     async create(req, res, next) {
         try {
             let location = await LocationService.createLocation(req.body.trip.startLocation)
-            console.log(location);
             req.body.trip.startLocation = location
             const tripFromDB = await TripService.insertOne(req.body.trip)
             let trip = Object.assign({}, tripFromDB._doc)
