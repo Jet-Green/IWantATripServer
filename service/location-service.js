@@ -12,7 +12,7 @@ module.exports = {
         )
     },
     async createLocation(loc) {
-        let candidate = await LocationModel.findOne({ geo_lat: loc.geo_lat, geo_lon: loc.geo_lon })
+        let candidate = await LocationModel.findOne({ 'location.coordinates': loc.location.coordinates })
 
         if (!candidate) {
             return await LocationModel.create(loc)
