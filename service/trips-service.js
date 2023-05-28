@@ -178,4 +178,10 @@ module.exports = {
     async findById(_id) {
         return TripModel.findById(_id)
     },
+    async createdTripsInfo(_id) {
+        // let tripsIdArray = UserModel.findById(_id,{ "trips": 1 })
+        // console.log(tripsIdArray.trips)
+        // let createdTrips = TripModel.find({_id:{$in: tripsIdArray}})
+        return UserModel.findById(_id,{ "trips": 1 })
+    },
 }
