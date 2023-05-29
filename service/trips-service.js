@@ -10,6 +10,9 @@ const LocationService = require('./location-service.js')
 const _ = require('lodash')
 
 module.exports = {
+    async getUserTrips(ids) {
+        return await TripModel.find({ '_id': { '$in': ids } })
+    },
     async getCustomers(customersIds) {
         let query = []
 
@@ -105,18 +108,18 @@ module.exports = {
 
     },
     async findMany(sitePage, geo_lat, geo_lon) {
-        const limit =  20;
+        const limit = 20;
         const page = sitePage || 1;
         const skip = (page - 1) * limit;
-      
+
         const cursor = TripModel.find({ $and: [{ start: { $gt: Date.now() } }, { isHidden: false, isModerated: true }] }, null, { sort: 'start' }).skip(skip).limit(limit).cursor();
-      
+
         const results = [];
         for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
-          results.push(doc);
+            results.push(doc);
         }
-      
-       return results
+
+        return results
 
 
 
@@ -133,7 +136,7 @@ module.exports = {
         const { query, when } = s
 
         // если пустой фильтр
-        if (!query  && !when.start) {
+        if (!query && !when.start) {
             return await TripModel.find({ isHidden: false, isModerated: true })
         }
         let filter = {
@@ -142,10 +145,10 @@ module.exports = {
                     $or: [
                         { name: { $regex: query, $options: 'i' } },
                         { description: { $regex: query, $options: 'i' } },
-                       
+
                     ]
                 },
-            
+
                 {
                     isHidden: false, isModerated: true
                 }

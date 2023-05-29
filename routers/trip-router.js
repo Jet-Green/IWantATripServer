@@ -13,6 +13,7 @@ const router = Router()
 
 
 // here all routes
+router.post('/get-user-trips', tripController.getUserTrips)
 router.post('/get-customers', tripController.getCustomers)
 router.post('/buy-trip', tripController.buyTrip)
 router.get('/get-all', tripController.getAll)
