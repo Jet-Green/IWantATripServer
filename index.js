@@ -1,5 +1,5 @@
 // here all imports ${process.env.NODE_ENV}
-require('dotenv').config({ path: `${process.argv[process.argv.length - 1]}.env` })
+require('dotenv').config()
 const express = require('express');
 const cors = require('cors')
 const app = express()

@@ -105,18 +105,18 @@ module.exports = {
 
     },
     async findMany(sitePage, geo_lat, geo_lon) {
-        const limit =  20;
+        const limit = 20;
         const page = sitePage || 1;
         const skip = (page - 1) * limit;
-      
+
         const cursor = TripModel.find({ $and: [{ start: { $gt: Date.now() } }, { isHidden: false, isModerated: true }] }, null, { sort: 'start' }).skip(skip).limit(limit).cursor();
-      
+
         const results = [];
         for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
-          results.push(doc);
+            results.push(doc);
         }
-      
-       return results
+
+        return results
 
 
 
@@ -133,7 +133,7 @@ module.exports = {
         const { query, when } = s
 
         // если пустой фильтр
-        if (!query  && !when.start) {
+        if (!query && !when.start) {
             return await TripModel.find({ isHidden: false, isModerated: true })
         }
         let filter = {
@@ -142,10 +142,10 @@ module.exports = {
                     $or: [
                         { name: { $regex: query, $options: 'i' } },
                         { description: { $regex: query, $options: 'i' } },
-                       
+
                     ]
                 },
-            
+
                 {
                     isHidden: false, isModerated: true
                 }
@@ -179,9 +179,25 @@ module.exports = {
         return TripModel.findById(_id)
     },
     async createdTripsInfo(_id) {
-        // let tripsIdArray = UserModel.findById(_id,{ "trips": 1 })
-        // console.log(tripsIdArray.trips)
-        // let createdTrips = TripModel.find({_id:{$in: tripsIdArray}})
-        return UserModel.findById(_id,{ "trips": 1 })
+        let tripsIdArray = []
+        let tripsInfoArray = []
+
+        await UserModel.findById(_id, { "trips": 1 }).then(data => {
+            tripsIdArray = data.trips
+
+        })
+        await TripModel.find({ _id: { $in: tripsIdArray } }).then((data) => {
+            tripsInfoArray = data
+        })
+
+        await Promise.all(tripsInfoArray.map(async (trip) => {
+
+            await Promise.all(trip.billsList.map(async (cart) => {
+                cart.userInfo = await UserModel.findById(cart.userId, { 'fullinfo.fullname': 1, 'fullinfo.phone': 1, })
+            }))
+
+        }))
+
+        return tripsInfoArray
     },
 }
