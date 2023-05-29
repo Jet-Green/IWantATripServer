@@ -28,5 +28,6 @@ router.get('/moderate', authMiddleware, tripController.moderateTrip)
 router.post('/upload-images', MULTER().any(), tripController.uploadImages)
 router.post('/upload-pdf', MULTER().any(), tripController.uploadPdf)
 router.get('/clear', tripController.clear)
+router.get('/created-trips-info', tripController.createdTripsInfo)
 
 module.exports = router

@@ -181,4 +181,26 @@ module.exports = {
     async findById(_id) {
         return TripModel.findById(_id)
     },
+    async createdTripsInfo(_id) {
+        let tripsIdArray = []
+        let tripsInfoArray = []
+
+        await UserModel.findById(_id, { "trips": 1 }).then(data => {
+            tripsIdArray = data.trips
+
+        })
+        await TripModel.find({ _id: { $in: tripsIdArray } }).then((data) => {
+            tripsInfoArray = data
+        })
+
+        await Promise.all(tripsInfoArray.map(async (trip) => {
+
+            await Promise.all(trip.billsList.map(async (cart) => {
+                cart.userInfo = await UserModel.findById(cart.userId, { 'fullinfo.fullname': 1, 'fullinfo.phone': 1, })
+            }))
+
+        }))
+
+        return tripsInfoArray
+    },
 }

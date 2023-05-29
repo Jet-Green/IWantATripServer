@@ -181,7 +181,15 @@ module.exports = {
         } catch (error) {
             next(error)
         }
-    }
+    },
+    async createdTripsInfo(req, res, next) {
+        try {
+            // console.log(req.query._id)
+            return res.json(await TripService.createdTripsInfo(req.query._id))
+        } catch (error) {
+            next(error)
+        }
+    },
 
 
 }
