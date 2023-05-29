@@ -18,13 +18,6 @@ const mailer = require('../middleware/mailer');
 const locationService = require('../service/location-service.js');
 
 module.exports = {
-    async getUserTrips(req, res, next) {
-        try {
-            return res.json(await TripService.getUserTrips(req.body))
-        } catch (error) {
-            next(error)
-        }
-    },
     async getCustomers(req, res, next) {
         try {
             return res.json(await TripService.getCustomers(req.body))

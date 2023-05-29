@@ -10,9 +10,6 @@ const LocationService = require('./location-service.js')
 const _ = require('lodash')
 
 module.exports = {
-    async getUserTrips(ids) {
-        return await TripModel.find({ '_id': { '$in': ids } })
-    },
     async getCustomers(customersIds) {
         let query = []
 
