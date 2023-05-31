@@ -29,4 +29,6 @@ router.post('/upload-pdf', MULTER().any(), tripController.uploadPdf)
 router.get('/clear', tripController.clear)
 router.get('/created-trips-info', tripController.createdTripsInfo)
 
+router.get('/get-full-trip', tripController.getFullTripById)
+
 module.exports = router

@@ -10,6 +10,15 @@ const LocationService = require('./location-service.js')
 const _ = require('lodash')
 
 module.exports = {
+    async getFullTripById(_id) {
+        let trip = await TripModel.findById(_id)
+
+        await Promise.all(trip.billsList.map(async (cart) => {
+            cart.userInfo = await UserModel.findById(cart.userId, { 'fullinfo.fullname': 1, 'fullinfo.phone': 1, })
+        }))
+
+        return trip
+    },
     async getCustomers(customersIds) {
         let query = []
 
