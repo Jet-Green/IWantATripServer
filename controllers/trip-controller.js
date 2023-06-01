@@ -34,8 +34,9 @@ module.exports = {
     },
     async getAll(req, res, next) {
         try {
-            return res.json(await TripService.findMany(req.query.cursor, req.query.geo_lat, req.query.geo_lon))
+            return res.json(await TripService.findMany(req.query.cursor, req.query.lon, req.query.lat))
         } catch (error) {
+            console.log(error);
             next(error)
         }
     },
