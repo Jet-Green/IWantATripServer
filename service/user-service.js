@@ -139,8 +139,10 @@ module.exports = {
 
         const user = await UserModel.findById(userData._id)
 
+        await TokenService.removeToken(refreshToken)
         const tokens = TokenService.generateTokens({ email: user.email, password: user.password, _id: user._id })
         await TokenService.saveToken(user._id, tokens.refreshToken);
+        
         return {
             ...tokens,
             // pass the data to client
