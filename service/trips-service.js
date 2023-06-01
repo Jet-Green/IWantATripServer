@@ -113,12 +113,34 @@ module.exports = {
         return tripToDelete.remove()
 
     },
-    async findMany(sitePage, geo_lat, geo_lon) {
+    async findMany(sitePage, lon, lat) {
         const limit = 20;
         const page = sitePage || 1;
         const skip = (page - 1) * limit;
+        let query = {
+            $and: [
+                { start: { $gt: Date.now() } },
+                { isHidden: false, isModerated: true },
 
-        const cursor = TripModel.find({ $and: [{ start: { $gt: Date.now() } }, { isHidden: false, isModerated: true }] }, null, { sort: 'start' }).skip(skip).limit(limit).cursor();
+            ]
+        }
+
+        if (lon && lat) {
+            query.$and.push({
+                startLocation: {
+                    $near: {
+                        $geometry: {
+                            type: 'Pointer',
+                            coordinates: [Number(lon), Number(lat)]
+                        },
+                        // 100 km
+                        $maxDistance: 100000
+                    }
+                }
+            })
+        }
+
+        const cursor = TripModel.find(query, null, { sort: 'start' }).skip(skip).limit(limit).cursor();
 
         const results = [];
         for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
@@ -126,17 +148,6 @@ module.exports = {
         }
 
         return results
-
-
-
-        // let tripsFromDB = await TripModel.find({ $and: [{ start: { $gt: Date.now() } }, { isHidden: false, isModerated: true }] }, null, { sort: 'start' }).skip(cursor ? cursor : 0).limit(20)
-        // let toSend = []
-        // for (let trip of tripsFromDB) {
-        //     if (LocationService.isNearPlace({ geo_lat, geo_lon }, trip.startLocation)) {
-        //         toSend.push(trip)
-        //     }
-        // }
-        // return toSend
     },
     async findForSearch(s, cursor) {
         const { query, when } = s
