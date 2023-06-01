@@ -12,6 +12,7 @@ const CompanionSchema = new Schema({
     companionGender: { type: String, required: true },
     // type: [{ type: String, required: true }],
     direction: { type: String, required: true },
+    startLocation: { type: Object, required: true },
     description: { type: String, required: true },
     companionRequests: Array
 })

@@ -7,8 +7,41 @@ module.exports = {
     findById(_id) {
         return СompanionModel.findById(_id)
     },
-    findMany() {
-        return СompanionModel.find({}).exec()
+    async findMany(sitePage, lon, lat) {
+        const limit = 20;
+        const page = sitePage || 1;
+        const skip = (page - 1) * limit;
+        let query = {
+            $and: [
+                { start: { $gt: Date.now() } },
+                { isHidden: false, isModerated: true },
+
+            ]
+        }
+
+        if (lon && lat) {
+            query.$and.push({
+                startLocation: {
+                    $near: {
+                        $geometry: {
+                            type: 'Pointer',
+                            coordinates: [Number(lon), Number(lat)]
+                        },
+                        // 100 km
+                        $maxDistance: 100000
+                    }
+                }
+            })
+        }
+
+        const cursor = CompanionModel.find(query, null, { sort: 'start' }).skip(skip).limit(limit).cursor();
+
+        const results = [];
+        for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
+            results.push(doc);
+        }
+
+        return results
     },
     async findForSearch(s) {
         const { find,
