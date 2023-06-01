@@ -77,6 +77,7 @@ function mongoConnect() {
     db.on('error', console.error.bind(console, 'connection error:'));
 
     db.collections.trips.createIndex({ 'startLocation': '2dsphere' })
+    db.collections.users.createIndex({ 'userLocation': '2dsphere' })
 
     db.once('open', function () {
         console.log('connection')
