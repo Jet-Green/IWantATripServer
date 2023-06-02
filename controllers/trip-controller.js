@@ -36,7 +36,6 @@ module.exports = {
         try {
             return res.json(await TripService.findMany(req.query.cursor, req.query.lon, req.query.lat))
         } catch (error) {
-            console.log(error);
             next(error)
         }
     },
@@ -44,7 +43,6 @@ module.exports = {
         try {
             return res.json(await TripService.buyTrip(req))
         } catch (error) {
-            console.log(error);
             next(error)
         }
     },
@@ -95,7 +93,6 @@ module.exports = {
 
             return res.json({ _id: trip._id })
         } catch (error) {
-            console.log(error);
             next(error)
         }
     },
