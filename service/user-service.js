@@ -94,7 +94,7 @@ module.exports = {
         const hashPassword = await bcrypt.hash(password, 3)
 
         const locationFromDb = await LocationService.createLocation(userLocation)
-        const user = await UserModel.create({ email, password: hashPassword, fullname, userLocation: locationFromDb, roles: [candidateAdmin.value], })
+        const user = await UserModel.create({ email, password: hashPassword, fullname, userLocation: locationFromDb, roles: [candidateUser.value], })
 
         const tokens = TokenService.generateTokens({ email, hashPassword, _id: user._id })
         await TokenService.saveToken(user._id, tokens.refreshToken);
