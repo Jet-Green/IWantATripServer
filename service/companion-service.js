@@ -7,8 +7,26 @@ module.exports = {
     findById(_id) {
         return СompanionModel.findById(_id)
     },
-    findMany() {
-        return СompanionModel.find({}).exec()
+    findMany(lon, lat) {
+        let query = {
+
+        }
+        if (lon && lat) {
+            query = {
+                startLocation: {
+                    $near: {
+                        $geometry: {
+                            type: 'Pointer',
+                            coordinates: [Number(lon), Number(lat)]
+                        },
+                        // 100 km
+                        $maxDistance: 100000
+                    }
+                }
+            }
+        }
+
+        return СompanionModel.find(query, null)
     },
     async findForSearch(s) {
         const { find,

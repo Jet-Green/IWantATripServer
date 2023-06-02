@@ -4,8 +4,10 @@ const LocationService = require('../service/location-service')
 module.exports = {
     async getAll(req, res, next) {
         try {
-            return res.json(await СompanionService.findMany())
+            let q = req.query
+            return res.json(await СompanionService.findMany(q.lon, q.lat))
         } catch (error) {
+            console.log(error);
             next(error)
         }
     },
