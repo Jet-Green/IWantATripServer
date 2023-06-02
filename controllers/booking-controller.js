@@ -7,8 +7,7 @@ module.exports = {
             const bookingCb = await BookingService.insertOne(req.body)
             return res.json({ _id: bookingCb._id })
         } catch (err) {
-            console.log(err);
-
+            next(err)
         }
     },
     async findByUserId(req, res, next) {

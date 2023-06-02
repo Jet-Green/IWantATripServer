@@ -7,7 +7,6 @@ module.exports = {
             let q = req.query
             return res.json(await СompanionService.findMany(q.lon, q.lat))
         } catch (error) {
-            console.log(error);
             next(error)
         }
     },
