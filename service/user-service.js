@@ -94,7 +94,7 @@ module.exports = {
         const hashPassword = await bcrypt.hash(password, 3)
 
         const locationFromDb = await LocationService.createLocation(userLocation)
-        const user = await UserModel.create({ email, password: hashPassword, fullname, userLocation: locationFromDb, roles: [candidateAdmin.value], })
+        const user = await UserModel.create({ email, password: hashPassword, fullname, userLocation: locationFromDb, roles: [candidateUser.value], })
 
         const tokens = TokenService.generateTokens({ email, hashPassword, _id: user._id })
         await TokenService.saveToken(user._id, tokens.refreshToken);
@@ -136,17 +136,20 @@ module.exports = {
         if (!userData || !tokenFromDb) {
             throw ApiError.UnauthorizedError();
         }
+        // удалить ненужный токен
+        await tokenFromDb.delete();
 
         const user = await UserModel.findById(userData._id)
-
-        await TokenService.removeToken(refreshToken)
-        const tokens = TokenService.generateTokens({ email: user.email, password: user.password, _id: user._id })
-        await TokenService.saveToken(user._id, tokens.refreshToken);
-        
-        return {
-            ...tokens,
-            // pass the data to client
-            user
+        if (user) {
+            const tokens = TokenService.generateTokens({ email: user.email, password: user.password, _id: user._id })
+            await TokenService.saveToken(user._id, tokens.refreshToken);
+            return {
+                ...tokens,
+                // pass the data to client
+                user
+            }
+        } else {
+            throw ApiError.UnauthorizedError();
         }
     },
     async logout(refreshToken) {

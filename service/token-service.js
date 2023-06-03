@@ -68,8 +68,8 @@ module.exports = {
         return tokenData;
     },
 
-    async findToken(refreshToken) {
-        const tokenData = await tokenModel.findOne({ refreshToken })
+    async findToken(token) {
+        const tokenData = await tokenModel.findOne({ token })
 
         return tokenData;
     },

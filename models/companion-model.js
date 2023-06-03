@@ -14,7 +14,8 @@ const CompanionSchema = new Schema({
     direction: { type: String, required: true },
     startLocation: { type: Object, required: true },
     description: { type: String, required: true },
-    companionRequests: Array
+    companionRequests: Array,
+    startLocation: Object
 })
 
 module.exports = model('Companion', CompanionSchema);

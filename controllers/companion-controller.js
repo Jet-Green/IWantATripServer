@@ -1,18 +1,13 @@
 const СompanionService = require('../service/companion-service')
+const LocationService = require('../service/location-service')
 
 module.exports = {
     async getAll(req, res, next) {
         try {
-            return res.json(await СompanionService.findMany())
+            let q = req.query
+            return res.json(await СompanionService.findMany(q.lon, q.lat, req.body))
         } catch (error) {
-            next(error)
-        }
-    },
-    async search(req, res, next) {
-        try {
-            let s = req.body
-            return res.json(await СompanionService.findForSearch(s))
-        } catch (error) {
+            console.log(error);
             next(error)
         }
     },
@@ -26,6 +21,8 @@ module.exports = {
     },
     async create(req, res, next) {
         try {
+            let location = await LocationService.createLocation(req.body.startLocation)
+            req.body.startLocation = location
             const companionCb = await СompanionService.insertOne(req.body)
 
             return res.json({ _id: companionCb._id })

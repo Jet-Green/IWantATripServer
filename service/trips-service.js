@@ -113,15 +113,13 @@ module.exports = {
         return tripToDelete.remove()
 
     },
-    async findMany(sitePage, lon, lat) {
+    async findMany(sitePage, lon, lat, strQuery, start, end) {
         const limit = 20;
         const page = sitePage || 1;
         const skip = (page - 1) * limit;
         let query = {
             $and: [
-                { start: { $gt: Date.now() } },
                 { isHidden: false, isModerated: true },
-
             ]
         }
 
@@ -138,6 +136,24 @@ module.exports = {
                     }
                 }
             })
+        }
+        if (strQuery) {
+            query.$and.push({
+                $or: [
+                    { name: { $regex: strQuery, $options: 'i' } },
+                    { tripRoute: { $regex: strQuery, $options: 'i' } },
+                    { offer: { $regex: strQuery, $options: 'i' } },
+                    { description: { $regex: strQuery, $options: 'i' } },
+                ]
+            })
+        }
+        if (start && end) {
+            query.$and.push({
+                start: { $gte: start },
+                end: { $lte: end }
+            })
+        } else {
+            query.$and.push({ start: { $gte: Date.now() } })
         }
 
         const cursor = TripModel.find(query, null, { sort: 'start' }).skip(skip).limit(limit).cursor();
