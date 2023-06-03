@@ -136,6 +136,8 @@ module.exports = {
         if (!userData || !tokenFromDb) {
             throw ApiError.UnauthorizedError();
         }
+        // удалить ненужный токен
+        await tokenFromDb.delete();
 
         const user = await UserModel.findById(userData._id)
 
