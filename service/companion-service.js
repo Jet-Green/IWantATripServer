@@ -7,19 +7,20 @@ module.exports = {
     findById(_id) {
         return СompanionModel.findById(_id)
     },
-    findMany(lon, lat, queryObj = {}) {
+    findMany(lon, lat, queryObj) {
         let query = {
             $and: []
         }
         let isEmptyObj = true
-        for (let key in queryObj) {
+        for (let key in Object.keys(queryObj)) {
             // skip age, cuz its not eempty
             if (key == 'age') {
-                if (queryObj[key].start || queryObj[key].end) {
+                if (queryObj[key].start !== '' || queryObj[key].end !== '') {
                     isEmptyObj = false
                 }
                 continue
             }
+
             if (queryObj[key] != '') {
                 isEmptyObj = false
                 break
@@ -60,17 +61,17 @@ module.exports = {
         if (queryObj.gender) {
             query.$and.push({ gender: { $eq: queryObj.gender } })
         }
-        if (queryObj.age) {
-            query.$and.push(
-                { age: { $gte: Number(queryObj.age.start), $lte: Number(queryObj.age.end == 0 ? 100 : queryObj.age.end) } },
-            )
-        }
+
         if (queryObj.start && queryObj.end) {
             query.$and.push(
                 { start: { $gte: queryObj.start } },
                 { end: { $lte: queryObj.end } }
             )
         }
+
+        query.$and.push(
+            { age: { $gte: Number(queryObj.age.start), $lte: Number(queryObj.age.end == 0 ? 100 : queryObj.age.end) } },
+        )
 
         return СompanionModel.find(query, null)
     },
