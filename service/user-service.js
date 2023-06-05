@@ -136,15 +136,20 @@ module.exports = {
         if (!userData || !tokenFromDb) {
             throw ApiError.UnauthorizedError();
         }
+        // удалить ненужный токен
+        await tokenFromDb.delete();
 
         const user = await UserModel.findById(userData._id)
-
-        const tokens = TokenService.generateTokens({ email: user.email, password: user.password, _id: user._id })
-        await TokenService.saveToken(user._id, tokens.refreshToken);
-        return {
-            ...tokens,
-            // pass the data to client
-            user
+        if (user) {
+            const tokens = TokenService.generateTokens({ email: user.email, password: user.password, _id: user._id })
+            await TokenService.saveToken(user._id, tokens.refreshToken);
+            return {
+                ...tokens,
+                // pass the data to client
+                user
+            }
+        } else {
+            throw ApiError.UnauthorizedError();
         }
     },
     async logout(refreshToken) {

@@ -5,15 +5,7 @@ module.exports = {
     async getAll(req, res, next) {
         try {
             let q = req.query
-            return res.json(await СompanionService.findMany(q.lon, q.lat))
-        } catch (error) {
-            next(error)
-        }
-    },
-    async search(req, res, next) {
-        try {
-            let s = req.body
-            return res.json(await СompanionService.findForSearch(s))
+            return res.json(await СompanionService.findMany(q.lon, q.lat, req.body))
         } catch (error) {
             next(error)
         }
