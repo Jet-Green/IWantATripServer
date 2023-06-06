@@ -19,10 +19,6 @@ module.exports = {
 
         trip.billsList = await BillModel.find({ _id: { $in: trip.billsList } })
 
-        await Promise.all(trip.billsList.map(async (cart) => {
-            cart.userInfo = await UserModel.findById(cart.userId, { 'fullinfo.fullname': 1, 'fullinfo.phone': 1, })
-        }))
-
         return trip
     },
     async getCustomers(customersIds) {
@@ -48,15 +44,13 @@ module.exports = {
     async buyTrip(req) {
         let tripId = req.query._id
         let bill = req.body
-
         let billFromDb = await BillModel.create(bill)
 
         await TripModel.findOneAndUpdate({ _id: tripId }, { $push: { billsList: billFromDb._id } })
 
-        let { userId } = bill
-        delete bill.userId
+        let userId = bill.userInfo._id
 
-        return await UserModel.findOneAndUpdate({ _id: userId }, { $push: { boughtTrips: { tripId, ...bill } } })
+        return await UserModel.findOneAndUpdate({ _id: userId }, { $push: { boughtTrips: { ...bill } } })
     },
     async insertOne(trip) {
         return TripModel.create(trip)
@@ -228,19 +222,10 @@ module.exports = {
 
         await UserModel.findById(_id, { "trips": 1 }).then(data => {
             tripsIdArray = data.trips
-
         })
         await TripModel.find({ _id: { $in: tripsIdArray } }).then((data) => {
             tripsInfoArray = data
         })
-
-        await Promise.all(tripsInfoArray.map(async (trip) => {
-
-            await Promise.all(trip.billsList.map(async (cart) => {
-                cart.userInfo = await UserModel.findById(cart.userId, { 'fullinfo.fullname': 1, 'fullinfo.phone': 1, })
-            }))
-
-        }))
 
         return tripsInfoArray
     },
