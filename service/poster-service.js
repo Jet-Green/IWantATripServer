@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const {Schema} = require('mongoose')
+const { Schema } = require('mongoose')
 
 const conn = mongoose.createConnection(process.env.POSTERS_DB_URL);
 const PostersModel = conn.model('Poster', new Schema({
@@ -24,7 +24,7 @@ module.exports = {
             console.log(await PostersModel.find({}))
             return PostersModel.find({})
         } catch (error) {
-            handleError(error);
+            next(error);
         }
     }
 }
