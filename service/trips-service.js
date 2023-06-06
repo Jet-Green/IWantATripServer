@@ -11,6 +11,9 @@ const LocationService = require('./location-service.js')
 const _ = require('lodash')
 
 module.exports = {
+    async setPayment(_id) {
+        return await BillModel.findByIdAndUpdate(_id, { isBoughtNow: true })
+    },
     async getFullTripById(_id) {
         let trip = await TripModel.findById(_id)
 

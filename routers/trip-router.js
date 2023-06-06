@@ -31,4 +31,6 @@ router.get('/created-trips-info', tripController.createdTripsInfo)
 
 router.get('/get-full-trip', tripController.getFullTripById)
 
+router.get('/set-payment', tripController.setPayment)
+
 module.exports = router
