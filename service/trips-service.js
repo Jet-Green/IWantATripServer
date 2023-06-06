@@ -11,6 +11,13 @@ const LocationService = require('./location-service.js')
 const _ = require('lodash')
 
 module.exports = {
+    async deletePayment(_id) {
+        let bill = await BillModel.findById(_id)
+
+        await TripModel.findOneAndUpdate({ _id: bill.tripId }, { $pull: { billsList: { $eq: bill._id } } })
+
+        return bill.delete()
+    },
     async setPayment(_id) {
         return await BillModel.findByIdAndUpdate(_id, { isBoughtNow: true })
     },

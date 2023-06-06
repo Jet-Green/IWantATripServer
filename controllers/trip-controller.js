@@ -25,6 +25,13 @@ module.exports = {
             next(error)
         }
     },
+    async deletePayment(req, res, next) {
+        try {
+            return res.json(await TripService.deletePayment(req.query._id))
+        } catch (error) {
+            next(error)
+        }
+    },
 
     async getFullTripById(req, res, next) {
         try {
