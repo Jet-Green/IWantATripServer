@@ -1,5 +1,6 @@
 const TripModel = require('../models/trip-model.js');
 const UserModel = require('../models/user-model.js')
+const BillModel = require('../models/bill-model.js')
 
 const ApiError = require('../exceptions/api-error.js')
 const multer = require('../middleware/multer-middleware')
@@ -12,6 +13,8 @@ const _ = require('lodash')
 module.exports = {
     async getFullTripById(_id) {
         let trip = await TripModel.findById(_id)
+
+        trip.billsList = await BillModel.find({ _id: { $in: trip.billsList } })
 
         await Promise.all(trip.billsList.map(async (cart) => {
             cart.userInfo = await UserModel.findById(cart.userId, { 'fullinfo.fullname': 1, 'fullinfo.phone': 1, })
@@ -43,7 +46,9 @@ module.exports = {
         let tripId = req.query._id
         let bill = req.body
 
-        await TripModel.findOneAndUpdate({ _id: tripId }, { $push: { billsList: bill } })
+        let billFromDb = await BillModel.create(bill)
+
+        await TripModel.findOneAndUpdate({ _id: tripId }, { $push: { billsList: billFromDb._id } })
 
         let { userId } = bill
         delete bill.userId
