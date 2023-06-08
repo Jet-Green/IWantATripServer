@@ -7,4 +7,7 @@ module.exports = {
     findByUserId(_id) {
         return BookingModel.find({ creatorId: _id })
     },
+    getByStatus(status) {
+        return BookingModel.find({ status })
+    }
 }

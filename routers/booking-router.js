@@ -12,6 +12,6 @@ const router = Router()
 
 router.post('/create', bookingController.create)
 router.post('/findByUserId', bookingController.findByUserId)
-
+router.get('/get-by-status', bookingController.getByStatus)
 
 module.exports = router
