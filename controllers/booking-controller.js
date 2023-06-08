@@ -23,5 +23,12 @@ module.exports = {
         } catch (error) {
             next(error)
         }
+    },
+    async changeStatus(req, res, next) {
+        try {
+            return res.json(await BookingService.changeStatus(req.query._id, req.query.status))
+        } catch (error) {
+            next(error)
+        }
     }
 }

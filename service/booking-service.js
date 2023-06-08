@@ -9,5 +9,8 @@ module.exports = {
     },
     getByStatus(status) {
         return BookingModel.find({ status })
+    },
+    changeStatus(_id, status) {
+        return BookingModel.findByIdAndUpdate(_id, { status: status })
     }
 }
