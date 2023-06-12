@@ -7,7 +7,7 @@ const CompanionSchema = new Schema({
     phone: { type: String, required: true },
     start: { type: Number, required: true },
     end: { type: Number, required: true },
-    age: { type: String, required: true },
+    age: { type: Number, required: true },
     gender: { type: String, required: true },
     companionGender: { type: String, required: true },
     // type: [{ type: String, required: true }],

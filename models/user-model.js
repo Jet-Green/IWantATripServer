@@ -6,7 +6,14 @@ const UserSchema = new Schema({
     fullname: { type: String, required: true },
     fullinfo: {
         type: Object,
-        default: {}
+        default: {
+            type: "phys",
+            creatorsType: "author",
+            fullname: '',
+            phone: '',
+            govermentRegNumber: '',
+            companyName: ''
+        }
     },
     trips: { type: Array },
     guideElements: { type: Array },

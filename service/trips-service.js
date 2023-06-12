@@ -1,5 +1,6 @@
 const TripModel = require('../models/trip-model.js');
 const UserModel = require('../models/user-model.js')
+const BillModel = require('../models/bill-model.js')
 
 const ApiError = require('../exceptions/api-error.js')
 const multer = require('../middleware/multer-middleware')
@@ -10,12 +11,20 @@ const LocationService = require('./location-service.js')
 const _ = require('lodash')
 
 module.exports = {
+    async deletePayment(_id) {
+        let bill = await BillModel.findById(_id)
+
+        await TripModel.findOneAndUpdate({ _id: bill.tripId }, { $pull: { billsList: { $eq: bill._id } } })
+
+        return bill.delete()
+    },
+    async setPayment(_id) {
+        return await BillModel.findByIdAndUpdate(_id, { isBoughtNow: true })
+    },
     async getFullTripById(_id) {
         let trip = await TripModel.findById(_id)
 
-        await Promise.all(trip.billsList.map(async (cart) => {
-            cart.userInfo = await UserModel.findById(cart.userId, { 'fullinfo.fullname': 1, 'fullinfo.phone': 1, })
-        }))
+        trip.billsList = await BillModel.find({ _id: { $in: trip.billsList } })
 
         return trip
     },
@@ -42,13 +51,13 @@ module.exports = {
     async buyTrip(req) {
         let tripId = req.query._id
         let bill = req.body
+        let billFromDb = await BillModel.create(bill)
 
-        await TripModel.findOneAndUpdate({ _id: tripId }, { $push: { billsList: bill } })
+        await TripModel.findOneAndUpdate({ _id: tripId }, { $push: { billsList: billFromDb._id } })
 
-        let { userId } = bill
-        delete bill.userId
+        let userId = bill.userInfo._id
 
-        return await UserModel.findOneAndUpdate({ _id: userId }, { $push: { boughtTrips: { tripId, ...bill } } })
+        return await UserModel.findOneAndUpdate({ _id: userId }, { $push: { boughtTrips: { ...bill } } })
     },
     async insertOne(trip) {
         return TripModel.create(trip)
@@ -220,19 +229,10 @@ module.exports = {
 
         await UserModel.findById(_id, { "trips": 1 }).then(data => {
             tripsIdArray = data.trips
-
         })
         await TripModel.find({ _id: { $in: tripsIdArray } }).then((data) => {
             tripsInfoArray = data
         })
-
-        await Promise.all(tripsInfoArray.map(async (trip) => {
-
-            await Promise.all(trip.billsList.map(async (cart) => {
-                cart.userInfo = await UserModel.findById(cart.userId, { 'fullinfo.fullname': 1, 'fullinfo.phone': 1, })
-            }))
-
-        }))
 
         return tripsInfoArray
     },
