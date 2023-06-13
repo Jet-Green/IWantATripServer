@@ -26,7 +26,7 @@ app.use(history())
 
 // here all .use
 app.use(cors({
-    origin: [process.env.CLIENT_URL, "http://localhost:5174"],
+    origin: [process.env.CLIENT_URL, "http://localhost:5174", "https://gorodaivesi.ru"],
     credentials: true
 }))
 app.use(express.json())
