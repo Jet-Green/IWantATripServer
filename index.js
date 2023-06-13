@@ -63,7 +63,7 @@ app.use(errorMiddleware)
 
 function startServer() {
     try {
-        app.listen(process.env.PORT, 'localhost', () => { console.log(`Server is running on http://localhost:${process.env.PORT}`); })
+        app.listen(process.env.PORT, () => { console.log(`Server is running on http://localhost:${process.env.PORT}`); })
     } catch (err) {
         console.error('Error while starting server: ', err);
     }
