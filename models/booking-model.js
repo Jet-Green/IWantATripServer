@@ -11,7 +11,7 @@ const BookingSchema = new Schema({
     children: { type: Number },
     fromAge: { type: Number },
     wishes: { type: String },
-    creatorId: { type: String },
+    creatorId: { type: Schema.Types.ObjectId, ref: 'User' },
     status: { type: String, default: 'open' },
 })
 
