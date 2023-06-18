@@ -8,7 +8,8 @@ module.exports = {
         return BookingModel.find({ creatorId: _id })
     },
     getByStatus(status) {
-        return BookingModel.find({ status })
+        return BookingModel.find({ status }).populate('creatorId', "fullinfo").
+            exec();
     },
     changeStatus(_id, status) {
         return BookingModel.findByIdAndUpdate(_id, { status: status })
