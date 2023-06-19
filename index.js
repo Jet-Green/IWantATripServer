@@ -17,7 +17,7 @@ const errorMiddleware = require('./middleware/error-middleware')
 const history = require('connect-history-api-fallback');
 const bookingRouter = require('./routers/booking-router');
 const locationRouter = require('./routers/location-router');
-const adminRouter = require('./routers/admin-funcs-router');
+const adminRouter = require('./routers/admin-router');
 const posterRouter = require('./routers/poster-router')
 
 
@@ -26,7 +26,7 @@ app.use(history())
 
 // here all .use
 app.use(cors({
-    origin: [process.env.CLIENT_URL, "http://localhost:5174"],
+    origin: [process.env.CLIENT_URL, "http://localhost:5174", "https://gorodaivesi.ru"],
     credentials: true
 }))
 app.use(express.json())
