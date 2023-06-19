@@ -13,5 +13,8 @@ module.exports = {
     },
     changeStatus(_id, status) {
         return BookingModel.findByIdAndUpdate(_id, { status: status })
+    },
+    updateBooking(newBooking) {
+        return BookingModel.findByIdAndUpdate(newBooking._id, newBooking)
     }
 }
