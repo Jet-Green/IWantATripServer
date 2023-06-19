@@ -13,6 +13,8 @@ const BookingSchema = new Schema({
     wishes: { type: String },
     creatorId: { type: Schema.Types.ObjectId, ref: 'User' },
     status: { type: String, default: 'open' },
+
+    comment: { type: String, default: '' }
 })
 
 module.exports = model('Booking', BookingSchema);
