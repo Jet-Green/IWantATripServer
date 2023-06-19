@@ -1,4 +1,5 @@
 const tripsService = require('../service/trips-service')
+const adminService = require('../service/admin-service')
 
 module.exports = {
     async findForModeration(req, res, next) {
@@ -19,6 +20,14 @@ module.exports = {
         try {
             return res.json(await tripsService.sendModerationMessage(req.query.tripId, req.body.msg))
         } catch (error) {
+            next(error)
+        }
+    },
+    async fetchUsers(req, res, next) {
+        try {
+            return res.json(await adminService.fetchUsers(req.body))
+        } catch (error) {
+            console.log(error);
             next(error)
         }
     }

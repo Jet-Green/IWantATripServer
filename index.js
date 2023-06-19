@@ -17,7 +17,7 @@ const errorMiddleware = require('./middleware/error-middleware')
 const history = require('connect-history-api-fallback');
 const bookingRouter = require('./routers/booking-router');
 const locationRouter = require('./routers/location-router');
-const adminRouter = require('./routers/admin-funcs-router');
+const adminRouter = require('./routers/admin-router');
 const posterRouter = require('./routers/poster-router')
 
 
