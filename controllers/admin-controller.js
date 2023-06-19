@@ -27,7 +27,6 @@ module.exports = {
         try {
             return res.json(await adminService.fetchUsers(req.body))
         } catch (error) {
-            console.log(error);
             next(error)
         }
     }
