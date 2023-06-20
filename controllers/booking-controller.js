@@ -30,5 +30,12 @@ module.exports = {
         } catch (error) {
             next(error)
         }
+    },
+    async updateBooking(req, res, next) {
+        try {
+            return res.json(await BookingService.updateBooking(req.body))
+        } catch (error) {
+            next(error)
+        }
     }
 }

@@ -13,6 +13,7 @@ module.exports = {
                     ]
                 }
             ]
-        })
+        }, { email: 1, fullname: 1, roles: 1 })
     }
 }
+
