@@ -30,9 +30,30 @@ module.exports = {
             next(error)
         }
     },
+    async deleteById(req, res, next) {
+        try {
+            return res.json(await СompanionService.deleteById(req.query._id))
+        } catch (error) {
+            next(error)
+        }
+    },
     async addFeedback(req, res, next) {
         try {
             return res.json(await СompanionService.addFeedback(req.body, req.query.companion_id))
+        } catch (error) {
+            next(error)
+        }
+    },
+    async getCompanionsOnModeration(req, res, next) {
+        try {
+            return res.json(await СompanionService.getCompanionsOnModeration())
+        } catch (error) {
+            next(error)
+        }
+    },
+    async acceptCompanion(req, res, next) {
+        try {
+            return res.json(await СompanionService.acceptCompanion(req.query._id))
         } catch (error) {
             next(error)
         }
@@ -44,5 +65,4 @@ module.exports = {
             next(error)
         }
     },
-
 }
