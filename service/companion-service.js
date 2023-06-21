@@ -84,4 +84,13 @@ module.exports = {
     async deleteMany() {
         return СompanionModel.deleteMany({})
     },
+    getCompanionsOnModeration() {
+        return СompanionModel.find({ isModerated: false })
+    },
+    acceptCompanion(_id) {
+        return СompanionModel.findByIdAndUpdate(_id, { $set: { isModerated: true } })
+    },
+    deleteById(_id) {
+        return СompanionModel.findByIdAndDelete(_id)
+    }
 }
