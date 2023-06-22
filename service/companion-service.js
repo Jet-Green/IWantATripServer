@@ -9,7 +9,9 @@ module.exports = {
     },
     findMany(lon, lat, queryObj) {
         let query = {
-            $and: []
+            $and: [
+                { isModerated: true },
+            ]
         }
         let isEmptyObj = true
         for (let key in Object.keys(queryObj)) {
