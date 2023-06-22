@@ -1,10 +1,13 @@
 const BookingService = require('../service/booking-service')
-
+const { sendMail } = require('../middleware/mailer')
 
 module.exports = {
     async create(req, res, next) {
         try {
-            const bookingCb = await BookingService.insertOne(req.body)
+            const bookingCb = await BookingService.insertOne(req.body.booking)
+
+            sendMail(req.body.emailHtml, '', 'Заказана поездка')
+
             return res.json({ _id: bookingCb._id })
         } catch (err) {
             next(err)
