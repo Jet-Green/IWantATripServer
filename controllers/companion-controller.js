@@ -1,5 +1,6 @@
 const СompanionService = require('../service/companion-service')
 const LocationService = require('../service/location-service')
+const { sendMail } = require('../middleware/mailer')
 
 module.exports = {
     async getAll(req, res, next) {
@@ -7,7 +8,6 @@ module.exports = {
             let q = req.query
             return res.json(await СompanionService.findMany(q.lon, q.lat, req.body))
         } catch (error) {
-            console.log(error);
             next(error)
         }
     },
@@ -21,9 +21,11 @@ module.exports = {
     },
     async create(req, res, next) {
         try {
-            let location = await LocationService.createLocation(req.body.startLocation)
-            req.body.startLocation = location
-            const companionCb = await СompanionService.insertOne(req.body)
+            let location = await LocationService.createLocation(req.body.companion.startLocation)
+            req.body.companion.startLocation = location
+            const companionCb = await СompanionService.insertOne(req.body.companion)
+
+            sendMail(req.body.emailHtml, '', 'Создан попутчик')
 
             return res.json({ _id: companionCb._id })
         } catch (error) {
