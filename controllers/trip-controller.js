@@ -105,7 +105,7 @@ module.exports = {
             trip.start = new Date(Number(trip.start)).toLocaleDateString("ru-RU")
             trip.end = new Date(Number(trip.end)).toLocaleDateString("ru-RU")
 
-            sendMail(trip, 'create-trip.hbs', req.body.emails)
+            sendMail(req.body.emailHtml, req.body.emails, 'Создана поездка')
 
             return res.json({ _id: trip._id })
         } catch (error) {

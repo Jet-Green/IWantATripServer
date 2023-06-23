@@ -6,6 +6,8 @@ const ApiError = require('../exceptions/api-error.js')
 const multer = require('../middleware/multer-middleware')
 const UserService = require('./user-service')
 
+const { sendMail } = require('../middleware/mailer');
+
 const LocationService = require('./location-service.js')
 
 const _ = require('lodash')
@@ -50,12 +52,14 @@ module.exports = {
     },
     async buyTrip(req) {
         let tripId = req.query._id
-        let bill = req.body
+        let bill = req.body.bill
         let billFromDb = await BillModel.create(bill)
 
         await TripModel.findOneAndUpdate({ _id: tripId }, { $push: { billsList: billFromDb._id } })
 
         let userId = bill.userInfo._id
+
+        sendMail(req.body.emailHtml, '', 'Куплена поездка')
 
         return await UserModel.findOneAndUpdate({ _id: userId }, { $push: { boughtTrips: { ...bill } } })
     },

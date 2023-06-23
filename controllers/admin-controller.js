@@ -29,5 +29,12 @@ module.exports = {
         } catch (error) {
             next(error)
         }
+    },
+    async changeUserRoles(req, res, next) {
+        try {
+            return res.json(await adminService.changeUserRoles(req.body))
+        } catch (error) {
+            next(error)
+        }
     }
 }

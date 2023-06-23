@@ -14,6 +14,11 @@ module.exports = {
                 }
             ]
         }, { email: 1, fullname: 1, roles: 1 })
+    },
+    changeUserRoles(body) {
+        let { email, roles } = body
+
+        return UserModel.findOneAndUpdate({ email }, { roles }, { new: true })
     }
 }
 
