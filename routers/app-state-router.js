@@ -12,5 +12,7 @@ router.get('/drop', appStateController.dropDatabase)
 router.post('/set-trip-type', appStateController.setTripType)
 router.post('/delete-trip-type', appStateController.deleteTripType)
 
+router.post('/add-email', appStateController.addEmail)
+router.post('/update-emails', appStateController.updateEmails)
 
 module.exports = router
