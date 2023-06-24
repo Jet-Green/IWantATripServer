@@ -5,9 +5,18 @@ const GuideElementModel = require('../models/guide-element-model')
 const TokenModel = require('../models/token-model')
 const UserModel = require('../models/user-model')
 const TripModel = require('../models/trip-model')
-const { getLocations } = require('../controllers/app-state-controller')
 
 module.exports = {
+    async updateEmails(updateQuery) {
+        return AppStateModel.findOneAndUpdate({}, updateQuery)
+    },
+    async addEmail({ email, events }) {
+        let updateQuery = { $push: {} }
+        for (let e of events) {
+            updateQuery.$push['sendMailsTo.' + e] = email
+        }
+        return await AppStateModel.findOneAndUpdate({}, updateQuery)
+    },
     deleteTripType(name) {
         return AppStateModel.findOneAndUpdate({}, { $pull: { 'tripType': name } })
     },
