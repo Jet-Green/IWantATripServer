@@ -7,16 +7,6 @@ const UserModel = require('../models/user-model')
 const TripModel = require('../models/trip-model')
 
 module.exports = {
-    async updateEmails(updateQuery) {
-        return AppStateModel.findOneAndUpdate({}, updateQuery)
-    },
-    async addEmail({ email, events }) {
-        let updateQuery = { $push: {} }
-        for (let e of events) {
-            updateQuery.$push['sendMailsTo.' + e] = email
-        }
-        return await AppStateModel.findOneAndUpdate({}, updateQuery)
-    },
     deleteTripType(name) {
         return AppStateModel.findOneAndUpdate({}, { $pull: { 'tripType': name } })
     },
