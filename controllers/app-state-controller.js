@@ -4,20 +4,6 @@ module.exports = {
     dropDatabase(req, res, next) {
         return res.json(AppStateService.dropDatabase())
     },
-    async updateEmails(req, res, next) {
-        try {
-            return res.json(await AppStateService.updateEmails(req.body))
-        } catch (error) {
-            next(error)
-        }
-    },
-    async addEmail(req, res, next) {
-        try {
-            return res.json(await AppStateService.addEmail(req.body));
-        } catch (error) {
-            next(error)
-        }
-    },
     async deleteTripType(req, res, next) {
         try {
             return res.json(await AppStateService.deleteTripType(req.body.name))
