@@ -1,4 +1,5 @@
 const UserModel = require('../models/user-model');
+const AppStateModel = require('../models/app-state-model');
 
 module.exports = {
     fetchUsers(q) {
@@ -19,6 +20,15 @@ module.exports = {
         let { email, roles } = body
 
         return UserModel.findOneAndUpdate({ email }, { roles }, { new: true })
+    },
+    addEmail({ event, email }) {
+        return AppStateModel.findOneAndUpdate({ "sendMailsTo.type": event }, { $push: { 'sendMailsTo.$.emails': email } })
+    },
+    getEmails(event) {
+        return AppStateModel.findOne({ "sendMailsTo.type": event }, { "sendMailsTo.$": 1, _id: 0 })
+    },
+    deleteEmail({ event, email }) {
+        return AppStateModel.findOneAndUpdate({ "sendMailsTo.type": event }, { $pull: { "sendMailsTo.$.emails": email } })
     }
 }
 
