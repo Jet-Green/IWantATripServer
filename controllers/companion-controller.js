@@ -1,5 +1,8 @@
 const СompanionService = require('../service/companion-service')
 const LocationService = require('../service/location-service')
+
+const AppStateModel = require('../models/app-state-model')
+
 const { sendMail } = require('../middleware/mailer')
 
 module.exports = {
@@ -25,7 +28,10 @@ module.exports = {
             req.body.companion.startLocation = location
             const companionCb = await СompanionService.insertOne(req.body.companion)
 
-            sendMail(req.body.emailHtml, '', 'Создан попутчик')
+            let eventEmails = await AppStateModel.findOne({ 'sendMailsTo.type': 'CreateCompanion' }, { 'sendMailsTo.$': 1 })
+            let emailsFromDb = eventEmails.sendMailsTo[0].emails
+
+            sendMail(req.body.emailHtml, emailsFromDb, 'Создан попутчик')
 
             return res.json({ _id: companionCb._id })
         } catch (error) {

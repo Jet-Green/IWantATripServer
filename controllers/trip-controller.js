@@ -1,6 +1,9 @@
 const TripService = require('../service/trips-service.js')
 const LocationService = require('../service/location-service.js')
 
+const AppStateModel = require('../models/app-state-model.js')
+
+
 let EasyYandexS3 = require('easy-yandex-s3').default;
 const { sendMail } = require('../middleware/mailer')
 
@@ -105,10 +108,15 @@ module.exports = {
             trip.start = new Date(Number(trip.start)).toLocaleDateString("ru-RU")
             trip.end = new Date(Number(trip.end)).toLocaleDateString("ru-RU")
 
-            sendMail(req.body.emailHtml, req.body.emails, 'Создана поездка')
+            let eventEmails = await AppStateModel.findOne({ 'sendMailsTo.type': 'CreateTrip' }, { 'sendMailsTo.$': 1 })
+            let emailsFromDb = eventEmails.sendMailsTo[0].emails
+
+            // req.body.emails - это емейл пользователя
+            sendMail(req.body.emailHtml, [...req.body.emails, ...emailsFromDb], 'Создана поездка')
 
             return res.json({ _id: trip._id })
         } catch (error) {
+            console.log(error);
             next(error)
         }
     },

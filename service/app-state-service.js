@@ -5,7 +5,6 @@ const GuideElementModel = require('../models/guide-element-model')
 const TokenModel = require('../models/token-model')
 const UserModel = require('../models/user-model')
 const TripModel = require('../models/trip-model')
-const { getLocations } = require('../controllers/app-state-controller')
 
 module.exports = {
     deleteTripType(name) {

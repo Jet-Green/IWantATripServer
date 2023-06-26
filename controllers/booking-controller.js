@@ -1,12 +1,16 @@
 const BookingService = require('../service/booking-service')
 const { sendMail } = require('../middleware/mailer')
+const AppStateModel = require('../models/app-state-model')
 
 module.exports = {
     async create(req, res, next) {
         try {
             const bookingCb = await BookingService.insertOne(req.body.booking)
 
-            sendMail(req.body.emailHtml, '', 'Заказана поездка')
+            let eventEmails = await AppStateModel.findOne({ 'sendMailsTo.type': 'BookingTrip' }, { 'sendMailsTo.$': 1 })
+            let emailsFromDb = eventEmails.sendMailsTo[0].emails
+
+            sendMail(req.body.emailHtml, emailsFromDb, 'Заказана поездка')
 
             return res.json({ _id: bookingCb._id })
         } catch (err) {
