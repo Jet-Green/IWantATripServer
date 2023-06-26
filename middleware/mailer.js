@@ -44,7 +44,7 @@ module.exports = {
             subject: emailSubject,
             html: html,
         }
-
+        console.log(details)
         let r = await transporter.sendMail(details)
     }
 }

@@ -9,7 +9,7 @@ module.exports = {
 
             let eventEmails = await AppStateModel.findOne({ 'sendMailsTo.type': 'BookingTrip' }, { 'sendMailsTo.$': 1 })
             let emailsFromDb = eventEmails.sendMailsTo[0].emails
-
+            
             sendMail(req.body.emailHtml, emailsFromDb, 'Заказана поездка')
 
             return res.json({ _id: bookingCb._id })
