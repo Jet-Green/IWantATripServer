@@ -58,9 +58,7 @@ module.exports = {
         await TripModel.findOneAndUpdate({ _id: tripId }, { $push: { billsList: billFromDb._id } })
 
         let userId = bill.userInfo._id
-
-        sendMail(req.body.emailHtml, '', 'Куплена поездка')
-
+        
         return await UserModel.findOneAndUpdate({ _id: userId }, { $push: { boughtTrips: { ...bill } } })
     },
     async insertOne(trip) {
