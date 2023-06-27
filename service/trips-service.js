@@ -20,8 +20,8 @@ module.exports = {
 
         return bill.delete()
     },
-    async setPayment(_id) {
-        return await BillModel.findByIdAndUpdate(_id, { isBoughtNow: true })
+    async setPayment(bill) {
+        return await BillModel.findByIdAndUpdate(bill._id, { 'payment.amount': bill.payment.amount })
     },
     async getFullTripById(_id) {
         let trip = await TripModel.findById(_id)
