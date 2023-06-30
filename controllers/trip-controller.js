@@ -22,7 +22,7 @@ const locationService = require('../service/location-service.js');
 module.exports = {
     async setPayment(req, res, next) {
         try {
-            return res.json(await TripService.setPayment(req.query._id))
+            return res.json(await TripService.setPayment(req.body))
         } catch (error) {
             next(error)
         }

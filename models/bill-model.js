@@ -2,7 +2,9 @@ const { Schema, model } = require('mongoose')
 
 const BillSchema = new Schema({
     cart: Array,
-    isBoughtNow: { type: Boolean, default: false },
+    payment: {
+        amount: { type: Number, default: 0 },
+    },
     tripId: String,
     userInfo: { type: Object, default: {} }
 })
