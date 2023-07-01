@@ -22,6 +22,7 @@ const TripSchema = new Schema({
     isModerated: { type: Boolean, default: false },
     billsList: { type: Array, default: [] },
     creatorForm: { type: Array },
+    bonuses: Array,
 
     moderationMessage: { type: String, default: '' }
 })
