@@ -1,7 +1,7 @@
 // here all imports ${process.env.NODE_ENV}
 require('dotenv').config({ path: `${process.argv[process.argv.length - 1]}.env` })
 const express = require('express');
-import helmet from "helmet";
+const helmet = require('helmet')
 
 const cors = require('cors')
 const app = express()
