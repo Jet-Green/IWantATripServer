@@ -1,6 +1,6 @@
 const TripService = require('../service/trips-service.js')
 const LocationService = require('../service/location-service.js')
-
+const TripModel = require('../models/trip-model.js');
 const AppStateModel = require('../models/app-state-model.js')
 
 
@@ -61,13 +61,12 @@ module.exports = {
         try {
             let eventEmailsBuy = await AppStateModel.findOne({ 'sendMailsTo.type': 'BuyTrip' }, { 'sendMailsTo.$': 1 })
             let emailsFromDbBuy = eventEmailsBuy.sendMailsTo[0].emails
-            console.log(1,emailsFromDbBuy)
-            
-            sendMail(req.body.emailHtml,[req.body.emails,...emailsFromDbBuy], 'Куплена поездка')
+            let authorEmail = await TripModel.findById(req.query._id).populate('author', {email: 1})
+            console.log([authorEmail.author.email,...emailsFromDbBuy])
+            sendMail(req.body.emailHtml,[authorEmail.author.email,...emailsFromDbBuy], 'Куплена поездка')
 
             return res.json(await TripService.buyTrip(req))
         } catch (error) {
-            console.log(error)
             next(error)
         }
     },
