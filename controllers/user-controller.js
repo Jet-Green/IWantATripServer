@@ -92,5 +92,19 @@ module.exports = {
         } catch (error) {
             next(error)
         }
+    },
+    async addTripCalc(req, res, next) {
+        try {
+            return res.json(await UserService.addTripCalc(req.body))
+        } catch (error) {
+            next(error)
+        }
+    },
+    async deleteTripCalc(req, res, next) {
+        try {
+            return res.json(await UserService.deleteTripCalc(req.body))
+        } catch (error) {
+            next(error)
+        }
     }
 }

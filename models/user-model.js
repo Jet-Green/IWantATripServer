@@ -25,6 +25,8 @@ const UserSchema = new Schema({
         type: Object,
         default: {}
     },
+
+    tripCalc: [{ type: Schema.Types.ObjectId, ref: 'TripCalc' }]
 })
 
 module.exports = model('User', UserSchema);
