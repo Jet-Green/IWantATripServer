@@ -21,7 +21,8 @@ const TripSchema = new Schema({
     // меняет модератор
     isModerated: { type: Boolean, default: false },
     billsList: { type: Array, default: [] },
-    creatorForm: { type: Array },
+    author: { type: Schema.Types.ObjectId, ref: 'User' },
+    bonuses: Array,
 
     moderationMessage: { type: String, default: '' }
 })
