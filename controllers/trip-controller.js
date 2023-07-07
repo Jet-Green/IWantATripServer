@@ -61,9 +61,9 @@ module.exports = {
         try {
             let eventEmailsBuy = await AppStateModel.findOne({ 'sendMailsTo.type': 'BuyTrip' }, { 'sendMailsTo.$': 1 })
             let emailsFromDbBuy = eventEmailsBuy.sendMailsTo[0].emails
-            let authorEmail = await TripModel.findById(req.query._id).populate('author', {email: 1})
-            console.log([authorEmail.author.email,...emailsFromDbBuy])
-            sendMail(req.body.emailHtml,[authorEmail.author.email,...emailsFromDbBuy], 'Куплена поездка')
+            let authorEmail = await TripModel.findById(req.query._id).populate('author', { email: 1 })
+
+            sendMail(req.body.emailHtml, [authorEmail.author.email, ...emailsFromDbBuy], 'Куплена поездка')
 
             return res.json(await TripService.buyTrip(req))
         } catch (error) {
