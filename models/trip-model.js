@@ -2,11 +2,10 @@ const { Schema, model } = require('mongoose')
 
 const TripSchema = new Schema({
     name: { type: String },
-    // start: { type: Number },
-    // end: { type: Number },
-    dates: Array,
+    start: { type: Number },
+    end: { type: Number },
     maxPeople: { type: Number },
-    duration: { type: String },
+    duration: { type: String},
     images: { type: Array },
     pdfs: { type: Array },
     tripRoute: { type: String },
