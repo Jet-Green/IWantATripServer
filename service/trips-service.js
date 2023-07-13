@@ -24,7 +24,7 @@ module.exports = {
         return await BillModel.findByIdAndUpdate(bill._id, { 'payment.amount': bill.payment.amount })
     },
     async getFullTripById(_id) {
-        let trip = await TripModel.findById(_id).populate('author', {fullinfo: 1})
+        let trip = await TripModel.findById(_id).populate('author', { fullinfo: 1 })
 
         trip.billsList = await BillModel.find({ _id: { $in: trip.billsList } })
 
@@ -58,7 +58,7 @@ module.exports = {
         await TripModel.findOneAndUpdate({ _id: tripId }, { $push: { billsList: billFromDb._id } })
 
         let userId = bill.userInfo._id
-        
+
         return await UserModel.findOneAndUpdate({ _id: userId }, { $push: { boughtTrips: { ...bill } } })
     },
     async insertOne(trip) {
@@ -214,7 +214,7 @@ module.exports = {
         return TripModel.findByIdAndUpdate(_id, { isHidden: v })
     },
     async findForModeration() {
-        return TripModel.find({ isModerated: false })
+        return TripModel.find({ isModerated: false }).populate('author', { fullinfo: 1 })
     },
     async moderate(_id, v) {
         return TripModel.findByIdAndUpdate(_id, { isModerated: v })
