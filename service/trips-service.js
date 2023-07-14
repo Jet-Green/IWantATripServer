@@ -13,6 +13,20 @@ const LocationService = require('./location-service.js')
 const _ = require('lodash')
 
 module.exports = {
+    async createManyByDates({ dates, parentId }) {
+        let parent = await TripModel.findById(parentId)
+
+        let createdIds = []
+        for (let d of dates) {
+            let r = await TripModel.create({ start: d.start, end: d.end, parent: parentId })
+            parent.children.push(r._id)
+            createdIds.push(r._id)
+        }
+
+        await parent.save()
+
+        return createdIds
+    },
     async deletePayment(_id) {
         let bill = await BillModel.findById(_id)
 
@@ -232,7 +246,7 @@ module.exports = {
         await UserModel.findById(_id, { "trips": 1 }).then(data => {
             tripsIdArray = data.trips
         })
-        await TripModel.find({ _id: { $in: tripsIdArray } }).then((data) => {
+        await TripModel.find({ _id: { $in: tripsIdArray } }).populate('parent').then((data) => {
             tripsInfoArray = data
         })
 

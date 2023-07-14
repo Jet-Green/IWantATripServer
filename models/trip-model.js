@@ -5,7 +5,7 @@ const TripSchema = new Schema({
     start: { type: Number },
     end: { type: Number },
     maxPeople: { type: Number },
-    duration: { type: String},
+    duration: { type: String },
     images: { type: Array },
     pdfs: { type: Array },
     tripRoute: { type: String },
@@ -17,14 +17,17 @@ const TripSchema = new Schema({
     tripType: { type: String },
     fromAge: { type: String },
     // меняет только пользователь
-    isHidden: { type: Boolean, default: false },
+    isHidden: { type: Boolean },
     // меняет модератор
-    isModerated: { type: Boolean, default: false },
-    billsList: { type: Array, default: [] },
+    isModerated: { type: Boolean },
+    billsList: { type: Array },
     author: { type: Schema.Types.ObjectId, ref: 'User' },
     bonuses: Array,
 
-    moderationMessage: { type: String, default: '' }
+    moderationMessage: { type: String, },
+
+    children: { type: [Schema.Types.ObjectId], ref: 'Trip' },
+    parent: { type: Schema.Types.ObjectId, ref: 'Trip' },
 })
 
 module.exports = model('Trip', TripSchema);
