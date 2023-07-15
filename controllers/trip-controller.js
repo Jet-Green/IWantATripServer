@@ -1,6 +1,6 @@
 const TripService = require('../service/trips-service.js')
 const LocationService = require('../service/location-service.js')
-
+const TripModel = require('../models/trip-model.js');
 const AppStateModel = require('../models/app-state-model.js')
 
 
@@ -17,13 +17,12 @@ let s3 = new EasyYandexS3({
     debug: false, // Дебаг в консоли
 });
 
-const mailer = require('../middleware/mailer');
 const locationService = require('../service/location-service.js');
 
 module.exports = {
     async setPayment(req, res, next) {
         try {
-            return res.json(await TripService.setPayment(req.query._id))
+            return res.json(await TripService.setPayment(req.body))
         } catch (error) {
             next(error)
         }
@@ -60,6 +59,12 @@ module.exports = {
     },
     async buyTrip(req, res, next) {
         try {
+            let eventEmailsBuy = await AppStateModel.findOne({ 'sendMailsTo.type': 'BuyTrip' }, { 'sendMailsTo.$': 1 })
+            let emailsFromDbBuy = eventEmailsBuy.sendMailsTo[0].emails
+            let authorEmail = await TripModel.findById(req.query._id).populate('author', {email: 1})
+            console.log([authorEmail.author.email,...emailsFromDbBuy])
+            sendMail(req.body.emailHtml,[authorEmail.author.email,...emailsFromDbBuy], 'Куплена поездка')
+
             return res.json(await TripService.buyTrip(req))
         } catch (error) {
             next(error)
@@ -108,11 +113,11 @@ module.exports = {
             trip.start = new Date(Number(trip.start)).toLocaleDateString("ru-RU")
             trip.end = new Date(Number(trip.end)).toLocaleDateString("ru-RU")
 
-            let eventEmails = await AppStateModel.findOne({ 'sendMailsTo.type': 'CreateTrip' }, { 'sendMailsTo.$': 1 })
-            let emailsFromDb = eventEmails.sendMailsTo[0].emails
+            let eventEmailsBook = await AppStateModel.findOne({ 'sendMailsTo.type': 'CreateTrip' }, { 'sendMailsTo.$': 1 })
+            let emailsFromDbBook = eventEmailsBook.sendMailsTo[0].emails
 
             // req.body.emails - это емейл пользователя
-            sendMail(req.body.emailHtml, [...req.body.emails, ...emailsFromDb], 'Создана поездка')
+            sendMail(req.body.emailHtml, [...req.body.emails, ...emailsFromDbBook], 'Создана поездка')
 
             return res.json({ _id: trip._id })
         } catch (error) {

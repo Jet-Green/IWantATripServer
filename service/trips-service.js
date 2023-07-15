@@ -20,11 +20,11 @@ module.exports = {
 
         return bill.delete()
     },
-    async setPayment(_id) {
-        return await BillModel.findByIdAndUpdate(_id, { isBoughtNow: true })
+    async setPayment(bill) {
+        return await BillModel.findByIdAndUpdate(bill._id, { 'payment.amount': bill.payment.amount })
     },
     async getFullTripById(_id) {
-        let trip = await TripModel.findById(_id)
+        let trip = await TripModel.findById(_id).populate('author', { fullinfo: 1 })
 
         trip.billsList = await BillModel.find({ _id: { $in: trip.billsList } })
 
@@ -58,8 +58,6 @@ module.exports = {
         await TripModel.findOneAndUpdate({ _id: tripId }, { $push: { billsList: billFromDb._id } })
 
         let userId = bill.userInfo._id
-
-        sendMail(req.body.emailHtml, '', 'Куплена поездка')
 
         return await UserModel.findOneAndUpdate({ _id: userId }, { $push: { boughtTrips: { ...bill } } })
     },
@@ -216,7 +214,7 @@ module.exports = {
         return TripModel.findByIdAndUpdate(_id, { isHidden: v })
     },
     async findForModeration() {
-        return TripModel.find({ isModerated: false })
+        return TripModel.find({ isModerated: false }).populate('author', { fullinfo: 1 })
     },
     async moderate(_id, v) {
         return TripModel.findByIdAndUpdate(_id, { isModerated: v })
@@ -225,7 +223,7 @@ module.exports = {
         return TripModel.findByIdAndUpdate(tripId, { isModerated: false, moderationMessage: msg })
     },
     async findById(_id) {
-        return TripModel.findById(_id)
+        return TripModel.findById(_id).populate('author')
     },
     async createdTripsInfo(_id) {
         let tripsIdArray = []
