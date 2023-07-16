@@ -248,6 +248,25 @@ module.exports = {
         })
         await TripModel.find({ _id: { $in: tripsIdArray } }).populate('parent').then((data) => {
             tripsInfoArray = data
+            let result = []
+            for (let trip of data) {
+                if (trip.parent) {
+                    let originalId = trip._id
+                    let parentId = trip.parent._id
+                    let { start, end } = trip
+                    let isModerated = trip.parent.isModerated
+
+                    Object.assign(trip, trip.parent)
+                    trip.parent = parentId
+                    trip.children = []
+                    trip._id = originalId
+                    trip.start = start
+                    trip.end = end
+                    trip.isModerated = isModerated
+                }
+
+                result.push(trip)
+            }
         })
 
         return tripsInfoArray

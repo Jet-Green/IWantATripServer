@@ -219,6 +219,7 @@ module.exports = {
             // console.log(req.query._id)
             return res.json(await TripService.createdTripsInfo(req.query._id))
         } catch (error) {
+            console.log(error);
             next(error)
         }
     },
