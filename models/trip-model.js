@@ -17,9 +17,9 @@ const TripSchema = new Schema({
     tripType: { type: String },
     fromAge: { type: String },
     // меняет только пользователь
-    isHidden: { type: Boolean },
+    isHidden: { type: Boolean, default: false },
     // меняет модератор
-    isModerated: { type: Boolean },
+    isModerated: { type: Boolean, default: false },
     billsList: { type: Array },
     author: { type: Schema.Types.ObjectId, ref: 'User' },
     bonuses: Array,
