@@ -38,7 +38,7 @@ module.exports = {
         return await BillModel.findByIdAndUpdate(bill._id, { 'payment.amount': bill.payment.amount })
     },
     async getFullTripById(_id) {
-        let trip = await TripModel.findById(_id).populate('author', { fullinfo: 1 })
+        let trip = await TripModel.findById(_id).populate('author', { fullinfo: 1 }).populate('children', { start: 1, end: 1 }).populate("billsList")
 
         trip.billsList = await BillModel.find({ _id: { $in: trip.billsList } })
 
@@ -73,7 +73,7 @@ module.exports = {
 
         let userId = bill.userInfo._id
 
-        return await UserModel.findOneAndUpdate({ _id: userId }, { $push: { boughtTrips: { ...bill } } })
+        return await UserModel.findOneAndUpdate({ _id: userId }, { $push: { boughtTrips: billFromDb._id } })
     },
     async insertOne(trip) {
         return TripModel.create(trip)
