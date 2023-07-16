@@ -145,6 +145,7 @@ module.exports = {
         let query = {
             $and: [
                 { isHidden: false, isModerated: true },
+                { "parent": { $exists: false } }
             ]
         }
 
@@ -181,7 +182,7 @@ module.exports = {
             query.$and.push({ start: { $gte: Date.now() } })
         }
 
-        const cursor = TripModel.find(query, null, { sort: 'start' }).skip(skip).limit(limit).cursor();
+        const cursor = TripModel.find(query, null, { sort: 'start' }).populate("children", { start: 1, end: 1 }).skip(skip).limit(limit).cursor();
 
         const results = [];
         for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
