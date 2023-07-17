@@ -67,8 +67,8 @@ module.exports = {
             let eventEmailsBuy = await AppStateModel.findOne({ 'sendMailsTo.type': 'BuyTrip' }, { 'sendMailsTo.$': 1 })
             let emailsFromDbBuy = eventEmailsBuy.sendMailsTo[0].emails
             let authorEmail = await TripModel.findById(req.query._id).populate('author', { email: 1 })
-            console.log([authorEmail.author.email, ...emailsFromDbBuy])
-            sendMail(req.body.emailHtml, [authorEmail.author.email, ...emailsFromDbBuy], 'Куплена поездка')
+
+            sendMail(req.body.emailHtml, [authorEmail?.author?.email, ...emailsFromDbBuy], 'Куплена поездка')
 
             return res.json(await TripService.buyTrip(req))
         } catch (error) {
@@ -126,7 +126,6 @@ module.exports = {
 
             return res.json({ _id: trip._id })
         } catch (error) {
-            console.log(error);
             next(error)
         }
     },
@@ -216,13 +215,9 @@ module.exports = {
     },
     async createdTripsInfo(req, res, next) {
         try {
-            // console.log(req.query._id)
             return res.json(await TripService.createdTripsInfo(req.query._id))
         } catch (error) {
-            console.log(error);
             next(error)
         }
     },
-
-
 }

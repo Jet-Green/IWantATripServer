@@ -5,7 +5,7 @@ const BillSchema = new Schema({
     payment: {
         amount: { type: Number, default: 0 },
     },
-    tripId: String,
+    tripId: { type: Schema.Types.ObjectId, ref: 'Trip' },
     userInfo: { type: Object, default: {} }
 })
 

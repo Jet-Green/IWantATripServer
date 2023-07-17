@@ -18,7 +18,7 @@ module.exports = {
 
         let createdIds = []
         for (let d of dates) {
-            let r = await TripModel.create({ start: d.start, end: d.end, parent: parentId })
+            let r = await TripModel.create({ start: d.start, end: d.end, parent: parentId, author: d.author })
             parent.children.push(r._id)
             createdIds.push(r._id)
         }
