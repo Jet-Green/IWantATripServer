@@ -106,5 +106,13 @@ module.exports = {
         } catch (error) {
             next(error)
         }
+    },
+    async getBoughtTrips(req, res, next) {
+        try {
+            return res.json(await UserService.getBoughtTrips(req.query.user_id))
+        } catch (error) {
+            console.log(error);
+            next(error)
+        }
     }
 }
