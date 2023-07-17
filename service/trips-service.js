@@ -13,6 +13,20 @@ const LocationService = require('./location-service.js')
 const _ = require('lodash')
 
 module.exports = {
+    async createManyByDates({ dates, parentId }) {
+        let parent = await TripModel.findById(parentId)
+
+        let createdIds = []
+        for (let d of dates) {
+            let r = await TripModel.create({ start: d.start, end: d.end, parent: parentId, author: d.author })
+            parent.children.push(r._id)
+            createdIds.push(r._id)
+        }
+
+        await parent.save()
+
+        return createdIds
+    },
     async deletePayment(_id) {
         let bill = await BillModel.findById(_id)
 
@@ -20,14 +34,27 @@ module.exports = {
 
         return bill.delete()
     },
-    async setPayment(_id) {
-        return await BillModel.findByIdAndUpdate(_id, { isBoughtNow: true })
+    async setPayment(bill) {
+        return await BillModel.findByIdAndUpdate(bill._id, { 'payment.amount': bill.payment.amount })
     },
     async getFullTripById(_id) {
-        let trip = await TripModel.findById(_id)
+        let trip = await TripModel.findById(_id).populate('author', { fullinfo: 1 }).populate('children', { start: 1, end: 1 }).populate('parent')
+        if (trip.parent) {
+            let originalId = trip._id
+            let parentId = trip.parent._id
+            let { start, end, billsList } = trip
+            let isModerated = trip.parent.isModerated
 
-        trip.billsList = await BillModel.find({ _id: { $in: trip.billsList } })
-
+            Object.assign(trip, trip.parent)
+            trip.parent = parentId
+            trip.children = []
+            trip._id = originalId
+            trip.start = start
+            trip.end = end
+            trip.isModerated = isModerated
+            trip.billsList = billsList
+        }
+        await trip.populate('billsList')
         return trip
     },
     async getCustomers(customersIds) {
@@ -59,9 +86,7 @@ module.exports = {
 
         let userId = bill.userInfo._id
 
-        sendMail(req.body.emailHtml, '', 'Куплена поездка')
-
-        return await UserModel.findOneAndUpdate({ _id: userId }, { $push: { boughtTrips: { ...bill } } })
+        return await UserModel.findOneAndUpdate({ _id: userId }, { $push: { boughtTrips: billFromDb._id } })
     },
     async insertOne(trip) {
         return TripModel.create(trip)
@@ -133,6 +158,7 @@ module.exports = {
         let query = {
             $and: [
                 { isHidden: false, isModerated: true },
+                { "parent": { $exists: false } }
             ]
         }
 
@@ -169,7 +195,7 @@ module.exports = {
             query.$and.push({ start: { $gte: Date.now() } })
         }
 
-        const cursor = TripModel.find(query, null, { sort: 'start' }).skip(skip).limit(limit).cursor();
+        const cursor = TripModel.find(query, null, { sort: 'start' }).populate("children", { start: 1, end: 1 }).skip(skip).limit(limit).cursor();
 
         const results = [];
         for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
@@ -216,7 +242,10 @@ module.exports = {
         return TripModel.findByIdAndUpdate(_id, { isHidden: v })
     },
     async findForModeration() {
-        return TripModel.find({ isModerated: false })
+        return TripModel.find({
+            $and: [{ isModerated: false },
+            { "parent": { $exists: false } }]
+        }).populate('author', { fullinfo: 1 })
     },
     async moderate(_id, v) {
         return TripModel.findByIdAndUpdate(_id, { isModerated: v })
@@ -225,7 +254,7 @@ module.exports = {
         return TripModel.findByIdAndUpdate(tripId, { isModerated: false, moderationMessage: msg })
     },
     async findById(_id) {
-        return TripModel.findById(_id)
+        return TripModel.findById(_id).populate('author')
     },
     async createdTripsInfo(_id) {
         let tripsIdArray = []
@@ -234,8 +263,27 @@ module.exports = {
         await UserModel.findById(_id, { "trips": 1 }).then(data => {
             tripsIdArray = data.trips
         })
-        await TripModel.find({ _id: { $in: tripsIdArray } }).then((data) => {
-            tripsInfoArray = data
+        await TripModel.find({ _id: { $in: tripsIdArray } }).populate('parent').then((data) => {
+            let result = []
+            for (let trip of data) {
+                if (trip.parent) {
+                    let originalId = trip._id
+                    let parentId = trip.parent._id
+                    let { start, end } = trip
+                    let isModerated = trip.parent.isModerated
+
+                    Object.assign(trip, trip.parent)
+                    trip.parent = parentId
+                    trip.children = []
+                    trip._id = originalId
+                    trip.start = start
+                    trip.end = end
+                    trip.isModerated = isModerated
+                }
+
+                result.push(trip)
+            }
+            tripsInfoArray = result
         })
 
         return tripsInfoArray

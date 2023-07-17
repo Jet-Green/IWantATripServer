@@ -18,13 +18,15 @@ const UserSchema = new Schema({
     trips: { type: Array },
     guideElements: { type: Array },
     createdCompanions: { type: Array },
-    boughtTrips: Array,
+    boughtTrips: [{ type: Schema.Types.ObjectId, ref: 'Bill' }],
 
     roles: { type: Array, default: ['user'] },
     userLocation: {
         type: Object,
         default: {}
     },
+
+    tripCalc: [{ type: Schema.Types.ObjectId, ref: 'TripCalc' }]
 })
 
 module.exports = model('User', UserSchema);

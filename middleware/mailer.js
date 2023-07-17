@@ -40,11 +40,10 @@ module.exports = {
 
         let details = {
             from: 'qbit.mailing@gmail.com',
-            to: [...emails, 'grishadzyin@gmail.com'],
+            to: [...emails],
             subject: emailSubject,
             html: html,
         }
-
         let r = await transporter.sendMail(details)
     }
 }
