@@ -38,10 +38,23 @@ module.exports = {
         return await BillModel.findByIdAndUpdate(bill._id, { 'payment.amount': bill.payment.amount })
     },
     async getFullTripById(_id) {
-        let trip = await TripModel.findById(_id).populate('author', { fullinfo: 1 }).populate('children', { start: 1, end: 1 }).populate("billsList")
+        let trip = await TripModel.findById(_id).populate('author', { fullinfo: 1 }).populate('children', { start: 1, end: 1 }).populate('parent')
+        if (trip.parent) {
+            let originalId = trip._id
+            let parentId = trip.parent._id
+            let { start, end, billsList } = trip
+            let isModerated = trip.parent.isModerated
 
-        trip.billsList = await BillModel.find({ _id: { $in: trip.billsList } })
-
+            Object.assign(trip, trip.parent)
+            trip.parent = parentId
+            trip.children = []
+            trip._id = originalId
+            trip.start = start
+            trip.end = end
+            trip.isModerated = isModerated
+            trip.billsList = billsList
+        }
+        await trip.populate('billsList')
         return trip
     },
     async getCustomers(customersIds) {

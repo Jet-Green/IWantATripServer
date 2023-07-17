@@ -20,7 +20,7 @@ const TripSchema = new Schema({
     isHidden: { type: Boolean, default: false },
     // меняет модератор
     isModerated: { type: Boolean, default: false },
-    billsList: { type: Array },
+    billsList: { type: [Schema.Types.ObjectId], ref: 'Bill' },
     author: { type: Schema.Types.ObjectId, ref: 'User' },
     bonuses: Array,
 
