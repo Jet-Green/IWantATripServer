@@ -123,7 +123,6 @@ module.exports = {
 
             // req.body.emails - это емейл пользователя
             sendMail(req.body.emailHtml, [...req.body.emails, ...emailsFromDbBook], 'Создан тур')
-            console.log(req.body.emailHtml);
             return res.json({ _id: trip._id })
         } catch (error) {
             next(error)
