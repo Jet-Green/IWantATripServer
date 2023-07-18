@@ -36,14 +36,14 @@ module.exports = {
         //         emailSubject = 'Создана поездка'
         //         break;
         // }
-
-
-        let details = {
-            from: 'qbit.mailing@gmail.com',
-            to: [...emails],
-            subject: emailSubject,
-            html: html,
+        if (emails.length) {
+            let details = {
+                from: 'qbit.mailing@gmail.com',
+                to: [...emails],
+                subject: emailSubject,
+                html: html,
+            }
+            let r = await transporter.sendMail(details)
         }
-        let r = await transporter.sendMail(details)
     }
 }
