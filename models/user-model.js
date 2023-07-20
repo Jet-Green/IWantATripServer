@@ -18,7 +18,7 @@ const UserSchema = new Schema({
     trips: { type: Array },
     guideElements: { type: Array },
     createdCompanions: { type: Array },
-    boughtTrips: Array,
+    boughtTrips: [{ type: Schema.Types.ObjectId, ref: 'Bill' }],
 
     roles: { type: Array, default: ['user'] },
     userLocation: {

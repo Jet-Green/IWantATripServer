@@ -34,4 +34,7 @@ router.get('/get-full-trip', tripController.getFullTripById)
 router.post('/set-payment', tripController.setPayment)
 router.get('/delete-payment', tripController.deletePayment)
 
+
+router.post('/create-many-by-dates', tripController.createManyByDates)
+
 module.exports = router

@@ -21,4 +21,6 @@ router.post('/reset-password', userController.resetPassword)
 
 router.get('/clear-users', userController.clearUsers)
 
+router.get('/get-bought-trips', userController.getBoughtTrips)
+
 module.exports = router

@@ -1,7 +1,7 @@
 // here all imports ${process.env.NODE_ENV}
 require('dotenv').config({ path: `${process.argv[process.argv.length - 1]}.env` })
 const express = require('express');
-const helmet = require('helmet')
+// const helmet = require('helmet')
 
 const cors = require('cors')
 const app = express()
@@ -24,7 +24,7 @@ const posterRouter = require('./routers/poster-router')
 
 
 app.use(history())
-app.use(helmet());
+// app.use(helmet());
 
 // here all .use
 app.use(cors({

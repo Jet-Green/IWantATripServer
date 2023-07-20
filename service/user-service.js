@@ -187,5 +187,33 @@ module.exports = {
     async deleteTripCalc({ userId, tripCalcId }) {
         await UserModel.findByIdAndUpdate(userId, { $pull: { tripCalc: tripCalcId } })
         return await TripCalcModel.findByIdAndDelete(tripCalcId)
+    },
+    async getBoughtTrips(userId) {
+        let user = await UserModel.findById(userId).populate('boughtTrips')
+        let { boughtTrips } = user
+
+        let result = []
+        for (let bill of boughtTrips) {
+            await bill.populate('tripId')
+            await bill.tripId.populate('parent')
+
+            if (bill.tripId.parent) {
+                let originalId = bill.tripId._id
+                let parentId = bill.tripId.parent._id
+                let { start, end } = bill.tripId
+                let isModerated = bill.tripId.parent.isModerated
+
+                Object.assign(bill.tripId, bill.tripId.parent)
+                bill.tripId.parent = parentId
+                bill.tripId.children = []
+                bill.tripId._id = originalId
+                bill.tripId.start = start
+                bill.tripId.end = end
+                bill.tripId.isModerated = isModerated
+            }
+
+            result.push(bill)
+        }
+        return result
     }
 }
