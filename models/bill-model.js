@@ -6,7 +6,14 @@ const BillSchema = new Schema({
         amount: { type: Number, default: 0 },
     },
     tripId: { type: Schema.Types.ObjectId, ref: 'Trip' },
-    userInfo: { type: Object, default: {} }
+    userInfo: {
+        phone: String,
+        fullname: String,
+    },
+    touristsList: [{
+        fullname: String,
+        phone: String
+    }]
 })
 
 module.exports = model('Bill', BillSchema);
