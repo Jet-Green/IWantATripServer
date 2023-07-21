@@ -303,4 +303,9 @@ module.exports = {
 
         return tripsInfoArray
     },
+    async updateBillsTourists({ _id, touristsList }) {
+        // console.log(_id, touristsList)
+        console.log(touristsList);
+        return BillModel.findOneAndUpdate(_id, { 'touristsList': touristsList })
+    }
 }

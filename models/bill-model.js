@@ -12,7 +12,8 @@ const BillSchema = new Schema({
     },
     touristsList: [{
         fullname: String,
-        phone: String
+        phone: String,
+        _id: false,
     }]
 })
 

@@ -222,4 +222,11 @@ module.exports = {
             next(error)
         }
     },
+    async updateBillsTourists(req, res, next) {
+        try {
+            return res.json(await TripService.updateBillsTourists(req.body))
+        } catch (error) {
+            next(error)
+        }
+    }
 }
