@@ -305,7 +305,8 @@ module.exports = {
     },
     async updateBillsTourists({ _id, touristsList }) {
         // console.log(_id, touristsList)
-        console.log(touristsList);
-        return BillModel.findOneAndUpdate(_id, { 'touristsList': touristsList })
+        let bill = await BillModel.findById(_id)
+        bill.touristsList = touristsList
+        return bill.save()
     }
 }
