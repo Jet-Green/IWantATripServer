@@ -65,7 +65,8 @@ module.exports = {
     async buyTrip(req, res, next) {
         try {
             let eventEmailsBuy = await AppStateModel.findOne({ 'sendMailsTo.type': 'BuyTrip' }, { 'sendMailsTo.$': 1 })
-            let emailsFromDbBuy = eventEmailsBuy.sendMailsTo[0].emails
+            let emailsFromDbBuy = eventEmailsBuy.sendMailsTo[0]?.emails
+
             let authorEmail = await TripModel.findById(req.query._id).populate('author', { email: 1 })
 
             sendMail(req.body.emailHtml, [authorEmail?.author?.email, ...emailsFromDbBuy], 'Куплена поездка')
@@ -95,8 +96,9 @@ module.exports = {
         try {
             const _id = req.body._id
 
-            return await TripService.deleteOne(_id);
+            return await TripService.deleteOne(_id, s3);
         } catch (error) {
+            console.log(error);
             next(error)
         }
     },
