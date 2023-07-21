@@ -98,6 +98,7 @@ module.exports = {
 
             return await TripService.deleteOne(_id, s3);
         } catch (error) {
+            console.log(error);
             next(error)
         }
     },

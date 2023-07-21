@@ -142,8 +142,15 @@ module.exports = {
             if (tripToDelete.billsList.length > 0) {
                 throw ApiError.BadRequest('Нельзя удалять купленные туры')
             }
-
-            await UserService.update({ $pull: { trips: _id } })
+            let childrenIds = []
+            for (let ch of tripToDelete.children) {
+                await TripModel.findByIdAndDelete(ch)
+                // если так не сделать, то вместо String получаем new ObjectId("64ba6635a5f641523c785c55")
+                childrenIds.push(ch.toString())
+            }
+            await UserModel.findByIdAndUpdate(tripToDelete.author, {
+                $pull: { trips: { $in: [_id, ...childrenIds] } }
+            })
 
             let images = tripToDelete.images
             // multer.deleteImages(images)
