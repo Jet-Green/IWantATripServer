@@ -135,20 +135,28 @@ module.exports = {
     async deleteMany() {
         return TripModel.deleteMany({})
     },
-    async deleteOne(_id) {
+    async deleteOne(_id, s3) {
         let tripToDelete = await TripModel.findById(_id)
+        if (tripToDelete) {
+            // if bought by user
+            if (tripToDelete.billsList.length > 0) {
+                throw ApiError.BadRequest('Нельзя удалять купленные туры')
+            }
 
-        // if bought by user
-        if (tripToDelete.billsList.length > 0) {
-            throw ApiError.BadRequest('Нельзя удалять купленные туры')
+            await UserService.update({ $pull: { trips: _id } })
+
+            let images = tripToDelete.images
+            // multer.deleteImages(images)
+            for (let image of images) {
+                let s = image.split('/')
+                let filename = s[s.length - 1]
+
+                let remove = await s3.Remove('/iwat/' + filename)
+            }
+
+            return tripToDelete.remove()
         }
-
-        await UserService.update({ $pull: { trips: _id } })
-
-        let images = tripToDelete.images
-        multer.deleteImages(images)
-
-        return tripToDelete.remove()
+        return null
 
     },
     async findMany(sitePage, lon, lat, strQuery, start, end) {

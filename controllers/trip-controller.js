@@ -96,7 +96,7 @@ module.exports = {
         try {
             const _id = req.body._id
 
-            return await TripService.deleteOne(_id);
+            return await TripService.deleteOne(_id, s3);
         } catch (error) {
             next(error)
         }
