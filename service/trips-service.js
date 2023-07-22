@@ -35,7 +35,7 @@ module.exports = {
         return bill.delete()
     },
     async setPayment(bill) {
-        return await BillModel.findByIdAndUpdate(bill._id, { 'payment.amount': bill.payment.amount })
+        return await BillModel.findByIdAndUpdate(bill._id,{$inc:{ 'payment.amount': bill.payment.amount }} )
     },
     async getFullTripById(_id) {
         let trip = await TripModel.findById(_id).populate('author', { fullinfo: 1 }).populate('children', { start: 1, end: 1 }).populate('parent')
@@ -135,20 +135,35 @@ module.exports = {
     async deleteMany() {
         return TripModel.deleteMany({})
     },
-    async deleteOne(_id) {
+    async deleteOne(_id, s3) {
         let tripToDelete = await TripModel.findById(_id)
+        if (tripToDelete) {
+            // if bought by user
+            if (tripToDelete.billsList.length > 0) {
+                throw ApiError.BadRequest('Нельзя удалять купленные туры')
+            }
+            let childrenIds = []
+            for (let ch of tripToDelete.children) {
+                await TripModel.findByIdAndDelete(ch)
+                // если так не сделать, то вместо String получаем new ObjectId("64ba6635a5f641523c785c55")
+                childrenIds.push(ch.toString())
+            }
+            await UserModel.findByIdAndUpdate(tripToDelete.author, {
+                $pull: { trips: { $in: [_id, ...childrenIds] } }
+            })
 
-        // if bought by user
-        if (tripToDelete.billsList.length > 0) {
-            throw ApiError.BadRequest('Нельзя удалять купленные туры')
+            let images = tripToDelete.images
+            // multer.deleteImages(images)
+            for (let image of images) {
+                let s = image.split('/')
+                let filename = s[s.length - 1]
+
+                let remove = await s3.Remove('/iwat/' + filename)
+            }
+
+            return tripToDelete.remove()
         }
-
-        await UserService.update({ $pull: { trips: _id } })
-
-        let images = tripToDelete.images
-        multer.deleteImages(images)
-
-        return tripToDelete.remove()
+        return null
 
     },
     async findMany(sitePage, lon, lat, strQuery, start, end) {
@@ -288,4 +303,10 @@ module.exports = {
 
         return tripsInfoArray
     },
+    async updateBillsTourists({ _id, touristsList }) {
+        // console.log(_id, touristsList)
+        let bill = await BillModel.findById(_id)
+        bill.touristsList = touristsList
+        return bill.save()
+    }
 }

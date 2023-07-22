@@ -21,6 +21,7 @@ const bookingRouter = require('./routers/booking-router');
 const locationRouter = require('./routers/location-router');
 const adminRouter = require('./routers/admin-router');
 const posterRouter = require('./routers/poster-router')
+const serviceFunctionsRouter = require('./routers/service-functions-router')
 
 
 app.use(history())
@@ -58,6 +59,8 @@ app.use('/location', locationRouter)
 app.use('/posters', posterRouter)
 
 app.use('/admin', adminRouter)
+
+app.use('/service-functions', serviceFunctionsRouter)
 
 // use error middleware last
 app.use(errorMiddleware)
