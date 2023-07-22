@@ -96,8 +96,9 @@ module.exports = {
         try {
             const _id = req.body._id
 
-            return await TripService.deleteOne(_id);
+            return await TripService.deleteOne(_id, s3);
         } catch (error) {
+            console.log(error);
             next(error)
         }
     },
@@ -221,4 +222,11 @@ module.exports = {
             next(error)
         }
     },
+    async updateBillsTourists(req, res, next) {
+        try {
+            return res.json(await TripService.updateBillsTourists(req.body))
+        } catch (error) {
+            next(error)
+        }
+    }
 }
