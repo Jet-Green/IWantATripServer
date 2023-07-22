@@ -35,7 +35,7 @@ module.exports = {
         return bill.delete()
     },
     async setPayment(bill) {
-        return await BillModel.findByIdAndUpdate(bill._id, { 'payment.amount': bill.payment.amount })
+        return await BillModel.findByIdAndUpdate(bill._id,{$inc:{ 'payment.amount': bill.payment.amount }} )
     },
     async getFullTripById(_id) {
         let trip = await TripModel.findById(_id).populate('author', { fullinfo: 1 }).populate('children', { start: 1, end: 1 }).populate('parent')
