@@ -13,7 +13,6 @@ module.exports = {
                 { isModerated: true },
             ]
         }
-
         if (lon && lat) {
             query.$and.push({
                 startLocation: {
@@ -52,10 +51,11 @@ module.exports = {
                 start: { $gte: Date.now() },
             })
         }
-
-        query.$and.push(
-            { age: { $gte: Number(queryObj.age.start), $lte: Number(queryObj.age.end == 0 ? 100 : queryObj.age.end) } },
-        )
+        if (queryObj.age?.start && queryObj.age?.end) {
+            query.$and.push(
+                { age: { $gte: Number(queryObj.age.start), $lte: Number(queryObj.age.end) } },
+            )
+        }
         return СompanionModel.find(query)
     },
     async deleteMany() {
