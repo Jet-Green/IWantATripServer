@@ -40,14 +40,15 @@ module.exports = {
     },
     async deleteById(req, res, next) {
         try {
-            
-            return res.json(await СompanionService.deleteById(req.query._id, req.query.email))
+            console.log(req.body.userId)
+            return res.json(await СompanionService.deleteById(req.query._id, req.body.userId))
         } catch (error) {
             next(error)
         }
     },
     async addFeedback(req, res, next) {
         try {
+            console.log(req.body);
             return res.json(await СompanionService.addFeedback(req.body, req.query.companion_id))
         } catch (error) {
             next(error)

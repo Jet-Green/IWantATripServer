@@ -17,7 +17,7 @@ router.post('/add-feedback', authMiddleware, СompanionController.addFeedback)
 router.get('/get-companions-on-moderation', СompanionController.getCompanionsOnModeration)
 
 router.get('/accept-companion', СompanionController.acceptCompanion)
-router.get('/delete-by-id', СompanionController.deleteById)
+router.post('/delete-by-id', СompanionController.deleteById)
 
 
 module.exports = router
