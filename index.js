@@ -1,6 +1,8 @@
 // here all imports ${process.env.NODE_ENV}
 require('dotenv').config({ path: `${process.argv[process.argv.length - 1]}.env` })
 const express = require('express');
+// const helmet = require('helmet')
+
 const cors = require('cors')
 const app = express()
 const mongoose = require('mongoose')
@@ -17,16 +19,17 @@ const errorMiddleware = require('./middleware/error-middleware')
 const history = require('connect-history-api-fallback');
 const bookingRouter = require('./routers/booking-router');
 const locationRouter = require('./routers/location-router');
-const adminRouter = require('./routers/admin-funcs-router');
+const adminRouter = require('./routers/admin-router');
 const posterRouter = require('./routers/poster-router')
+const serviceFunctionsRouter = require('./routers/service-functions-router')
 
 
 app.use(history())
-
+// app.use(helmet());
 
 // here all .use
 app.use(cors({
-    origin: [process.env.CLIENT_URL, "http://localhost:5174"],
+    origin: [process.env.CLIENT_URL, "http://localhost:5174", "https://gorodaivesi.ru"],
     credentials: true
 }))
 app.use(express.json())
@@ -56,6 +59,8 @@ app.use('/location', locationRouter)
 app.use('/posters', posterRouter)
 
 app.use('/admin', adminRouter)
+
+app.use('/service-functions', serviceFunctionsRouter)
 
 // use error middleware last
 app.use(errorMiddleware)

@@ -13,9 +13,14 @@ router.get('/refresh', userController.refresh)
 router.post('/logout', userController.logout)
 router.post('/update', userController.update)
 
+router.post('/add-trip-calc', userController.addTripCalc)
+router.post('/delete-trip-calc', userController.deleteTripCalc)
+
 router.post('/forgot-password', userController.sendResetLink)
 router.post('/reset-password', userController.resetPassword)
 
 router.get('/clear-users', userController.clearUsers)
+
+router.get('/get-bought-trips', userController.getBoughtTrips)
 
 module.exports = router

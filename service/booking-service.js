@@ -7,4 +7,14 @@ module.exports = {
     findByUserId(_id) {
         return BookingModel.find({ creatorId: _id })
     },
+    getByStatus(status) {
+        return BookingModel.find({ status }).populate('creatorId', "fullinfo").
+            exec();
+    },
+    changeStatus(_id, status) {
+        return BookingModel.findByIdAndUpdate(_id, { status: status })
+    },
+    updateBooking(newBooking) {
+        return BookingModel.findByIdAndUpdate(newBooking._id, newBooking)
+    }
 }

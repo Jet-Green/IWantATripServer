@@ -47,7 +47,6 @@ module.exports = {
             let r = await GuideService.getAllElements(req.query.name)
             return res.json(r)
         } catch (err) {
-            console.log(err);
             // when api error enabled
             // next(err)
         }
@@ -56,7 +55,6 @@ module.exports = {
         try {
             return res.json(data.toWatch.find((e) => e._id == req.query._id))
         } catch (error) {
-            console.log(error);
         }
     },
     async deleteById(req, res, next) {
@@ -65,7 +63,6 @@ module.exports = {
 
             GuideService.deleteOne(_id);
         } catch (error) {
-            console.log(error);
         }
     },
     async createGuideElement(req, res, next) {
@@ -74,7 +71,6 @@ module.exports = {
             // вызвать сервис, который будет сохранять в БД
             return res.json({ _id: guideCb._id })
         } catch (err) {
-            console.log(err);
             // when api error enabled
             // next(err)
         }
@@ -87,14 +83,12 @@ module.exports = {
 
             res.status(200).send('OK')
         } catch (error) {
-            console.log(error);
         }
     },
     async clear() {
         try {
             await GuideService.clear()
         } catch (error) {
-            console.log(error);
         }
     },
 }

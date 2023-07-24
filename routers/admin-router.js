@@ -8,4 +8,11 @@ router.get('/trips-on-moderation', AdminController.findForModeration)
 router.get('/moderate-trip', AdminController.moderateTrip)
 router.post('/send-moderation-message', AdminController.sendModerationMessage)
 
+router.post('/get-users', AdminController.fetchUsers)
+router.post('/change-user-roles', AdminController.changeUserRoles)
+
+router.post('/add-email', AdminController.addEmail)
+router.get('/get-emails', AdminController.getEmails)
+router.get('/delete-email', AdminController.deleteEmail)
+
 module.exports = router

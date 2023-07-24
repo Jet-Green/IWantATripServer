@@ -2,9 +2,19 @@ const { Schema, model } = require('mongoose')
 
 const BillSchema = new Schema({
     cart: Array,
-    isBoughtNow: { type: Boolean, default: false },
-    tripId: String,
-    userInfo: { type: Object, default: {} }
+    payment: {
+        amount: { type: Number, default: 0 },
+    },
+    tripId: { type: Schema.Types.ObjectId, ref: 'Trip' },
+    userInfo: {
+        phone: String,
+        fullname: String,
+    },
+    touristsList: [{
+        fullname: String,
+        phone: String,
+        _id: false,
+    }]
 })
 
 module.exports = model('Bill', BillSchema);

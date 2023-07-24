@@ -1,4 +1,5 @@
 const tripsService = require('../service/trips-service')
+const adminService = require('../service/admin-service')
 
 module.exports = {
     async findForModeration(req, res, next) {
@@ -21,5 +22,40 @@ module.exports = {
         } catch (error) {
             next(error)
         }
-    }
+    },
+    async fetchUsers(req, res, next) {
+        try {
+            return res.json(await adminService.fetchUsers(req.body))
+        } catch (error) {
+            next(error)
+        }
+    },
+    async changeUserRoles(req, res, next) {
+        try {
+            return res.json(await adminService.changeUserRoles(req.body))
+        } catch (error) {
+            next(error)
+        }
+    },
+    async addEmail(req, res, next) {
+        try {
+            return res.json(await adminService.addEmail(req.body))
+        } catch (error) {
+            next(error)
+        }
+    },
+    async getEmails(req, res, next) {
+        try {
+            return res.json(await adminService.getEmails(req.query.event))
+        } catch (error) {
+            next(error)
+        }
+    },
+    async deleteEmail(req, res, next) {
+        try {
+            return res.json(await adminService.deleteEmail(req.query))
+        } catch (error) {
+            next(error)
+        }
+    },
 }

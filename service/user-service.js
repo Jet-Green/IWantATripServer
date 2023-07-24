@@ -1,8 +1,11 @@
 const UserModel = require('../models/user-model')
+const RoleModel = require('../models/role-model')
+const TripCalcModel = require('../models/trip-calc-model')
+
 const bcrypt = require('bcryptjs');
 const TokenService = require('../service/token-service')
 const LocationService = require('../service/location-service')
-const RoleModel = require('../models/role-model')
+
 const ApiError = require('../exceptions/api-error');
 const { sendMail } = require('../middleware/mailer');
 
@@ -58,7 +61,21 @@ module.exports = {
 
         const link = process.env.CLIENT_URL + `/forgot-password?user_id=${candidate._id}&token=${token}`
 
-        sendMail({ link: link }, 'reset-password.hbs', [candidate.email], 'single')
+        // порпишу html тут, чтобы не отправлять токен на клиент
+        sendMail(
+            `<!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Document</title>
+                </head>
+                <body>
+                    <h1>Чтобы поменять пароль перейдите по ссылке: </h1> <a href="${link}">${link}</a>
+                </body>
+            </html>`,
+            [candidate.email], 'Восстановление пароля')
 
         return link
     },
@@ -87,7 +104,7 @@ module.exports = {
             candidateManager = await RoleModel.create({ value: 'manager' })
         }
 
-        const candidate = await UserModel.findOne({ email })
+        const candidate = await UserModel.findOne({ email }).populate('tripCalc').exec()
         if (candidate) {
             throw ApiError.BadRequest(`Пользователь с почтой ${email} уже существует`)
         }
@@ -105,7 +122,7 @@ module.exports = {
         }
     },
     async login(email, password) {
-        const user = await UserModel.findOne({ email })
+        const user = await UserModel.findOne({ email }).populate('tripCalc').exec()
 
         if (!user) {
             throw ApiError.BadRequest('Пользователь с таким email не найден')
@@ -136,10 +153,8 @@ module.exports = {
         if (!userData || !tokenFromDb) {
             throw ApiError.UnauthorizedError();
         }
-        // удалить ненужный токен
-        await tokenFromDb.delete();
 
-        const user = await UserModel.findById(userData._id)
+        const user = await UserModel.findById(userData._id).populate('tripCalc').exec()
         if (user) {
             const tokens = TokenService.generateTokens({ email: user.email, password: user.password, _id: user._id })
             await TokenService.saveToken(user._id, tokens.refreshToken);
@@ -162,6 +177,43 @@ module.exports = {
         delete user.email
         return await UserModel.findOneAndUpdate({ email }, user, {
             new: true
-        })
+        }).populate('tripCalc').exec()
+    },
+    async addTripCalc({ userId, tripCalc }) {
+        let cb = await TripCalcModel.create(tripCalc)
+
+        return await UserModel.findByIdAndUpdate(userId, { $push: { tripCalc: cb._id } }, { returnOriginal: false }).populate('tripCalc').exec()
+    },
+    async deleteTripCalc({ userId, tripCalcId }) {
+        await UserModel.findByIdAndUpdate(userId, { $pull: { tripCalc: tripCalcId } })
+        return await TripCalcModel.findByIdAndDelete(tripCalcId)
+    },
+    async getBoughtTrips(userId) {
+        let user = await UserModel.findById(userId).populate('boughtTrips')
+        let { boughtTrips } = user
+
+        let result = []
+        for (let bill of boughtTrips) {
+            await bill.populate('tripId')
+            await bill.tripId.populate('parent')
+
+            if (bill.tripId.parent) {
+                let originalId = bill.tripId._id
+                let parentId = bill.tripId.parent._id
+                let { start, end } = bill.tripId
+                let isModerated = bill.tripId.parent.isModerated
+
+                Object.assign(bill.tripId, bill.tripId.parent)
+                bill.tripId.parent = parentId
+                bill.tripId.children = []
+                bill.tripId._id = originalId
+                bill.tripId.start = start
+                bill.tripId.end = end
+                bill.tripId.isModerated = isModerated
+            }
+
+            result.push(bill)
+        }
+        return result
     }
 }
