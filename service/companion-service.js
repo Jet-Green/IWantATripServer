@@ -94,7 +94,6 @@ module.exports = {
         return СompanionModel.findByIdAndUpdate(_id, { $set: { isModerated: true } })
     },
     async deleteById(_id, userId) {
-        console.log(userId);
         await UserModel.findByIdAndUpdate(userId, { $pull: { createdCompanions: { $in: _id}}})
         return СompanionModel.findByIdAndDelete(_id)
 
