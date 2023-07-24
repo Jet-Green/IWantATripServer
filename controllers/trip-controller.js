@@ -124,8 +124,7 @@ module.exports = {
             let emailsFromDbBook = eventEmailsBook.sendMailsTo[0].emails
 
             // req.body.emails - это емейл пользователя
-            sendMail(req.body.emailHtml, [...req.body.emails, ...emailsFromDbBook], 'Создана поездка')
-
+            sendMail(req.body.emailHtml, [...req.body.emails, ...emailsFromDbBook], 'Создан тур')
             return res.json({ _id: trip._id })
         } catch (error) {
             next(error)
