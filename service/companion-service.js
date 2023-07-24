@@ -1,4 +1,5 @@
 const СompanionModel = require('../models/companion-model');
+const UserModel = require('../models/user-model');
 
 module.exports = {
     insertOne(companion) {
@@ -73,7 +74,10 @@ module.exports = {
     acceptCompanion(_id) {
         return СompanionModel.findByIdAndUpdate(_id, { $set: { isModerated: true } })
     },
-    deleteById(_id) {
+    async deleteById(_id, userId) {
+        console.log(userId);
+        await UserModel.findByIdAndUpdate(userId, { $pull: { createdCompanions: { $in: _id}}})
         return СompanionModel.findByIdAndDelete(_id)
+
     }
 }
