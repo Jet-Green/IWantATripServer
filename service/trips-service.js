@@ -43,7 +43,9 @@ module.exports = {
             populate: {
                 path: 'billsList',
                 select: {
-                    cart: 1
+                    cart: 1,
+                    payment: 1,
+                    userInfo: 1
                 }
             },
             select: { start: 1, end: 1, billsList: 1 },
@@ -64,7 +66,7 @@ module.exports = {
             trip.billsList = billsList
         }
 
-        await trip.populate('billsList', { cart: 1 })
+        await trip.populate('billsList', { cart: 1, payment: 1, userInfo: 1 })
         return trip
     },
     async getCustomers(customersIds) {
