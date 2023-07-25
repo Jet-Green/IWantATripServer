@@ -35,10 +35,21 @@ module.exports = {
         return bill.delete()
     },
     async setPayment(bill) {
-        return await BillModel.findByIdAndUpdate(bill._id,{$inc:{ 'payment.amount': bill.payment.amount }} )
+        return await BillModel.findByIdAndUpdate(bill._id, { $inc: { 'payment.amount': bill.payment.amount } })
     },
     async getFullTripById(_id) {
-        let trip = await TripModel.findById(_id).populate('author', { fullinfo: 1 }).populate('children', { start: 1, end: 1 }).populate('parent')
+        let trip = await TripModel.findById(_id).populate('author', { fullinfo: 1 }).populate('parent').populate({
+            path: 'children',
+            populate: {
+                path: 'billsList',
+                select: {
+                    cart: 1,
+                    payment: 1,
+                    userInfo: 1
+                }
+            },
+            select: { start: 1, end: 1, billsList: 1 },
+        })
         if (trip.parent) {
             let originalId = trip._id
             let parentId = trip.parent._id
@@ -54,7 +65,8 @@ module.exports = {
             trip.isModerated = isModerated
             trip.billsList = billsList
         }
-        await trip.populate('billsList')
+
+        await trip.populate('billsList', { cart: 1, payment: 1, userInfo: 1 })
         return trip
     },
     async getCustomers(customersIds) {

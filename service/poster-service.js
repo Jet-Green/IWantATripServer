@@ -21,7 +21,7 @@ module.exports = conn;
 module.exports = {
     async getAll() {
         try {
-            console.log(await PostersModel.find({}))
+            // console.log(await PostersModel.find({}))
             return PostersModel.find({})
         } catch (error) {
             next(error);
