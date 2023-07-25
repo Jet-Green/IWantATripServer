@@ -82,6 +82,9 @@ module.exports = {
     async buyTrip(_id, userEmail) {
         return UserModel.findOneAndUpdate({ email: userEmail }, { $push: { boughtTrips: _id } })
     },
+    async cancelTrip(_id, user_id) {
+        return UserModel.findByIdAndUpdate(user_id, { $pull: { boughtTrips:  } })
+    },
     async clearUsers() {
         console.log(
             await UserModel.deleteMany({})
