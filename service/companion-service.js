@@ -14,22 +14,6 @@ module.exports = {
                 { isModerated: true },
             ]
         }
-        let isEmptyObj = true
-        for (let key in Object.keys(queryObj)) {
-            // skip age, cuz its not eempty
-            if (key == 'age') {
-                if (queryObj[key].start !== '' || queryObj[key].end !== '') {
-                    isEmptyObj = false
-                }
-                continue
-            }
-
-            if (queryObj[key] != '') {
-                isEmptyObj = false
-                break
-            }
-        }
-
         if (lon && lat) {
             query.$and.push({
                 startLocation: {
@@ -44,13 +28,6 @@ module.exports = {
                 }
             })
         }
-        if (isEmptyObj) {
-            if (!lon && !lat) {
-                return СompanionModel.find({}, null)
-            } else {
-                return СompanionModel.find(query, null)
-            }
-        }
         if (queryObj.strQuery) {
             query.$and.push({
                 $or: [
@@ -62,7 +39,7 @@ module.exports = {
             })
         }
         if (queryObj.gender) {
-            query.$and.push({ gender: { $eq: queryObj.gender } })
+            query.$and.push({ gender: { '$eq': queryObj.gender } })
         }
 
         if (queryObj.start && queryObj.end) {
@@ -70,13 +47,17 @@ module.exports = {
                 { start: { $gte: queryObj.start } },
                 { end: { $lte: queryObj.end } }
             )
+        } else {
+            query.$and.push({
+                start: { $gte: Date.now() },
+            })
         }
-
-        query.$and.push(
-            { age: { $gte: Number(queryObj.age.start), $lte: Number(queryObj.age.end == 0 ? 100 : queryObj.age.end) } },
-        )
-
-        return СompanionModel.find(query, null)
+        if (queryObj.age?.start && queryObj.age?.end) {
+            query.$and.push(
+                { age: { $gte: Number(queryObj.age.start), $lte: Number(queryObj.age.end) } },
+            )
+        }
+        return СompanionModel.find(query)
     },
     async deleteMany() {
         return СompanionModel.deleteMany({})
