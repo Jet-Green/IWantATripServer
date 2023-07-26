@@ -271,8 +271,7 @@ module.exports = {
     },
     async findForModeration() {
         return TripModel.find({
-            $and: [{ isModerated: false },
-            { "parent": { $exists: false } }]
+            isModerated: false
         })
     },
     async moderate(_id, v) {
