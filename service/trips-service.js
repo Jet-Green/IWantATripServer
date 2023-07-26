@@ -273,7 +273,7 @@ module.exports = {
         return TripModel.find({
             $and: [{ isModerated: false },
             { "parent": { $exists: false } }]
-        })
+        }).populate('author', { 'fullinfo.fullname': 1 })
     },
     async moderate(_id, v) {
         return TripModel.findByIdAndUpdate(_id, { isModerated: v })
