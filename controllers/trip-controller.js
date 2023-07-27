@@ -68,7 +68,6 @@ module.exports = {
             let emailsFromDbBuy = eventEmailsBuy.sendMailsTo[0]?.emails
 
             let authorEmail = await TripModel.findById(req.query._id).populate('author', { email: 1 })
-
             sendMail(req.body.emailHtml, [authorEmail?.author?.email, ...emailsFromDbBuy], 'Куплена поездка')
 
             return res.json(await TripService.buyTrip(req))

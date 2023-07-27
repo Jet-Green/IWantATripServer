@@ -37,13 +37,15 @@ module.exports = {
         //         break;
         // }
 
-
-        let details = {
-            from: 'qbit.mailing@gmail.com',
-            to: [...emails],
-            subject: emailSubject,
-            html: html,
+        for (var email of emails){
+            let details = {
+                from: 'qbit.mailing@gmail.com',
+                to: email,
+                subject: emailSubject,
+                html: html,
+            }
+            let r = await transporter.sendMail(details)
         }
-        let r = await transporter.sendMail(details)
+        
     }
 }
