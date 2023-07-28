@@ -1,6 +1,8 @@
 const UserModel = require('../models/user-model')
 const RoleModel = require('../models/role-model')
 const TripCalcModel = require('../models/trip-calc-model')
+const BillModel = require('../models/bill-model');
+const TripModel = require('../models/trip-model');
 
 const bcrypt = require('bcryptjs');
 const TokenService = require('../service/token-service')
@@ -82,8 +84,12 @@ module.exports = {
     async buyTrip(_id, userEmail) {
         return UserModel.findOneAndUpdate({ email: userEmail }, { $push: { boughtTrips: _id } })
     },
-    async cancelTrip(_id, user_id) {
-        return UserModel.findByIdAndUpdate(user_id, { $pull: { boughtTrips:  } })
+    async cancelTrip(bill_id, user_id) {
+        let bill = await BillModel.findById(bill_id);
+        let trip_id = bill.tripId._id
+        await TripModel.findByIdAndUpdate(trip_id, { $pull: { billsList: bill_id } })
+        await BillModel.findByIdAndDelete(bill_id);
+        return UserModel.findByIdAndUpdate(user_id, { $pull: { boughtTrips: bill_id } })
     },
     async clearUsers() {
         console.log(

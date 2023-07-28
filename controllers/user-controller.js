@@ -31,7 +31,7 @@ module.exports = {
     },
     async cancelTrip(req, res, next) {
         try {
-            return res.json(await UserService.cancelTrip(req.body._id, req.body.user_id))
+            return res.json(await UserService.cancelTrip(req.body.bill_id, req.body.user_id))
         } catch (error) {
             next(error)
         }
