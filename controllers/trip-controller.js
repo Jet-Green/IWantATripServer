@@ -3,6 +3,7 @@ const LocationService = require('../service/location-service.js')
 const TripModel = require('../models/trip-model.js');
 const AppStateModel = require('../models/app-state-model.js')
 
+const ApiError = require('../exceptions/api-error.js')
 
 let EasyYandexS3 = require('easy-yandex-s3').default;
 const { sendMail } = require('../middleware/mailer')
@@ -64,11 +65,32 @@ module.exports = {
     },
     async buyTrip(req, res, next) {
         try {
+            let tripFromDb = await TripModel.findById(req.query._id).populate('author', { email: 1 }).populate('billsList')
+
+            if (tripFromDb.parent) {
+                await tripFromDb.populate('parent', { maxPeople: 1 })
+                tripFromDb.maxPeople = tripFromDb.parent.maxPeople
+            }
+
+            let countToBuy = 0
+            for (let cartItem of req.body.bill.cart) {
+                countToBuy += cartItem.count
+            }
+
+            let boughtCount = 0
+            for (let billFromDb of tripFromDb.billsList) {
+                for (let cartItem of billFromDb.cart) {
+                    boughtCount += cartItem.count
+                }
+            }
+            if (boughtCount + countToBuy > tripFromDb.maxPeople) {
+                throw ApiError.BadRequest('Слишком много человек в туре')
+            }
+
             let eventEmailsBuy = await AppStateModel.findOne({ 'sendMailsTo.type': 'BuyTrip' }, { 'sendMailsTo.$': 1 })
             let emailsFromDbBuy = eventEmailsBuy.sendMailsTo[0]?.emails
 
-            let authorEmail = await TripModel.findById(req.query._id).populate('author', { email: 1 })
-            sendMail(req.body.emailHtml, [authorEmail?.author?.email, ...emailsFromDbBuy], 'Куплена поездка')
+            sendMail(req.body.emailHtml, [tripFromDb?.author?.email, ...emailsFromDbBuy], 'Куплена поездка')
 
             return res.json(await TripService.buyTrip(req))
         } catch (error) {
@@ -95,9 +117,8 @@ module.exports = {
         try {
             const _id = req.body._id
 
-            return await TripService.deleteOne(_id, s3);
+            return res.json(await TripService.deleteOne(_id, s3));
         } catch (error) {
-            console.log(error);
             next(error)
         }
     },
