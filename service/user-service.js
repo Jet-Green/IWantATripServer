@@ -198,15 +198,18 @@ module.exports = {
         return await TripCalcModel.findByIdAndDelete(tripCalcId)
     },
     async getBoughtTrips(userId) {
-        let user = await UserModel.findById(userId).populate('boughtTrips')
-        let { boughtTrips } = user
+        let userFromDb = await UserModel.findById(userId)
+        await userFromDb.populate("boughtTrips")
+
+        let { boughtTrips } = userFromDb
 
         let result = []
         for (let bill of boughtTrips) {
             await bill.populate('tripId')
-            await bill.tripId.populate('parent')
+            if (bill.tripId)
+                await bill.tripId.populate('parent')
 
-            if (bill.tripId.parent) {
+            if (bill.tripId?.parent) {
                 let originalId = bill.tripId._id
                 let parentId = bill.tripId.parent._id
                 let { start, end } = bill.tripId
