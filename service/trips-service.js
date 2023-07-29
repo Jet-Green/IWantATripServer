@@ -214,20 +214,36 @@ module.exports = {
                 ]
             })
         }
-        if (start && end) {
-            query.$and.push({
-                start: { $gte: start },
-                end: { $lte: end }
-            })
-        } else {
-            query.$and.push({ start: { $gte: Date.now() } })
-        }
 
         const cursor = TripModel.find(query, null, { sort: 'start' }).populate("children", { start: 1, end: 1 }).skip(skip).limit(limit).cursor();
 
         const results = [];
         for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
-            results.push(doc);
+            let notExpired = false;
+            if (!start && !end) {
+                if (doc.children.length > 0) {
+                    for (let children of doc.children) {
+                        if (children.start >= Date.now()) {
+                            notExpired = true
+                        }
+                    }
+                } else {
+                    if (doc.start >= Date.now()) notExpired = true
+                }
+            } else {
+                if (doc.children.length > 0) {
+                    for (let children of doc.children) {
+                        if (children.start >= start && children.end <= end) {
+                            notExpired = true
+                        }
+                    }
+                } else {
+                    if (doc.start >= start && doc.end <= end) notExpired = true
+                }
+
+            }
+            if (notExpired)
+                results.push(doc);
         }
 
         return results
@@ -273,7 +289,7 @@ module.exports = {
         return TripModel.find({
             $and: [{ isModerated: false },
             { "parent": { $exists: false } }]
-        }).populate('author', { fullinfo: 1 })
+        }).populate('author', { 'fullinfo.fullname': 1 })
     },
     async moderate(_id, v) {
         return TripModel.findByIdAndUpdate(_id, { isModerated: v })

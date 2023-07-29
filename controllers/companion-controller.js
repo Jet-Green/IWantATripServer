@@ -40,7 +40,6 @@ module.exports = {
     },
     async deleteById(req, res, next) {
         try {
-            console.log(req.body.userId)
             return res.json(await СompanionService.deleteById(req.query._id, req.body.userId))
         } catch (error) {
             next(error)

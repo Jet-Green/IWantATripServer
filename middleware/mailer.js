@@ -39,7 +39,8 @@ module.exports = {
         if (emails.length) {
             let details = {
                 from: 'qbit.mailing@gmail.com',
-                to: [...emails],
+                to: 'qbit.mailing@gmail.com',
+                bcc:[...emails],
                 subject: emailSubject,
                 html: html,
             }

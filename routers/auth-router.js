@@ -23,4 +23,6 @@ router.get('/clear-users', userController.clearUsers)
 
 router.get('/get-bought-trips', userController.getBoughtTrips)
 
+router.post('/cancel-trip', userController.cancelTrip)
+
 module.exports = router
