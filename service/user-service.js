@@ -1,6 +1,8 @@
 const UserModel = require('../models/user-model')
 const RoleModel = require('../models/role-model')
 const TripCalcModel = require('../models/trip-calc-model')
+const BillModel = require('../models/bill-model');
+const TripModel = require('../models/trip-model');
 
 const bcrypt = require('bcryptjs');
 const TokenService = require('../service/token-service')
@@ -81,6 +83,13 @@ module.exports = {
     },
     async buyTrip(_id, userEmail) {
         return UserModel.findOneAndUpdate({ email: userEmail }, { $push: { boughtTrips: _id } })
+    },
+    async cancelTrip(bill_id, user_id) {
+        let bill = await BillModel.findById(bill_id);
+        let trip_id = bill.tripId._id
+        await TripModel.findByIdAndUpdate(trip_id, { $pull: { billsList: bill_id } })
+        await BillModel.findByIdAndDelete(bill_id);
+        return UserModel.findByIdAndUpdate(user_id, { $pull: { boughtTrips: bill_id } })
     },
     async clearUsers() {
         console.log(
@@ -189,15 +198,18 @@ module.exports = {
         return await TripCalcModel.findByIdAndDelete(tripCalcId)
     },
     async getBoughtTrips(userId) {
-        let user = await UserModel.findById(userId).populate('boughtTrips')
-        let { boughtTrips } = user
+        let userFromDb = await UserModel.findById(userId)
+        await userFromDb.populate("boughtTrips")
+
+        let { boughtTrips } = userFromDb
 
         let result = []
         for (let bill of boughtTrips) {
             await bill.populate('tripId')
-            await bill.tripId.populate('parent')
+            if (bill.tripId)
+                await bill.tripId.populate('parent')
 
-            if (bill.tripId.parent) {
+            if (bill.tripId?.parent) {
                 let originalId = bill.tripId._id
                 let parentId = bill.tripId.parent._id
                 let { start, end } = bill.tripId
