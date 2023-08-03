@@ -35,6 +35,7 @@ router.post('/set-payment', tripController.setPayment)
 router.get('/delete-payment', tripController.deletePayment)
 
 router.post('/update-bills-tourists', tripController.updateBillsTourists)
+router.post('/update-partner', tripController.updatePartner)
 
 router.post('/create-many-by-dates', tripController.createManyByDates)
 

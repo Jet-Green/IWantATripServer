@@ -247,5 +247,15 @@ module.exports = {
         } catch (error) {
             next(error)
         }
+    },
+    async updatePartner(req, res, next) {
+        try {
+            return res.json(await TripService.updatePartner(req.body))
+        } catch (error) {
+            next(error)
+        }
     }
+
+
+    
 }

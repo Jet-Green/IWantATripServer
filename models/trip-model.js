@@ -25,6 +25,7 @@ const TripSchema = new Schema({
     bonuses: Array,
 
     moderationMessage: { type: String, },
+    partner: { type: String, },
 
     children: { type: [Schema.Types.ObjectId], ref: 'Trip' },
     parent: { type: Schema.Types.ObjectId, ref: 'Trip' },

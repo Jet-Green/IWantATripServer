@@ -337,5 +337,8 @@ module.exports = {
         let bill = await BillModel.findById(_id)
         bill.touristsList = touristsList
         return bill.save()
-    }
+    },
+    async updatePartner({partner, _id }) {
+        return TripModel.findByIdAndUpdate(_id , { partner: partner })
+    },
 }
