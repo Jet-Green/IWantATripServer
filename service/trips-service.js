@@ -215,35 +215,43 @@ module.exports = {
             })
         }
 
-        const cursor = TripModel.find(query, null, { sort: 'start' }).populate("children", { start: 1, end: 1 }).skip(skip).limit(limit).cursor();
+        const cursor = TripModel.find(query, null, { sort: 'start' })
+            .populate(
+                {
+                    path: "children",
+                    match: { start: { $gte: Date.now() } },
+                    select: { start: 1, end: 1 }
+                }
+            )
+            .skip(skip).limit(limit).cursor();
 
         const results = [];
         for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
-            let notExpired = false;
-            if (!start && !end) {
-                if (doc.children.length > 0) {
-                    for (let children of doc.children) {
-                        if (children.start >= Date.now()) {
-                            notExpired = true
-                        }
-                    }
-                } else {
-                    if (doc.start >= Date.now()) notExpired = true
-                }
-            } else {
-                if (doc.children.length > 0) {
-                    for (let children of doc.children) {
-                        if (children.start >= start && children.end <= end) {
-                            notExpired = true
-                        }
-                    }
-                } else {
-                    if (doc.start >= start && doc.end <= end) notExpired = true
-                }
+            // let notExpired = false;
+            // if (!start && !end) {
+            //     if (doc.children.length > 0) {
+            //         for (let children of doc.children) {
+            //             if (children.start >= Date.now()) {
+            //                 notExpired = true
+            //             }
+            //         }
+            //     } else {
+            //         if (doc.start >= Date.now()) notExpired = true
+            //     }
+            // } else {
+            //     if (doc.children.length > 0) {
+            //         for (let children of doc.children) {
+            //             if (children.start >= start && children.end <= end) {
+            //                 notExpired = true
+            //             }
+            //         }
+            //     } else {
+            //         if (doc.start >= start && doc.end <= end) notExpired = true
+            //     }
 
-            }
-            if (notExpired)
-                results.push(doc);
+            // }
+            // if (notExpired)
+            results.push(doc);
         }
 
         return results
@@ -338,7 +346,7 @@ module.exports = {
         bill.touristsList = touristsList
         return bill.save()
     },
-    async updatePartner({partner, _id }) {
-        return TripModel.findByIdAndUpdate(_id , { partner: partner })
+    async updatePartner({ partner, _id }) {
+        return TripModel.findByIdAndUpdate(_id, { partner: partner })
     },
 }
