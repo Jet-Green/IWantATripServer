@@ -38,19 +38,20 @@ module.exports = {
         return await BillModel.findByIdAndUpdate(bill._id, { $inc: { 'payment.amount': bill.payment.amount } })
     },
     async getFullTripById(_id) {
-        let trip = await TripModel.findById(_id).populate('author', { fullinfo: 1 }).populate('parent').populate({
-            path: 'children',
-            populate: {
-                path: 'billsList',
-                select: {
-                    cart: 1,
-                    payment: 1,
-                    userInfo: 1,
-                    touristsList: 1
-                }
-            },
-            select: { start: 1, end: 1, billsList: 1, touristsList: 1 },
-        })
+        let trip = await TripModel.findById(_id).populate('author', { fullinfo: 1 }).populate('parent')
+            .populate({
+                path: 'children._id',
+                populate: {
+                    path: 'billsList',
+                    select: {
+                        cart: 1,
+                        payment: 1,
+                        userInfo: 1,
+                        touristsList: 1
+                    }
+                },
+                select: { start: 1, end: 1, billsList: 1, touristsList: 1 },
+            })
         if (trip.parent) {
             let originalId = trip._id
             let parentId = trip.parent._id
@@ -264,14 +265,7 @@ module.exports = {
             )
         }
 
-        const cursor = TripModel.find(query, null, { sort: 'start' })
-            .populate(
-                {
-                    path: "children",
-                    select: { start: 1, end: 1 }
-                }
-            )
-            .skip(skip).limit(limit).cursor();
+        const cursor = TripModel.find(query, null, { sort: 'start' }).skip(skip).limit(limit).cursor();
 
         const results = [];
         for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
