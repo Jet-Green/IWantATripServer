@@ -183,14 +183,17 @@ module.exports = {
         const limit = 20;
         const page = sitePage || 1;
         const skip = (page - 1) * limit;
-        let query = {
+        let query = {}
+
+        // geo $near must be top-level expr
+        query = {
             $and: [
+
                 { isHidden: false, isModerated: true },
-                { "parent": { $exists: false } }
+                { "parent": { $exists: false } },
             ]
         }
-
-        if (lon && lat) {
+        if (lat && lon) {
             query.$and.push({
                 startLocation: {
                     $near: {
@@ -204,22 +207,123 @@ module.exports = {
                 }
             })
         }
-        if (strQuery) {
+        if (start && end) {
             query.$and.push({
                 $or: [
-                    { name: { $regex: strQuery, $options: 'i' } },
-                    { tripRoute: { $regex: strQuery, $options: 'i' } },
-                    { offer: { $regex: strQuery, $options: 'i' } },
-                    { description: { $regex: strQuery, $options: 'i' } },
+                    {
+                        // всё, что относится к родителю
+                        $and: [
+                            { 'start': { $gte: start } },
+                            { 'end': { $lte: end } },
+                        ]
+                    },
+                    // все, что относится к children
+                    {
+                        children: {
+                            $elemMatch:
+                            {
+                                $and: [
+                                    { 'start': { $gte: start } },
+                                    { 'end': { $lte: end } },
+                                ]
+                            }
+                        }
+                    }
+                ]
+            })
+        } else {
+            query.$and.push({
+                $or: [
+                    {
+                        // всё, что относится к родителю
+                        $and: [
+                            { 'start': { $gte: Date.now() } },
+                        ]
+                    },
+                    // все, что относится к children
+                    {
+                        children: {
+                            $elemMatch: {
+                                start: { $gte: Date.now() },
+                            }
+                        }
+                    }
                 ]
             })
         }
+        if (strQuery) {
+            query.$and.push(
+                {
+                    $or: [
+                        { name: { $regex: strQuery, $options: 'i' } },
+                        { tripRoute: { $regex: strQuery, $options: 'i' } },
+                        { offer: { $regex: strQuery, $options: 'i' } },
+                        { description: { $regex: strQuery, $options: 'i' } },
+                    ]
+                }
+            )
+        }
+
+        // else {
+        //     query = {
+        //         $or: [
+        //             {
+        //                 // parent
+        //                 $and: [
+        //                     { isHidden: false, isModerated: true },
+        //                     { "parent": { $exists: false } },
+        //                 ]
+        //             },
+        //             // children
+        //             // ...
+        //         ]
+        //     }
+        //     if (start && end) {
+        //         query.$or[0].$and.push({ start: { $gte: start } }, { end: { $lte: end } })
+        //         query.$or.push(
+        //             {
+        //                 children: {
+        //                     $elemMatch: {
+        //                         $and: [
+        //                             { start: { $gte: start } },
+        //                             { end: { $lte: end } }
+        //                         ]
+        //                     }
+        //                 }
+        //             }
+        //         )
+        //     } else {
+        //         query.$or[0].$and.push({ start: { $gte: Date.now() } })
+        //         // query.$or.push(
+        //         //     {
+        //         //         // children: {
+        //         //         //     $elemMatch:
+        //         //         //         { start: { $gte: Date.now() } },
+        //         //         // }
+        //         //         'children.start': { $gte: Date.now() }
+        //         //     }
+        //         // )
+        //     }
+        //     if (strQuery) {
+        //         query.$or[0].$and.push(
+        //             {
+        //                 $or: [
+
+        //                     { name: { $regex: strQuery, $options: 'i' } },
+        //                     { tripRoute: { $regex: strQuery, $options: 'i' } },
+        //                     { offer: { $regex: strQuery, $options: 'i' } },
+        //                     { description: { $regex: strQuery, $options: 'i' } },
+        //                 ]
+        //             }
+        //         )
+        //     }
+        // }
+
 
         const cursor = TripModel.find(query, null, { sort: 'start' })
             .populate(
                 {
                     path: "children",
-                    match: { start: { $gte: Date.now() } },
                     select: { start: 1, end: 1 }
                 }
             )
