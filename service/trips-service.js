@@ -264,62 +264,6 @@ module.exports = {
             )
         }
 
-        // else {
-        //     query = {
-        //         $or: [
-        //             {
-        //                 // parent
-        //                 $and: [
-        //                     { isHidden: false, isModerated: true },
-        //                     { "parent": { $exists: false } },
-        //                 ]
-        //             },
-        //             // children
-        //             // ...
-        //         ]
-        //     }
-        //     if (start && end) {
-        //         query.$or[0].$and.push({ start: { $gte: start } }, { end: { $lte: end } })
-        //         query.$or.push(
-        //             {
-        //                 children: {
-        //                     $elemMatch: {
-        //                         $and: [
-        //                             { start: { $gte: start } },
-        //                             { end: { $lte: end } }
-        //                         ]
-        //                     }
-        //                 }
-        //             }
-        //         )
-        //     } else {
-        //         query.$or[0].$and.push({ start: { $gte: Date.now() } })
-        //         // query.$or.push(
-        //         //     {
-        //         //         // children: {
-        //         //         //     $elemMatch:
-        //         //         //         { start: { $gte: Date.now() } },
-        //         //         // }
-        //         //         'children.start': { $gte: Date.now() }
-        //         //     }
-        //         // )
-        //     }
-        //     if (strQuery) {
-        //         query.$or[0].$and.push(
-        //             {
-        //                 $or: [
-
-        //                     { name: { $regex: strQuery, $options: 'i' } },
-        //                     { tripRoute: { $regex: strQuery, $options: 'i' } },
-        //                     { offer: { $regex: strQuery, $options: 'i' } },
-        //                     { description: { $regex: strQuery, $options: 'i' } },
-        //                 ]
-        //             }
-        //         )
-        //     }
-        // }
-
-
         const cursor = TripModel.find(query, null, { sort: 'start' })
             .populate(
                 {
@@ -331,30 +275,6 @@ module.exports = {
 
         const results = [];
         for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
-            // let notExpired = false;
-            // if (!start && !end) {
-            //     if (doc.children.length > 0) {
-            //         for (let children of doc.children) {
-            //             if (children.start >= Date.now()) {
-            //                 notExpired = true
-            //             }
-            //         }
-            //     } else {
-            //         if (doc.start >= Date.now()) notExpired = true
-            //     }
-            // } else {
-            //     if (doc.children.length > 0) {
-            //         for (let children of doc.children) {
-            //             if (children.start >= start && children.end <= end) {
-            //                 notExpired = true
-            //             }
-            //         }
-            //     } else {
-            //         if (doc.start >= start && doc.end <= end) notExpired = true
-            //     }
-
-            // }
-            // if (notExpired)
             results.push(doc);
         }
 
