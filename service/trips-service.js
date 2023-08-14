@@ -333,30 +333,43 @@ module.exports = {
         await UserModel.findById(_id, { "trips": 1 }).then(data => {
             tripsIdArray = data.trips
         })
-        await TripModel.find({ _id: { $in: tripsIdArray } }).populate('parent').then((data) => {
-            let result = []
+        let result =[]
+        await TripModel.find({ _id: { $in: tripsIdArray } }).populate('parent')
+        .then((data) => {
+            
             for (let trip of data) {
                 if (trip.parent) {
-                    let originalId = trip._id
-                    let parentId = trip.parent._id
-                    let { start, end } = trip
-                    let isModerated = trip.parent.isModerated
+                    // let originalId = trip._id
+                    // let parentId = trip.parent._id
+                    // let { start, end } = trip
+                    // let isModerated = trip.parent.isModerated
 
-                    Object.assign(trip, trip.parent)
-                    trip.parent = parentId
-                    trip.children = []
-                    trip._id = originalId
-                    trip.start = start
-                    trip.end = end
-                    trip.isModerated = isModerated
+                    // Object.assign(trip, trip.parent)
+                    // trip.parent = parentId
+                    // trip.children = []
+                    // trip._id = originalId
+                    // trip.start = start
+                    // trip.end = end
+                    // trip.isModerated = isModerated
+                    trip.name = trip.parent.name
+                    trip.description = trip.parent.description
+                    trip.tripRoute = trip.parent.tripRoute
+                    trip.tripType = trip.parent.tripType
+                    // trip.startLocation.name = trip.parent.startLocation.name
+                    trip.partner = trip.parent.partner
+                    trip.offer = trip.parent.offer
+                    trip.parent.isModerated? trip.isModerated = true: trip.isModerated = false
+                    result.push(trip)
+                } else {
+                    result.push(trip)
                 }
 
-                result.push(trip)
+                
             }
             tripsInfoArray = result
         })
 
-        return tripsInfoArray
+        return result
     },
     async updateBillsTourists({ _id, touristsList }) {
         // console.log(_id, touristsList)
