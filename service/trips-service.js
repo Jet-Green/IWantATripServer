@@ -355,7 +355,7 @@ module.exports = {
                     trip.description = trip.parent.description
                     trip.tripRoute = trip.parent.tripRoute
                     trip.tripType = trip.parent.tripType
-                    // trip.startLocation.name = trip.parent.startLocation.name
+                    trip.startLocation = trip.parent.startLocation
                     trip.partner = trip.parent.partner
                     trip.offer = trip.parent.offer
                     trip.parent.isModerated? trip.isModerated = true: trip.isModerated = false
