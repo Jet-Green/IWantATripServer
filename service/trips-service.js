@@ -166,6 +166,10 @@ module.exports = {
                 $pull: { trips: { $in: [_id, ...childrenIds] } }
             })
 
+            if (tripToDelete.parent) {
+                await TripModel.findByIdAndUpdate(tripToDelete.parent, { $pull: { children: { _id: tripToDelete._id } } })
+            }
+
             let images = tripToDelete.images
             // multer.deleteImages(images)
             for (let image of images) {
@@ -333,41 +337,41 @@ module.exports = {
         await UserModel.findById(_id, { "trips": 1 }).then(data => {
             tripsIdArray = data.trips
         })
-        let result =[]
+        let result = []
         await TripModel.find({ _id: { $in: tripsIdArray } }).populate('parent')
-        .then((data) => {
-            
-            for (let trip of data) {
-                if (trip.parent) {
-                    // let originalId = trip._id
-                    // let parentId = trip.parent._id
-                    // let { start, end } = trip
-                    // let isModerated = trip.parent.isModerated
+            .then((data) => {
 
-                    // Object.assign(trip, trip.parent)
-                    // trip.parent = parentId
-                    // trip.children = []
-                    // trip._id = originalId
-                    // trip.start = start
-                    // trip.end = end
-                    // trip.isModerated = isModerated
-                    trip.name = trip.parent.name
-                    trip.description = trip.parent.description
-                    trip.tripRoute = trip.parent.tripRoute
-                    trip.tripType = trip.parent.tripType
-                    trip.startLocation = trip.parent.startLocation
-                    trip.partner = trip.parent.partner
-                    trip.offer = trip.parent.offer
-                    trip.parent.isModerated? trip.isModerated = true: trip.isModerated = false
-                    result.push(trip)
-                } else {
-                    result.push(trip)
+                for (let trip of data) {
+                    if (trip.parent) {
+                        // let originalId = trip._id
+                        // let parentId = trip.parent._id
+                        // let { start, end } = trip
+                        // let isModerated = trip.parent.isModerated
+
+                        // Object.assign(trip, trip.parent)
+                        // trip.parent = parentId
+                        // trip.children = []
+                        // trip._id = originalId
+                        // trip.start = start
+                        // trip.end = end
+                        // trip.isModerated = isModerated
+                        trip.name = trip.parent.name
+                        trip.description = trip.parent.description
+                        trip.tripRoute = trip.parent.tripRoute
+                        trip.tripType = trip.parent.tripType
+                        trip.startLocation = trip.parent.startLocation
+                        trip.partner = trip.parent.partner
+                        trip.offer = trip.parent.offer
+                        trip.parent.isModerated ? trip.isModerated = true : trip.isModerated = false
+                        result.push(trip)
+                    } else {
+                        result.push(trip)
+                    }
+
+
                 }
-
-                
-            }
-            tripsInfoArray = result
-        })
+                tripsInfoArray = result
+            })
 
         return result
     },
