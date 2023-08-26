@@ -1,5 +1,9 @@
 const { Schema, model } = require('mongoose')
 
+const LocationModel = require('./location-model')
+
+const LocationSchema = LocationModel.schema
+
 const TripSchema = new Schema({
     name: { type: String },
     start: { type: Number },
@@ -13,7 +17,16 @@ const TripSchema = new Schema({
     cost: { type: Array },
     offer: { type: String },
     description: { type: String },
+
     startLocation: { type: Object },
+    includedLocations: {
+        type: Object,
+        default: {
+            "type": "GeometryCollection",
+            geometries: []
+        }
+    },
+
     tripType: { type: String },
     fromAge: { type: String },
     // меняет только пользователь

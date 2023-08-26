@@ -254,8 +254,13 @@ module.exports = {
         } catch (error) {
             next(error)
         }
+    },
+    async updateIncludedLocations(req, res, next) {
+        try {
+            return res.json(await TripService.updateIncludedLocations(req.body))
+        } catch (error) {
+            console.log(error);
+            next(error)
+        }
     }
-
-
-    
 }

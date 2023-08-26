@@ -38,5 +38,6 @@ router.post('/update-bills-tourists', tripController.updateBillsTourists)
 router.post('/update-partner', tripController.updatePartner)
 
 router.post('/create-many-by-dates', tripController.createManyByDates)
+router.post('/update-included-locations', tripController.updateIncludedLocations)
 
 module.exports = router
