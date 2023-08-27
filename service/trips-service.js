@@ -386,25 +386,22 @@ module.exports = {
         return TripModel.findByIdAndUpdate(_id, { partner: partner })
     },
     async updateIncludedLocations({ newLocation, locationsToDelete, tripId }) {
-        console.log(newLocation, locationsToDelete, tripId);
+        // console.log(newLocation, locationsToDelete, tripId);
         if (newLocation) {
             let locFromDb = await LocationService.createLocation(newLocation)
             let trip = await TripModel.findByIdAndUpdate(tripId, { $push: { 'includedLocations.geometries': locFromDb } })
         }
         if (locationsToDelete) {
             let trip = await TripModel.findById(tripId)
-            for (let i = 0; i < trip.includedLocations.geomteries; i++) {
+            for (let i = 0; i < trip.includedLocations.geometries.length; i++) {
                 for (let _id of locationsToDelete) {
-                    if (trip.includedLocations.geomteries._id == _id) {
-                        trip.includedLocations.geomteries.splice(i, 1)
-                        trip.includedLocations.geomteries.markModified()
-                        break
+                    if (trip.includedLocations.geometries[i]._id == _id) {
+                        trip.includedLocations.geometries.splice(i, 1)
                     }
                 }
             }
-
+            trip.markModified('includedLocations.geometries')
             await trip.save()
-            // let trip = await TripModel.findByIdAndUpdate(tripId, { $pull: { 'includedLocations.geomteries': { '_id': { $in: locationsToDelete } } } })
             let de = await LocationModel.deleteMany({ _id: { $in: locationsToDelete } })
         }
         return 'ok'

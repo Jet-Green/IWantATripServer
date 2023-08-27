@@ -21,6 +21,7 @@ const TripSchema = new Schema({
     startLocation: { type: Object },
     includedLocations: {
         type: Object,
+        geometries: [LocationSchema],
         default: {
             "type": "GeometryCollection",
             geometries: []
