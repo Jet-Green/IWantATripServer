@@ -112,6 +112,8 @@ module.exports = {
 
         let oldTrip = await TripModel.findById(_id)
         trip.startLocation = await LocationService.createLocation(trip.startLocation)
+        trip.locationNames[0] = trip.startLocation
+        trip.includedLocations.coordinates[0] = trip.startLocation.coordinates
 
         let imagesToDelete = []
         for (let oldImg of oldTrip.images) {
@@ -201,10 +203,10 @@ module.exports = {
         }
         if (lat && lon) {
             query.$and.push({
-                startLocation: {
+                includedLocations: {
                     $near: {
                         $geometry: {
-                            type: 'Pointer',
+                            type: 'Point',
                             coordinates: [Number(lon), Number(lat)]
                         },
                         // 100 km
@@ -386,22 +388,31 @@ module.exports = {
         return TripModel.findByIdAndUpdate(_id, { partner: partner })
     },
     async updateIncludedLocations({ newLocation, locationsToDelete, tripId }) {
-        // console.log(newLocation, locationsToDelete, tripId);
         if (newLocation) {
             let locFromDb = await LocationService.createLocation(newLocation)
-            let trip = await TripModel.findByIdAndUpdate(tripId, { $push: { 'includedLocations.geometries': locFromDb } })
+            let trip = await TripModel.findByIdAndUpdate(tripId, { $push: { 'includedLocations.coordinates': locFromDb.coordinates, 'locationNames': locFromDb } })
         }
         if (locationsToDelete) {
             let trip = await TripModel.findById(tripId)
-            for (let i = 0; i < trip.includedLocations.geometries.length; i++) {
+            for (let i = 0; i < trip.locationNames.length; i++) {
                 for (let _id of locationsToDelete) {
-                    if (trip.includedLocations.geometries[i]._id == _id) {
-                        trip.includedLocations.geometries.splice(i, 1)
+                    if (trip.locationNames[i]._id == _id) {
+                        let indexToDelete;
+                        for (let j = 0; j < trip.includedLocations.coordinates.length; j++) {
+                            if (trip.includedLocations.coordinates[j][0] == trip.locationNames[i].coordinates[0] && trip.includedLocations.coordinates[j][1] == trip.locationNames[i].coordinates[1])
+                                indexToDelete = j
+                        }
+                        if (indexToDelete) {
+                            trip.includedLocations.coordinates.splice(indexToDelete, 1)
+                            trip.locationNames.splice(i, 1)
+                        }
                     }
                 }
             }
-            trip.markModified('includedLocations.geometries')
+            trip.markModified('includedLocations.coordinates')
+            trip.markModified('locationNames')
             await trip.save()
+
             let de = await LocationModel.deleteMany({ _id: { $in: locationsToDelete } })
         }
         return 'ok'

@@ -86,7 +86,7 @@ function mongoConnect() {
     db.collections.trips.createIndex({ 'startLocation': '2dsphere' })
     db.collections.users.createIndex({ 'userLocation': '2dsphere' })
     db.collections.companions.createIndex({ 'startLocation': '2dsphere' })
-    db.collections.trips.createIndex({ 'includedLocations.geomteries': '2dsphere' })
+    db.collections.trips.createIndex({ 'includedLocations': '2dsphere' })
 
     db.once('open', function () {
         console.log('connection')
