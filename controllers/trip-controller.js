@@ -132,12 +132,15 @@ module.exports = {
     async create(req, res, next) {
         try {
             let location = await LocationService.createLocation(req.body.trip.startLocation)
-            req.body.trip.startLocation = location
-            req.body.trip.includedLocations = {
-                'type': 'MultiPoint',
-                coordinates: [location.coordinates],
+            // чтобы при копировании не затирались includedLocations, locationNames
+            if (req.body.trip.includedLocations?.length <= 1) {
+                req.body.trip.startLocation = location
+                req.body.trip.includedLocations = {
+                    'type': 'MultiPoint',
+                    coordinates: [location.coordinates],
+                }
+                req.body.trip.locationNames = [location]
             }
-            req.body.trip.locationNames = [location]
 
             const tripFromDB = await TripService.insertOne(req.body.trip)
             let trip = Object.assign({}, tripFromDB._doc)
