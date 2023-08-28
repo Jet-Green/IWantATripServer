@@ -132,8 +132,8 @@ module.exports = {
     async create(req, res, next) {
         try {
             let location = await LocationService.createLocation(req.body.trip.startLocation)
-            // чтобы при копировании не затирались includedLocations, locationNames
-            if (req.body.trip.includedLocations?.length <= 1) {
+
+            if (!req.body.trip.includedLocations?.coordinates > 1) {
                 req.body.trip.startLocation = location
                 req.body.trip.includedLocations = {
                     'type': 'MultiPoint',
