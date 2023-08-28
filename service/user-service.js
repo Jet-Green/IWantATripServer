@@ -166,6 +166,7 @@ module.exports = {
         const user = await UserModel.findById(userData._id).populate('tripCalc').exec()
         if (user) {
             const tokens = TokenService.generateTokens({ email: user.email, password: user.password, _id: user._id })
+            await TokenService.removeToken(refreshToken)
             await TokenService.saveToken(user._id, tokens.refreshToken);
             return {
                 ...tokens,
