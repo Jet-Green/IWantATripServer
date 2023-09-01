@@ -10,6 +10,9 @@ module.exports = {
     deleteTripType(name) {
         return AppStateModel.findOneAndUpdate({}, { $pull: { 'tripType': name } })
     },
+    deleteTransportName(name) {
+        return AppStateModel.findOneAndUpdate({}, { $pull: { 'transport': name } })
+    },
     getState() {
         return AppStateModel.find({})
     },
@@ -34,5 +37,8 @@ module.exports = {
 
     setTripType(type) {
         return AppStateModel.updateOne({}, { $push: { tripType: type } })
+    },
+    setTransportName(type) {
+        return AppStateModel.updateOne({}, { $push: { transport: type } })
     },
 }
