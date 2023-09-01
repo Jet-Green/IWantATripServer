@@ -271,5 +271,12 @@ module.exports = {
             console.log(error);
             next(error)
         }
+    },
+    async updateTransports(req, res, next) {
+        try {
+            return res.json(await TripService.updateTransports(req.body))
+        } catch (error) {
+            next(error)
+        }
     }
 }

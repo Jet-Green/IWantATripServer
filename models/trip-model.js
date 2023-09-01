@@ -48,7 +48,10 @@ const TripSchema = new Schema({
             }
         ],
     parent: { type: Schema.Types.ObjectId, ref: 'Trip' },
-    returnConditions: String
+    returnConditions: String,
+    transports: {
+        type: Array
+    }
 })
 
 module.exports = model('Trip', TripSchema);

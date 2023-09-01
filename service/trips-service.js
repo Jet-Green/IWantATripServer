@@ -416,5 +416,10 @@ module.exports = {
             let de = await LocationModel.deleteMany({ _id: { $in: locationsToDelete } })
         }
         return 'ok'
+    },
+    async updateTransports({ tripId, newTransport, transportToDelete }) {
+        console.log(tripId, newTransport, transportToDelete);
+        return
+        return await TripModel.findByIdAndUpdate(tripId, { $push: { transports: newTransport } })
     }
 }
