@@ -11,6 +11,13 @@ module.exports = {
             next(error)
         }
     },
+    async deleteTransportName(req, res, next) {
+        try {
+            return res.json(await AppStateService.deleteTransportName(req.body))
+        } catch (error) {
+            next(error)
+        }
+    },
     async getState(req, res, next) {
         try {
             return res.send(await AppStateService.getState())
@@ -49,6 +56,13 @@ module.exports = {
     async setTripType(req, res, next) {
         try {
             res.json(await AppStateService.setTripType(req.body.type))
+        } catch (err) {
+            next(err)
+        }
+    },
+    async setTransportName(req, res, next) {
+        try {
+            res.json(await AppStateService.setTransportName(req.body))
         } catch (err) {
             next(err)
         }
