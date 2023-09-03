@@ -132,14 +132,14 @@ module.exports = {
     async create(req, res, next) {
         try {
             let location = await LocationService.createLocation(req.body.trip.startLocation)
-         
+
             // if (!req.body.trip.includedLocations?.coordinates > 1) {
-                req.body.trip.startLocation = location
-                req.body.trip.includedLocations = {
-                    'type': 'MultiPoint',
-                    coordinates: [location.coordinates],
-                }
-                req.body.trip.locationNames = [location]
+            req.body.trip.startLocation = location
+            req.body.trip.includedLocations = {
+                'type': 'MultiPoint',
+                coordinates: [location.coordinates],
+            }
+            req.body.trip.locationNames = [location]
             // }
 
             const tripFromDB = await TripService.insertOne(req.body.trip)
@@ -276,6 +276,7 @@ module.exports = {
         try {
             return res.json(await TripService.updateTransports(req.body))
         } catch (error) {
+            console.log(error);
             next(error)
         }
     }

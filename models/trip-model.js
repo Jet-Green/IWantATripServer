@@ -50,7 +50,7 @@ const TripSchema = new Schema({
     parent: { type: Schema.Types.ObjectId, ref: 'Trip' },
     returnConditions: String,
     transports: {
-        type: Array
+        type: [Object]
     }
 })
 

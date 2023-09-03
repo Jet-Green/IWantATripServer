@@ -418,8 +418,17 @@ module.exports = {
         return 'ok'
     },
     async updateTransports({ tripId, newTransport, transportToDelete }) {
-        console.log(tripId, newTransport, transportToDelete);
-        return
-        return await TripModel.findByIdAndUpdate(tripId, { $push: { transports: newTransport } })
+        let tripFromDb = await TripModel.findById(tripId)
+        for (let i = 0; i < tripFromDb.transports.length; i++) {
+            for (let nameToDelete of transportToDelete) {
+                if (tripFromDb.transports[i].transportType.name == nameToDelete) {
+                    tripFromDb.transports.splice(i, 1)
+                }
+            }
+        }
+        tripFromDb.transports.push(newTransport)
+        // tripFromDb.markModified('transports')
+
+        return await tripFromDb.save()
     }
 }
