@@ -426,8 +426,8 @@ module.exports = {
                 }
             }
         }
-        tripFromDb.transports.push(newTransport)
-        // tripFromDb.markModified('transports')
+        if (newTransport)
+            tripFromDb.transports.push(newTransport)
 
         return await tripFromDb.save()
     }
