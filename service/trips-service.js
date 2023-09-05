@@ -426,9 +426,13 @@ module.exports = {
                 }
             }
         }
-        if (newTransport)
+        if (newTransport) {
+            for (let tr of tripFromDb.transports) {
+                tr.price = newTransport.price
+            }
             tripFromDb.transports.push(newTransport)
-
+            tripFromDb.markModified('transports.price')
+        }
         return await tripFromDb.save()
     }
 }
