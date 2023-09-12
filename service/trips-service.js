@@ -210,7 +210,7 @@ module.exports = {
                             coordinates: [Number(lon), Number(lat)]
                         },
                         // 100 km
-                        $maxDistance: 100000
+                        $maxDistance: 50000
                     }
                 }
             })
