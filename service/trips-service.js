@@ -279,7 +279,17 @@ module.exports = {
             results.push(doc);
         }
 
-        return results
+        let sortedByDateResults = _.sortBy(results, function (trip) {
+            if (trip.children.length > 0 && trip.start < Date.now()) {
+                for (let ch of trip.children) {
+                    if (ch.start >= Date.now())
+                        return ch.start
+                }
+            }
+            return trip.start
+        })
+
+        return sortedByDateResults
     },
     async findForSearch(s, cursor) {
         const { query, when } = s
