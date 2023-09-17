@@ -187,7 +187,7 @@ module.exports = {
         return null
 
     },
-    async findMany(sitePage, lon, lat, strQuery, start, end) {
+    async findMany(sitePage, lon, lat, strQuery, start, end, tripType) {
         const limit = 20;
         const page = sitePage || 1;
         const skip = (page - 1) * limit;
@@ -209,7 +209,7 @@ module.exports = {
                             type: 'Point',
                             coordinates: [Number(lon), Number(lat)]
                         },
-                        // 100 km
+                        // 50 km
                         $maxDistance: 50000
                     }
                 }
@@ -267,6 +267,16 @@ module.exports = {
                         { tripRoute: { $regex: strQuery, $options: 'i' } },
                         { offer: { $regex: strQuery, $options: 'i' } },
                         { description: { $regex: strQuery, $options: 'i' } },
+                    ]
+                }
+            )
+        }
+        if (tripType) {
+            console.log(tripType);
+            query.$and.push(
+                {
+                    $or: [
+                        { tripType: { $regex: tripType, $options: 'i' } },
                     ]
                 }
             )
