@@ -272,7 +272,6 @@ module.exports = {
             )
         }
         if (tripType) {
-            console.log(tripType);
             query.$and.push(
                 {
                     $or: [
