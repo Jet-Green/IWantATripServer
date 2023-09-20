@@ -274,9 +274,9 @@ module.exports = {
         if (tripType) {
             query.$and.push(
                 {
-                    $or: [
-                        { tripType: { $regex: tripType, $options: 'i' } },
-                    ]
+
+                    tripType: { $regex: tripType, $options: 'i' },
+
                 }
             )
         }
