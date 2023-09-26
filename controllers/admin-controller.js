@@ -9,6 +9,13 @@ module.exports = {
             next(error)
         }
     },
+    async findRejectedTrips(req, res, next) {
+        try {
+            return res.json(await tripsService.findRejectedTrips())
+        } catch (error) {
+            next(error)
+        }
+    },
     async moderateTrip(req, res, next) {
         try {
             return res.json(await tripsService.moderate(req.query._id, true))

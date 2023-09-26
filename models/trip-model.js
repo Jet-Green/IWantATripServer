@@ -17,6 +17,7 @@ const TripSchema = new Schema({
     cost: { type: Array },
     offer: { type: String },
     description: { type: String },
+    rejected: { type: Boolean, default: false },
 
     startLocation: { type: Object },
     includedLocations: {

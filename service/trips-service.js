@@ -343,11 +343,17 @@ module.exports = {
             { "parent": { $exists: false } }]
         }).populate('author', { 'fullinfo.fullname': 1 })
     },
-    async moderate(_id, v) {
-        return TripModel.findByIdAndUpdate(_id, { isModerated: v })
+    async findRejectedTrips() {
+        return TripModel.find({
+            $and: [{ rejected: true },
+            { "parent": { $exists: false } }]
+        }).populate('author', { 'fullinfo.fullname': 1 })
+    },
+    async moderate(_id, t) {
+        return TripModel.findByIdAndUpdate(_id, { isModerated: t })
     },
     async sendModerationMessage(tripId, msg) {
-        return TripModel.findByIdAndUpdate(tripId, { isModerated: false, moderationMessage: msg })
+        return TripModel.findByIdAndUpdate(tripId, { isModerated: false, moderationMessage: msg, rejected: true })
     },
     async findById(_id) {
         return TripModel.findById(_id).populate('author')
