@@ -351,7 +351,7 @@ module.exports = {
         }).populate('author', { 'fullinfo.fullname': 1 })
     },
     async moderate(_id, t) {
-        return TripModel.findByIdAndUpdate(_id, { isModerated: t })
+        return TripModel.findByIdAndUpdate(_id, { isModerated: t, rejected: false })
     },
     async sendModerationMessage(tripId, msg) {
         return TripModel.findByIdAndUpdate(tripId, { isModerated: false, moderationMessage: msg, rejected: true })
