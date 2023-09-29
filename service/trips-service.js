@@ -340,6 +340,7 @@ module.exports = {
     async findForModeration() {
         return TripModel.find({
             $and: [{ isModerated: false },
+            { rejected: false },
             { "parent": { $exists: false } }]
         }).populate('author', { 'fullinfo.fullname': 1 })
     },
