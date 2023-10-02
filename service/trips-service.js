@@ -400,7 +400,6 @@ module.exports = {
                         result.push(trip)
                     }
 
-
                 }
                 tripsInfoArray = result
             })
