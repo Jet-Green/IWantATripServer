@@ -58,6 +58,7 @@ module.exports = {
             let parentId = trip.parent._id
             let { start, end, billsList } = trip
             let isModerated = trip.parent.isModerated
+            let rejected = trip.parent.rejected
 
             Object.assign(trip, trip.parent)
             trip.parent = parentId
@@ -66,6 +67,7 @@ module.exports = {
             trip.start = start
             trip.end = end
             trip.isModerated = isModerated
+            trip.rejected = rejected
             trip.billsList = billsList
         }
 
@@ -104,6 +106,7 @@ module.exports = {
         return await UserModel.findOneAndUpdate({ _id: userId }, { $push: { boughtTrips: billFromDb._id } })
     },
     async insertOne(trip) {
+
         return TripModel.create(trip)
     },
     async updateOne(trip) {
@@ -197,7 +200,7 @@ module.exports = {
         query = {
             $and: [
 
-                { isHidden: false, isModerated: true },
+                { isHidden: false, isModerated: true, rejected: false },
                 { "parent": { $exists: false } },
             ]
         }
@@ -305,7 +308,7 @@ module.exports = {
 
         // если пустой фильтр
         if (!query && !when.start) {
-            return await TripModel.find({ isHidden: false, isModerated: true })
+            return await TripModel.find({ isHidden: false, isModerated: true, rejected: false })
         }
         let filter = {
             $and: [
@@ -318,7 +321,7 @@ module.exports = {
                 },
 
                 {
-                    isHidden: false, isModerated: true
+                    isHidden: false, isModerated: true, rejected: false
                 }
             ]
         }
@@ -342,7 +345,7 @@ module.exports = {
             $and: [{ isModerated: false },
             { rejected: false },
             { "parent": { $exists: false } }]
-        }).populate('author', { 'fullinfo.fullname': 1 })
+        }).populate('author', { 'fullinfo.fullname': 1 }).sort({'createdDay': -1})
     },
     async findRejectedTrips() {
         return TripModel.find({

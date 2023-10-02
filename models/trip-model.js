@@ -52,7 +52,8 @@ const TripSchema = new Schema({
     returnConditions: String,
     transports: {
         type: [Object]
-    }
+    },
+    createdDay: { type: Number }
 })
 
 module.exports = model('Trip', TripSchema);
