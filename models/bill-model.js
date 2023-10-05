@@ -5,6 +5,7 @@ const BillSchema = new Schema({
     payment: {
         amount: { type: Number, default: 0 },
     },
+    tinkoff: { type: Object },
     tripId: { type: Schema.Types.ObjectId, ref: 'Trip' },
     userInfo: {
         phone: String,
