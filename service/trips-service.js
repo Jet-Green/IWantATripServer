@@ -36,7 +36,6 @@ module.exports = {
         return bill.delete()
     },
     async setPayment(bill) {
-        console.log(bill.doc)
         return await BillModel.findByIdAndUpdate(bill.bill._id, {
             $inc: { 'payment.amount': bill.bill.payment.amount },
             $push: { 'payment.documents': bill.doc }
