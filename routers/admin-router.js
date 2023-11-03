@@ -16,4 +16,8 @@ router.post('/add-email', AdminController.addEmail)
 router.get('/get-emails', AdminController.getEmails)
 router.get('/delete-email', AdminController.deleteEmail)
 
+router.post('/add-cabinet-notifications', AdminController.addCabinetNotifications)
+router.post('/get-notifications', AdminController.getNotifications)
+router.post('/delete-notifications', AdminController.deleteNotifications)
+
 module.exports = router
