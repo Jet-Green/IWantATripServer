@@ -2,8 +2,10 @@ const { Schema, model } = require('mongoose')
 
 const BillSchema = new Schema({
     cart: Array,
+    selectedStartLocation: String,
     payment: {
         amount: { type: Number, default: 0 },
+        documents: [{ paySum: Number, payDocument: String }]
     },
     tinkoff: { type: Object },
     tripId: { type: Schema.Types.ObjectId, ref: 'Trip' },

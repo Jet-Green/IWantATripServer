@@ -9,6 +9,13 @@ module.exports = {
             next(error)
         }
     },
+    async findRejectedTrips(req, res, next) {
+        try {
+            return res.json(await tripsService.findRejectedTrips())
+        } catch (error) {
+            next(error)
+        }
+    },
     async moderateTrip(req, res, next) {
         try {
             return res.json(await tripsService.moderate(req.query._id, true))
@@ -58,4 +65,25 @@ module.exports = {
             next(error)
         }
     },
+    async addCabinetNotifications(req, res, next) {
+        try {
+            return res.json(await adminService.addCabinetNotifications(req.body))
+        } catch (error) {
+            next(error)
+        }
+    },
+    async getNotifications(req, res, next) {
+        try {
+            return res.json(await adminService.getNotifications(req.body))
+        } catch (error) {
+            next(error)
+        }
+    },
+    async deleteNotifications(req, res, next) {
+        try {
+            return res.json(await adminService.deleteNotifications(req.body))
+        } catch (error) {
+            next(error)
+        }
+    }
 }

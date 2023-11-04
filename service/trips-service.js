@@ -36,7 +36,10 @@ module.exports = {
         return bill.delete()
     },
     async setPayment(bill) {
-        return await BillModel.findByIdAndUpdate(bill._id, { $inc: { 'payment.amount': bill.payment.amount } })
+        return await BillModel.findByIdAndUpdate(bill.bill._id, {
+            $inc: { 'payment.amount': bill.bill.payment.amount },
+            $push: { 'payment.documents': bill.doc }
+        })
     },
     async getFullTripById(_id) {
         let trip = await TripModel.findById(_id).populate('author', { fullinfo: 1 }).populate('parent')
@@ -49,16 +52,18 @@ module.exports = {
                         payment: 1,
                         userInfo: 1,
                         touristsList: 1,
-                        tinkoff: 1
+                        tinkoff: 1,
+                        selectedStartLocation: 1,
                     }
                 },
-                select: { start: 1, end: 1, billsList: 1, touristsList: 1 },
+                select: { start: 1, end: 1, billsList: 1, touristsList: 1, selectedStartLocation: 1},
             })
         if (trip.parent) {
             let originalId = trip._id
             let parentId = trip.parent._id
             let { start, end, billsList } = trip
             let isModerated = trip.parent.isModerated
+            let rejected = trip.parent.rejected
 
             Object.assign(trip, trip.parent)
             trip.parent = parentId
@@ -67,10 +72,11 @@ module.exports = {
             trip.start = start
             trip.end = end
             trip.isModerated = isModerated
+            trip.rejected = rejected
             trip.billsList = billsList
         }
 
-        await trip.populate('billsList', { cart: 1, payment: 1, userInfo: 1, touristsList: 1, tinkoff: 1 })
+        await trip.populate('billsList', { cart: 1, payment: 1, userInfo: 1, touristsList: 1, selectedStartLocation: 1, tinkoff: 1 })
         return trip
     },
     async getCustomers(customersIds) {
@@ -105,6 +111,7 @@ module.exports = {
         return await UserModel.findOneAndUpdate({ _id: userId }, { $push: { boughtTrips: billFromDb._id } })
     },
     async insertOne(trip) {
+
         return TripModel.create(trip)
     },
     async updateOne(trip) {
@@ -188,7 +195,7 @@ module.exports = {
         return null
 
     },
-    async findMany(sitePage, lon, lat, strQuery, start, end) {
+    async findMany(sitePage, lon, lat, strQuery, start, end, tripType) {
         const limit = 20;
         const page = sitePage || 1;
         const skip = (page - 1) * limit;
@@ -198,7 +205,7 @@ module.exports = {
         query = {
             $and: [
 
-                { isHidden: false, isModerated: true },
+                { isHidden: false, isModerated: true, rejected: false },
                 { "parent": { $exists: false } },
             ]
         }
@@ -210,8 +217,8 @@ module.exports = {
                             type: 'Point',
                             coordinates: [Number(lon), Number(lat)]
                         },
-                        // 100 km
-                        $maxDistance: 100000
+                        // 50 km
+                        $maxDistance: 50000
                     }
                 }
             })
@@ -272,6 +279,15 @@ module.exports = {
                 }
             )
         }
+        if (tripType) {
+            query.$and.push(
+                {
+
+                    tripType: { $regex: tripType, $options: 'i' },
+
+                }
+            )
+        }
 
         const cursor = TripModel.find(query, null, { sort: 'start' }).skip(skip).limit(limit).cursor();
 
@@ -280,14 +296,24 @@ module.exports = {
             results.push(doc);
         }
 
-        return results
+        let sortedByDateResults = _.sortBy(results, function (trip) {
+            if (trip.children.length > 0 && trip.start < Date.now()) {
+                for (let ch of trip.children) {
+                    if (ch.start >= Date.now())
+                        return ch.start
+                }
+            }
+            return trip.start
+        })
+
+        return sortedByDateResults
     },
     async findForSearch(s, cursor) {
         const { query, when } = s
 
         // если пустой фильтр
         if (!query && !when.start) {
-            return await TripModel.find({ isHidden: false, isModerated: true })
+            return await TripModel.find({ isHidden: false, isModerated: true, rejected: false })
         }
         let filter = {
             $and: [
@@ -300,7 +326,7 @@ module.exports = {
                 },
 
                 {
-                    isHidden: false, isModerated: true
+                    isHidden: false, isModerated: true, rejected: false
                 }
             ]
         }
@@ -322,14 +348,21 @@ module.exports = {
     async findForModeration() {
         return TripModel.find({
             $and: [{ isModerated: false },
+            { rejected: false },
+            { "parent": { $exists: false } }]
+        }).populate('author', { 'fullinfo.fullname': 1 }).sort({ 'createdDay': -1 })
+    },
+    async findRejectedTrips() {
+        return TripModel.find({
+            $and: [{ rejected: true },
             { "parent": { $exists: false } }]
         }).populate('author', { 'fullinfo.fullname': 1 })
     },
-    async moderate(_id, v) {
-        return TripModel.findByIdAndUpdate(_id, { isModerated: v })
+    async moderate(_id, t) {
+        return TripModel.findByIdAndUpdate(_id, { isModerated: t, rejected: false })
     },
     async sendModerationMessage(tripId, msg) {
-        return TripModel.findByIdAndUpdate(tripId, { isModerated: false, moderationMessage: msg })
+        return TripModel.findByIdAndUpdate(tripId, { isModerated: false, moderationMessage: msg, rejected: true })
     },
     async findById(_id) {
         return TripModel.findById(_id).populate('author')
@@ -427,9 +460,13 @@ module.exports = {
                 }
             }
         }
-        if (newTransport)
+        if (newTransport) {
+            for (let tr of tripFromDb.transports) {
+                tr.price = newTransport.price
+            }
             tripFromDb.transports.push(newTransport)
-
+            tripFromDb.markModified('transports.price')
+        }
         return await tripFromDb.save()
     }
 }
