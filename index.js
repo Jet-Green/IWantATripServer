@@ -22,6 +22,7 @@ const locationRouter = require('./routers/location-router');
 const adminRouter = require('./routers/admin-router');
 const posterRouter = require('./routers/poster-router')
 const serviceFunctionsRouter = require('./routers/service-functions-router')
+const contractRouter = require('./routers/contract-router')
 
 
 app.use(history())
@@ -57,6 +58,7 @@ app.use('/companion', companionRouter)
 app.use('/booking', bookingRouter)
 app.use('/location', locationRouter)
 app.use('/posters', posterRouter)
+app.use('/contract', contractRouter)
 
 app.use('/admin', adminRouter)
 

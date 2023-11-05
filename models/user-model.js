@@ -26,7 +26,26 @@ const UserSchema = new Schema({
         default: {}
     },
 
-    tripCalc: [{ type: Schema.Types.ObjectId, ref: 'TripCalc' }]
+    tripCalc: [{ type: Schema.Types.ObjectId, ref: 'TripCalc' }],
+
+    notifications: {
+        type: [Object], default: [{
+            type: 'BookingTrip',
+            send: false
+        },
+        {
+            type: 'CreateTrip',
+            send: false
+        },
+        {
+            type: 'CreateCompanion',
+            send: false
+        },
+        {
+            type: 'BuyTrip',
+            send: false
+        }]
+    }
 })
 
 module.exports = model('User', UserSchema);

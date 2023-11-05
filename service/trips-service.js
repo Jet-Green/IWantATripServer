@@ -36,7 +36,10 @@ module.exports = {
         return bill.delete()
     },
     async setPayment(bill) {
-        return await BillModel.findByIdAndUpdate(bill._id, { $inc: { 'payment.amount': bill.payment.amount } })
+        return await BillModel.findByIdAndUpdate(bill.bill._id, {
+            $inc: { 'payment.amount': bill.bill.payment.amount },
+            $push: { 'payment.documents': bill.doc }
+        })
     },
     async getFullTripById(_id) {
         let trip = await TripModel.findById(_id).populate('author', { fullinfo: 1 }).populate('parent')
@@ -49,10 +52,11 @@ module.exports = {
                         payment: 1,
                         userInfo: 1,
                         touristsList: 1,
-                        tinkoff: 1
+                        tinkoff: 1,
+                        selectedStartLocation: 1,
                     }
                 },
-                select: { start: 1, end: 1, billsList: 1, touristsList: 1 },
+                select: { start: 1, end: 1, billsList: 1, touristsList: 1, selectedStartLocation: 1},
             })
         if (trip.parent) {
             let originalId = trip._id
@@ -72,7 +76,7 @@ module.exports = {
             trip.billsList = billsList
         }
 
-        await trip.populate('billsList', { cart: 1, payment: 1, userInfo: 1, touristsList: 1, tinkoff: 1 })
+        await trip.populate('billsList', { cart: 1, payment: 1, userInfo: 1, touristsList: 1, selectedStartLocation: 1, tinkoff: 1 })
         return trip
     },
     async getCustomers(customersIds) {
@@ -346,7 +350,7 @@ module.exports = {
             $and: [{ isModerated: false },
             { rejected: false },
             { "parent": { $exists: false } }]
-        }).populate('author', { 'fullinfo.fullname': 1 }).sort({'createdDay': -1})
+        }).populate('author', { 'fullinfo.fullname': 1 }).sort({ 'createdDay': -1 })
     },
     async findRejectedTrips() {
         return TripModel.find({
