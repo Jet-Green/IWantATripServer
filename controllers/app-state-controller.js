@@ -77,7 +77,6 @@ module.exports = {
     async setTaxi(req, res, next) {
         try {
             res.json(await AppStateService.setTaxi(req.body))
-            console.log(req.body)
         } catch (err) {
             next(err)
         }
