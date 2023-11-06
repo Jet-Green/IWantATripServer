@@ -13,6 +13,8 @@ router.post('/set-trip-type', appStateController.setTripType)
 router.post('/delete-trip-type', appStateController.deleteTripType)
 router.post('/set-transport-name', appStateController.setTransportName)
 router.post('/delete-transport-name', appStateController.deleteTransportName)
+router.post('/set-taxi', appStateController.setTaxi)
+router.post('/delete-taxi', appStateController.deleteTaxi)
 
 
 module.exports = router
