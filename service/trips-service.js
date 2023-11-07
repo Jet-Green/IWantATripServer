@@ -75,7 +75,7 @@ module.exports = {
             trip.billsList = billsList
         }
 
-        await trip.populate('billsList', { cart: 1, payment: 1, userInfo: 1, touristsList: 1, selectedStartLocation: 1, })
+        await trip.populate('billsList', { cart: 1, payment: 1, userInfo: 1, date: 1, isWaitingList: 1, touristsList: 1, selectedStartLocation: 1, })
         return trip
     },
     async getCustomers(customersIds) {
