@@ -8,5 +8,8 @@ module.exports = {
         await UserModel.findOneAndUpdate({ email: userEmail }, { $push: { contracts: contractFromDb._id } })
 
         return contractFromDb
+    },
+    async getAll() {
+        return ContractModel.find({})
     }
 }
