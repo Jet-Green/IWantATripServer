@@ -15,6 +15,8 @@ const ContractSchema = new Schema({
     phone: { type: String },
     email: { type: String },
     director: { type: String },
+
+    userEmail: String
 })
 
 module.exports = model('Contract', ContractSchema);

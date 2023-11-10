@@ -1,7 +1,12 @@
 const ContractModel = require('../models/contract-model.js')
+const UserModel = require('../models/user-model.js')
 
 module.exports = {
-    createContract({ contract }) {
-        return ContractModel.create(contract)
+    async createContract({ contract, userEmail }) {
+        let contractFromDb = await ContractModel.create({ ...contract, userEmail: userEmail })
+
+        await UserModel.findOneAndUpdate({ email: userEmail }, { $push: { contracts: contractFromDb._id } })
+
+        return contractFromDb
     }
 }
