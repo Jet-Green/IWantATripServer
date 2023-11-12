@@ -22,22 +22,34 @@ let s3 = new EasyYandexS3({
 module.exports = {
     async createManyByDates(req, res, next) {
         try {
-            return res.json(await TripService.createManyByDates(req.body))
+            let createdIds = await TripService.createManyByDates(req.body)
+
+            logger.info({ parentId: req.body.parentId, createdIds, logType: 'trip' }, 'many trips created by dates')
+
+            return res.json(createdIds)
         } catch (error) {
             next(error)
         }
     },
     async setPayment(req, res, next) {
         try {
-            return res.json(await TripService.setPayment(req.body))
+            let billFromDb = await TripService.setPayment(req.body)
+
+            logger.info({ billId: billFromDb._id, doc: req.body.doc, logType: 'trip' }, 'set payment')
+
+            return res.json(billFromDb)
         } catch (error) {
+            logger.fatal({ error, logType: 'trip error', brokenMethod: 'setPayment' })
             next(error)
         }
     },
     async deletePayment(req, res, next) {
         try {
+            logger.info({ billId: req.query._id, logType: 'trip' }, 'delete payment')
+
             return res.json(await TripService.deletePayment(req.query._id))
         } catch (error) {
+            logger.fatal({ error, logType: 'trip error', brokenMethod: 'setPayment' })
             next(error)
         }
     },
@@ -99,6 +111,7 @@ module.exports = {
 
             return res.json(buyCallBack.userCallback)
         } catch (error) {
+            logger.fatal({ error, logType: 'trip error', brokenMethod: 'buyTrip' })
             next(error)
         }
     },
@@ -167,6 +180,7 @@ module.exports = {
             sendMail(req.body.emailHtml, [...req.body.emails, ...emailsFromDbBook], 'Создан тур')
             return res.json({ _id: trip._id })
         } catch (error) {
+            logger.fatal({ error, logType: 'trip error', brokenMethod: 'create' })
             next(error)
         }
     },
@@ -176,6 +190,7 @@ module.exports = {
 
             return res.json({ _id: tripCb._id })
         } catch (error) {
+            logger.fatal({ error, logType: 'trip error', brokenMethod: 'booking' })
             next(error)
         }
     },
@@ -187,6 +202,7 @@ module.exports = {
 
             return res.json({ _id: tripCb._id })
         } catch (error) {
+            logger.fatal({ error, logType: 'trip error', brokenMethod: 'update' })
             next(error)
         }
     },
@@ -218,11 +234,15 @@ module.exports = {
                     filenames.push(upl.Location)
                 }
             }
-            if (filenames.length)
+
+            if (filenames.length) {
                 await TripService.updateTripImagesUrls(_id, filenames)
+                logger.info({ filenames, logType: 'trip' }, 'images uploaded')
+            }
 
             res.status(200).send('Ok')
         } catch (error) {
+            logger.fatal({ error, logType: 'trip error', brokenMethod: 'uploadImages' })
             next(error)
         }
     },
@@ -262,6 +282,7 @@ module.exports = {
         try {
             return res.json(await TripService.updateBillsTourists(req.body))
         } catch (error) {
+            logger.fatal({ error, logType: 'trip error', brokenMethod: 'updateBillsTourists' })
             next(error)
         }
     },
@@ -269,22 +290,43 @@ module.exports = {
         try {
             return res.json(await TripService.updatePartner(req.body))
         } catch (error) {
+            logger.fatal({ error, logType: 'trip error', brokenMethod: 'updatePartner' })
             next(error)
         }
     },
+    /*
+    * req.body {
+    *   newLocation
+    *   locationsToDelete
+    *   tripId
+    * }
+    */
     async updateIncludedLocations(req, res, next) {
         try {
-            return res.json(await TripService.updateIncludedLocations(req.body))
+            let updateCallback = await TripService.updateIncludedLocations(req.body)
+
+            logger.info({ newLocation: req.body.newLocation, locationsToDelete: req.body.locationsToDelete, _id: req.body.tripId, logType: 'trip' }, 'trip locations updated')
+
+            return res.json(updateCallback)
         } catch (error) {
-            console.log(error);
+            logger.fatal({ error, logType: 'trip error', brokenMethod: 'updateIncludedLocations' })
             next(error)
         }
     },
+    /*
+    * req.body {
+    *   newTransport
+    *   transportToDelete
+    *   tripId
+    * }
+    */
     async updateTransports(req, res, next) {
         try {
-            return res.json(await TripService.updateTransports(req.body))
+            let updateTransportsCallback = await TripService.updateTransports(req.body)
+            // logger.info({ newTransport: req.body.newTransport, transportToDelete: req.body.transportToDelete, _id: req.body.tripId, logType: 'trip' }, 'trip transports updated')
+            return res.json(updateTransportsCallback)
         } catch (error) {
-            console.log(error);
+            logger.fatal({ error, logType: 'trip error', brokenMethod: 'updateTransports' })
             next(error)
         }
     }
