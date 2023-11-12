@@ -56,7 +56,7 @@ module.exports = {
                         selectedStartLocation: 1,
                     }
                 },
-                select: { start: 1, end: 1, billsList: 1, touristsList: 1, selectedStartLocation: 1},
+                select: { start: 1, end: 1, billsList: 1, touristsList: 1, selectedStartLocation: 1 },
             })
         if (trip.parent) {
             let originalId = trip._id
@@ -108,7 +108,7 @@ module.exports = {
 
         let userId = bill.userInfo._id
 
-        return await UserModel.findOneAndUpdate({ _id: userId }, { $push: { boughtTrips: billFromDb._id } })
+        return { billId: billFromDb._id, userCallback: await UserModel.findOneAndUpdate({ _id: userId }, { $push: { boughtTrips: billFromDb._id } }) }
     },
     async insertOne(trip) {
 

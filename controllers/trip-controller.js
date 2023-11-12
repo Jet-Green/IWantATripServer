@@ -7,6 +7,7 @@ const ApiError = require('../exceptions/api-error.js')
 
 let EasyYandexS3 = require('easy-yandex-s3').default;
 const { sendMail } = require('../middleware/mailer')
+const logger = require('../logger.js')
 
 // Указываем аутентификацию в Yandex Object Storage
 let s3 = new EasyYandexS3({
@@ -92,7 +93,11 @@ module.exports = {
 
             sendMail(req.body.emailHtml, [tripFromDb?.author?.email, ...emailsFromDbBuy], 'Куплена поездка')
 
-            return res.json(await TripService.buyTrip(req))
+            let buyCallBack = await TripService.buyTrip(req)
+
+            logger.info({ _id: tripFromDb._id, billId: buyCallBack.billId, logType: 'trip' }, 'trip purchased')
+
+            return res.json(buyCallBack.userCallback)
         } catch (error) {
             next(error)
         }
@@ -116,8 +121,11 @@ module.exports = {
     async deleteById(req, res, next) {
         try {
             const _id = req.body._id
+            let removeTripCallback = await TripService.deleteOne(_id, s3)
 
-            return res.json(await TripService.deleteOne(_id, s3));
+            logger.info({ _id: removeTripCallback._id, logType: 'trip' }, 'trip deleted')
+
+            return res.json(removeTripCallback);
         } catch (error) {
             next(error)
         }
@@ -143,6 +151,9 @@ module.exports = {
             // }
 
             const tripFromDB = await TripService.insertOne(req.body.trip)
+
+            logger.info({ _id: tripFromDB._id.toString(), logType: 'trip' }, 'trip created')
+
             let trip = Object.assign({}, tripFromDB._doc)
 
             // format to send the mail
@@ -172,6 +183,8 @@ module.exports = {
         try {
             const tripCb = await TripService.updateOne(req.body)
 
+            logger.info({ _id: tripCb._id, logType: 'trip' }, 'trip edited and sent to moderation')
+
             return res.json({ _id: tripCb._id })
         } catch (error) {
             next(error)
@@ -180,14 +193,9 @@ module.exports = {
     async hideTrip(req, res, next) {
         try {
             await TripService.hide(req.query._id, req.query.v)
-            return res.json('OK')
-        } catch (error) {
-            next(error)
-        }
-    },
-    async moderateTrip(req, res, next) {
-        try {
-            await TripService.moderate(req.query._id, req.query.v)
+
+            logger.info({ _id: req.query._id, isHidden: Boolean(req.query.v), logType: 'trip' }, 'trip hide')
+
             return res.json('OK')
         } catch (error) {
             next(error)

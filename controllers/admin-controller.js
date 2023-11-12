@@ -1,6 +1,8 @@
 const tripsService = require('../service/trips-service')
 const adminService = require('../service/admin-service')
 
+const logger = require('../logger.js')
+
 module.exports = {
     async findForModeration(req, res, next) {
         try {
@@ -18,14 +20,22 @@ module.exports = {
     },
     async moderateTrip(req, res, next) {
         try {
-            return res.json(await tripsService.moderate(req.query._id, true))
+            let tripFromDb = await tripsService.moderate(req.query._id, true)
+
+            logger.info({ _id: tripFromDb._id.toString(), isModerated: true, rejected: false, logType: 'trip' }, 'trip moderated and published')
+
+            return res.json(tripFromDb)
         } catch (error) {
             next(error)
         }
     },
     async sendModerationMessage(req, res, next) {
         try {
-            return res.json(await tripsService.sendModerationMessage(req.query.tripId, req.body.msg))
+            let tripFromDb = await tripsService.sendModerationMessage(req.query.tripId, req.body.msg)
+
+            logger.info({ _id: req.query.tripId, moderationMessage: req.body.msg, isModerated: false, rejected: true, logType: 'trip' }, 'trip rejected')
+
+            return res.json(tripFromDb)
         } catch (error) {
             next(error)
         }
