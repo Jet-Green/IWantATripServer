@@ -9,13 +9,15 @@ const mongoose = require('mongoose')
 const cookieParser = require('cookie-parser')
 var bodyParser = require('body-parser');
 
+const errorMiddleware = require('./middleware/error-middleware')
+const errorFilter = require('./exceptions/error-filter')
+
 // here all routes
 const tripRouter = require('./routers/trip-router')
 const guideRouter = require('./routers/guide-router')
 const authRouter = require('./routers/auth-router')
 const appStateRouter = require('./routers/app-state-router')
 const companionRouter = require('./routers/companion-router')
-const errorMiddleware = require('./middleware/error-middleware')
 const history = require('connect-history-api-fallback');
 const bookingRouter = require('./routers/booking-router');
 const locationRouter = require('./routers/location-router');
@@ -64,9 +66,9 @@ app.use('/admin', adminRouter)
 
 app.use('/service-functions', serviceFunctionsRouter)
 
+app.use(errorFilter)
 // use error middleware last
 app.use(errorMiddleware)
-
 
 function startServer() {
     try {
