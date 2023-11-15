@@ -13,8 +13,10 @@ const BookingSchema = new Schema({
     wishes: { type: String },
     creatorId: { type: Schema.Types.ObjectId, ref: 'User' },
     status: { type: String, default: 'open' },
-    dateOfBooking: { type: Number},
-    comment: { type: String, default: '' }
+    dateOfBooking: { type: Number },
+    comment: { type: String, default: '' },
+
+    offers: { type: [Object], default: [] }
 })
 
 module.exports = model('Booking', BookingSchema);
