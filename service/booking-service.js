@@ -16,5 +16,8 @@ module.exports = {
     },
     updateBooking(newBooking) {
         return BookingModel.findByIdAndUpdate(newBooking._id, newBooking)
+    },
+    offerTrip({ bookingId, offer }) {
+        return BookingModel.findByIdAndUpdate(bookingId, { $push: { offers: offer } })
     }
 }
