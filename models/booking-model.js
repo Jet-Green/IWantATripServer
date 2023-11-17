@@ -16,7 +16,16 @@ const BookingSchema = new Schema({
     dateOfBooking: { type: Number },
     comment: { type: String, default: '' },
 
-    offers: { type: [Object], default: [] }
+    offers: {
+        type: [{
+            offerText: { type: String },
+            date: { type: Number },
+            offerer: {
+                type: Schema.Types.ObjectId,
+                ref: 'Contract',
+            }
+        }], default: []
+    }
 })
 
 module.exports = model('Booking', BookingSchema);

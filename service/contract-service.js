@@ -5,7 +5,7 @@ module.exports = {
     async createContract({ contract, userEmail }) {
         let contractFromDb = await ContractModel.create({ ...contract, userEmail: userEmail })
 
-        await UserModel.findOneAndUpdate({ email: userEmail }, { $push: { contracts: contractFromDb._id } })
+        await UserModel.findOneAndUpdate({ email: userEmail }, { $push: { tinkoffContracts: contractFromDb._id } })
 
         return contractFromDb
     },
