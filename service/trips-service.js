@@ -452,6 +452,7 @@ module.exports = {
         return 'ok'
     },
     async updateTransports({ tripId, newTransport, transportToDelete }) {
+        console.log(tripId, newTransport)
         let tripFromDb = await TripModel.findById(tripId)
         for (let i = 0; i < tripFromDb.transports.length; i++) {
             for (let nameToDelete of transportToDelete) {
@@ -465,7 +466,7 @@ module.exports = {
                 tr.price = newTransport.price
             }
             tripFromDb.transports.push(newTransport)
-            tripFromDb.markModified('transports.price')
+            tripFromDb.markModified('transports.capacity')
         }
         return await tripFromDb.save()
     }
