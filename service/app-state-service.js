@@ -13,6 +13,7 @@ module.exports = {
     deleteTransportName(name) {
         return AppStateModel.findOneAndUpdate({}, { $pull: { 'transport': name } })
     },
+ 
     getState() {
         return AppStateModel.find({})
     },
@@ -41,4 +42,5 @@ module.exports = {
     setTransportName(type) {
         return AppStateModel.updateOne({}, { $push: { transport: type } })
     },
+
 }
