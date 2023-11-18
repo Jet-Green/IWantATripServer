@@ -8,7 +8,8 @@ const GuideElementSchema = new Schema({
     socialMedia: { type: String, required: true },
     description: { type: String, required: true },
     // watch, eat, go ...
-    type: { type: String, required: true }
+    type: { type: String, required: true },
+    taxi: [Object],
 })
 
 module.exports = model('GuideElement', GuideElementSchema);

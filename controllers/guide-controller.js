@@ -91,4 +91,29 @@ module.exports = {
         } catch (error) {
         }
     },
+    async deleteTaxi(req, res, next) {
+        try {
+            return res.json(await GuideService.deleteTaxi(req.body))
+        } catch (error) {
+            next(error)
+        }
+    },
+    async setTaxi(req, res, next) {
+        try {
+          
+            res.json(await GuideService.setTaxi(req.body.taxi))
+        } catch (err) {
+            next(err)
+        }
+    },
+
+    async getLocalTaxi(req, res, next) {
+        try {
+          
+            res.json(await GuideService.getLocalTaxi(req.body.location))
+        } catch (err) {
+            next(err)
+        }
+    },
+    
 }

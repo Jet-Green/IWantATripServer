@@ -51,5 +51,12 @@ module.exports = {
         } catch (error) {
             next(error)
         }
+    },
+    async getOffersByBookingId(req, res, next) {
+        try {
+            return res.json(await BookingService.getOffersByBookingId(req.query.booking_id))
+        } catch (error) {
+            next(error)
+        }
     }
 }

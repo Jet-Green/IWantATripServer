@@ -46,6 +46,8 @@ const AppStateSchema = new Schema({
             },
         ]
     },
+  
+
 })
 
 module.exports = model('AppState', AppStateSchema);
