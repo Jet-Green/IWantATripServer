@@ -17,5 +17,6 @@ router.get('/change-status', bookingController.changeStatus)
 router.post('/update-booking', bookingController.updateBooking)
 router.post('/offer-trip', bookingController.offerTrip)
 router.post('/offers', bookingController.getOffersByBookingId)
+router.post('/accept-offer', bookingController.acceptOffer)
 
 module.exports = router

@@ -58,5 +58,12 @@ module.exports = {
         } catch (error) {
             next(error)
         }
+    },
+    async acceptOffer(req, res, next) {
+        try {
+            return res.json(await BookingService.acceptOffer(req.body))
+        } catch (error) {
+            next(error)
+        }
     }
 }

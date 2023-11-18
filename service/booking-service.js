@@ -24,5 +24,8 @@ module.exports = {
         let bookingFromDb = await BookingModel.findById(booking_id, { offers: 1 }).populate({ path: 'offers.offerer', select: { name: 1 } })
 
         return bookingFromDb.offers
+    },
+    async acceptOffer({ bookingId, offerId, client }) {
+        return await BookingModel.findOneAndUpdate({ _id: bookingId, 'offers._id': offerId }, { $set: { "offers.$.client": client, "offers.$.accepted": true } })
     }
 }
