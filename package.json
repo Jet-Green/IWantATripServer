@@ -26,7 +26,8 @@
     "lodash": "^4.17.21",
     "mongoose": "^6.6.3",
     "multer": "^1.4.5-lts.1",
-    "nodemailer": "^6.9.1"
+    "nodemailer": "^6.9.1",
+    "pino": "^8.16.1"
   },
   "devDependencies": {
     "nodemon": "^2.0.20"
