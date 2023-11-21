@@ -16,5 +16,13 @@ module.exports = {
     },
     updateBooking(newBooking) {
         return BookingModel.findByIdAndUpdate(newBooking._id, newBooking)
+    },
+    offerTrip({ bookingId, offer }) {
+        return BookingModel.findByIdAndUpdate(bookingId, { $push: { offers: offer } })
+    },
+    async getOffersByBookingId(booking_id) {
+        let bookingFromDb = await BookingModel.findById(booking_id, { offers: 1 }).populate({ path: 'offers.offerer', select: { name: 1 } })
+
+        return bookingFromDb.offers
     }
 }

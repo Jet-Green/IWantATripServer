@@ -4,8 +4,51 @@ const AppStateSchema = new Schema({
     mainPageMessage: [{ type: String, default: '' }],
     tripType: [String],
     transport: [Object],
+    sendMailsTo: {
+        type: [Object],
+        default: [
+            {
+                type: 'BookingTrip',
+                emails: []
+            },
+            {
+                type: 'CreateTrip',
+                emails: []
+            },
+            {
+                type: 'CreateCompanion',
+                emails: []
+            },
+            {
+                type: 'BuyTrip',
+                emails: []
+            },
+        ]
+    },
     taxi: [Object],
-    sendMailsTo: { type: Object, default: { 'CreateTrip': [], 'CreateCompanion': [], 'BookingTrip': [], 'BuyTrip': [] } }
+    cabinetNotifications: {
+        type: [Object],
+        default: [
+            {
+                type: 'BookingTrip',
+                emails: []
+            },
+            {
+                type: 'CreateTrip',
+                emails: []
+            },
+            {
+                type: 'CreateCompanion',
+                emails: []
+            },
+            {
+                type: 'BuyTrip',
+                emails: []
+            },
+        ]
+    },
+  
+
 })
 
 module.exports = model('AppState', AppStateSchema);
