@@ -23,8 +23,13 @@ const BookingSchema = new Schema({
             offerer: {
                 type: Schema.Types.ObjectId,
                 ref: 'Contract',
-            }
-        }], default: []
+            },
+            accepted: { type: Boolean, default: false },
+            rejected: { type: Boolean, default: false },
+            client: { type: Object, default: {} }
+        }],
+        _id: { id: true },
+        default: []
     }
 })
 
