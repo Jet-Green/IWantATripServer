@@ -25,7 +25,6 @@ const AppStateSchema = new Schema({
             },
         ]
     },
-    taxi: [Object],
     cabinetNotifications: {
         type: [Object],
         default: [

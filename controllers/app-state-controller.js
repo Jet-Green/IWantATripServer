@@ -18,13 +18,6 @@ module.exports = {
             next(error)
         }
     },
-    async deleteTaxi(req, res, next) {
-        try {
-            return res.json(await AppStateService.deleteTaxi(req.body))
-        } catch (error) {
-            next(error)
-        }
-    },
     async getState(req, res, next) {
         try {
             return res.send(await AppStateService.getState())
@@ -73,12 +66,5 @@ module.exports = {
         } catch (err) {
             next(err)
         }
-    },
-    async setTaxi(req, res, next) {
-        try {
-            res.json(await AppStateService.setTaxi(req.body))
-        } catch (err) {
-            next(err)
-        }
-    },
+    }
 }

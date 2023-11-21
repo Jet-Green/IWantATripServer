@@ -13,9 +13,6 @@ module.exports = {
     deleteTransportName(name) {
         return AppStateModel.findOneAndUpdate({}, { $pull: { 'transport': name } })
     },
-    deleteTaxi(name) {
-        return AppStateModel.findOneAndUpdate({}, { $pull: { 'taxi': name } })
-    },
     getState() {
         return AppStateModel.find({})
     },
@@ -43,8 +40,5 @@ module.exports = {
     },
     setTransportName(type) {
         return AppStateModel.updateOne({}, { $push: { transport: type } })
-    },
-    setTaxi(taxi) {
-        return AppStateModel.updateOne({}, { $push: { taxi: taxi } })
     },
 }
