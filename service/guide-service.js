@@ -23,8 +23,11 @@ module.exports = {
         return GuideElementModel.updateOne({}, { $push: { taxi: taxi } })
     },
     getLocalTaxi(location) {
-        console.log(location)
-        return GuideElementModel.find({'taxi.location': location })
+        if(location == null){
+            return GuideElementModel.find({})
+        }else{
+            return GuideElementModel.find({'taxi.location': location },{_id: 0, taxi: {$elemMatch: {location: location}}})
+        }
     },
     deleteTaxi(name) {
         return GuideElementModel.findOneAndUpdate({}, { $pull: { 'taxi': name } })
