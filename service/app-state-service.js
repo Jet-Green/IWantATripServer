@@ -11,7 +11,6 @@ module.exports = {
         return AppStateModel.findOneAndUpdate({}, { $pull: { 'tripType': name } })
     },
     deleteTransportName(name) {
-        console.log(name)
         return AppStateModel.findOneAndUpdate({}, { $pull: { 'transport': name } })
     },
     getState() {
