@@ -14,6 +14,4 @@ router.post('/delete-trip-type', appStateController.deleteTripType)
 router.post('/set-transport-name', appStateController.setTransportName)
 router.post('/delete-transport-name', appStateController.deleteTransportName)
 
-
-
 module.exports = router
