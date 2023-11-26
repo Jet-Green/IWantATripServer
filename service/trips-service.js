@@ -451,7 +451,6 @@ module.exports = {
         return 'ok'
     },
     async updateTransports({ tripId, newTransport, transportToDelete }) {
-        console.log(tripId, newTransport)
         let tripFromDb = await TripModel.findById(tripId)
         for (let i = 0; i < tripFromDb.transports.length; i++) {
             for (let nameToDelete of transportToDelete) {
@@ -468,5 +467,10 @@ module.exports = {
             tripFromDb.markModified('transports.capacity')
         }
         return await tripFromDb.save()
+    },
+    async findTripsByName({ name: name }) {
+
+        return BillModel.find({ 'touristsList.fullname': { $regex: name, $options: 'i' } }, { tripId: 1 }).populate('tripId')
+
     }
 }

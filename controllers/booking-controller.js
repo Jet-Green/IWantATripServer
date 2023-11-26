@@ -54,9 +54,30 @@ module.exports = {
     },
     async getOffersByBookingId(req, res, next) {
         try {
-            return res.json(await BookingService.getOffersByBookingId(req.query.booking_id))
+            return res.json(await BookingService.getOffersByBookingId(req.query.booking_id, req.query.status))
         } catch (error) {
             next(error)
         }
-    }
+    },
+    async acceptOffer(req, res, next) {
+        try {
+            return res.json(await BookingService.acceptOffer(req.body))
+        } catch (error) {
+            next(error)
+        }
+    },
+    async rejectOffer(req, res, next) {
+        try {
+            return res.json(await BookingService.rejectOffer(req.body))
+        } catch (error) {
+            next(error)
+        }
+    },
+    async toNewOffer(req, res, next) {
+        try {
+            return res.json(await BookingService.toNewOffer(req.body))
+        } catch (error) {
+            next(error)
+        }
+    },
 }
