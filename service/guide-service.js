@@ -1,4 +1,5 @@
 const GuideElementModel = require('../models/guide-element-model')
+const TaxiModel = require('../models/taxi-model')
 
 module.exports = {
     async clear() {
@@ -19,17 +20,16 @@ module.exports = {
         return GuideElementModel.find({ 'type': type }).exec()
     },
     setTaxi(taxi) {
-       
-        return GuideElementModel.updateOne({}, { $push: { taxi: taxi } })
+        return TaxiModel.create(taxi)
     },
     getLocalTaxi(location) {
-        if(location == null){
-            return GuideElementModel.find({})
-        }else{
-            return GuideElementModel.find({'taxi.location': location },{_id: 0, taxi: {$elemMatch: {location: location}}})
+        if (location == null) {
+            return TaxiModel.find({})
+        } else {
+            return TaxiModel.find({ location: location})
         }
     },
     deleteTaxi(name) {
-        return GuideElementModel.findOneAndUpdate({}, { $pull: { 'taxi': name } })
+        return TaxiModel.findOneAndUpdate({ $pull: { name } })
     },
 }
