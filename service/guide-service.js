@@ -29,7 +29,7 @@ module.exports = {
             return TaxiModel.find({ location: location})
         }
     },
-    deleteTaxi(name) {
-        return TaxiModel.findOneAndUpdate({ $pull: { name } })
+    deleteTaxi(_id) {
+        return TaxiModel.deleteOne({ _id: _id })
     },
 }
