@@ -329,5 +329,15 @@ module.exports = {
             logger.fatal({ error, logType: 'trip error', brokenMethod: 'updateTransports' })
             next(error)
         }
+    },
+
+    async findTripsByName (req, res, next) {
+        try {
+            let tripsByName = await TripService.findTripsByName(req.body)
+            return res.json(tripsByName)
+        } catch (error) {
+            next(error)
+        }
     }
+
 }

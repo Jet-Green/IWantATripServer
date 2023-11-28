@@ -40,5 +40,6 @@ router.post('/create-many-by-dates', tripController.createManyByDates)
 router.post('/update-included-locations', tripController.updateIncludedLocations)
 
 router.post('/update-transports', tripController.updateTransports)
+router.post('/find-trip-by-name', tripController.findTripsByName)
 
 module.exports = router
