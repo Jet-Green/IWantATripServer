@@ -42,5 +42,4 @@ module.exports = {
     setTransportName(type) {
         return AppStateModel.updateOne({}, { $push: { transport: type } })
     },
-
 }
