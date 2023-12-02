@@ -468,9 +468,11 @@ module.exports = {
         }
         return await tripFromDb.save()
     },
-    async findTripsByName({ name: name }) {
+    async findTripsByName({ name: name, userId: userId }) {
 
-        return BillModel.find({ 'touristsList.fullname': { $regex: name, $options: 'i' } }, { tripId: 1 }).populate('tripId')
-
+        let tempTrips = await BillModel.find({ 'touristsList.fullname': { $regex: name, $options: 'i' } }, { tripId: 1 })
+        let clearTrips = tempTrips.map((trip) => { return trip.tripId })
+        let trips = await TripModel.find({ _id: clearTrips, author: userId }, { name: 1, start: 1, end: 1, author: 1 })
+        return trips
     }
 }
