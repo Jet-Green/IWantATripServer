@@ -121,5 +121,12 @@ module.exports = {
             console.log(error);
             next(error)
         }
+    },
+    async determineTheWinner(req, res, next) {
+        try {
+            return res.json(await UserService.determineTheWinner())
+        } catch (error) {
+            next(error)
+        }
     }
 }

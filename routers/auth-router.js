@@ -25,4 +25,6 @@ router.get('/get-bought-trips', userController.getBoughtTrips)
 
 router.post('/cancel-trip', userController.cancelTrip)
 
+router.get('/determine-winner', userController.determineTheWinner)
+
 module.exports = router

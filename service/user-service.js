@@ -120,7 +120,7 @@ module.exports = {
         const hashPassword = await bcrypt.hash(password, 3)
 
         const locationFromDb = await LocationService.createLocation(userLocation)
-        const user = await UserModel.create({ email, password: hashPassword, fullname, userLocation: locationFromDb, roles: [candidateUser.value], })
+        const user = await UserModel.create({ email, password: hashPassword, fullname, userLocation: locationFromDb, roles: [candidateUser.value], date: Date.now() })
 
         const tokens = TokenService.generateTokens({ email, hashPassword, _id: user._id })
         await TokenService.saveToken(user._id, tokens.refreshToken);
@@ -228,5 +228,24 @@ module.exports = {
             result.push(bill)
         }
         return result
+    },
+
+    async determineTheWinner() {
+        function getRandomInt(max) {
+            return Math.floor(Math.random() * max);
+        }
+
+        let users_registered_today = await UserModel.find(
+            { 
+                date: { $gte: new Date().setHours(0, 0, 0, 0) },
+                $expr: { $gt: [{ $strLenCP: '$fullinfo.phone' }, 0] } 
+            }, 
+            { fullname: 1, 'fullinfo.phone': 1 }
+        )
+        let user = users_registered_today[getRandomInt(users_registered_today.length)]
+
+        await new Promise(r => setTimeout(r, 1500))
+
+        return user
     }
 }
