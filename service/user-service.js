@@ -237,14 +237,13 @@ module.exports = {
 
         let users_registered_today = await UserModel.find(
             { 
-                date: { $gte: new Date().setHours(0, 0, 0, 0) },
-                $expr: { $gt: [{ $strLenCP: '$fullinfo.phone' }, 0] } 
+                date: { $gte: new Date().setHours(0, 0, 0, 0) }
             }, 
-            { fullname: 1, 'fullinfo.phone': 1 }
+            { fullname: 1, email: 1 }
         )
         let user = users_registered_today[getRandomInt(users_registered_today.length)]
 
-        await new Promise(r => setTimeout(r, 1500))
+        await new Promise(r => setTimeout(r, 3000))
 
         return user
     }
