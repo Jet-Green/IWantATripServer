@@ -330,15 +330,20 @@ module.exports = {
             next(error)
         }
     },
-
-    async findTripsByName (req, res, next) {
+    async findTripsByName(req, res, next) {
         try {
-    
+
             let tripsByName = await TripService.findTripsByName(req.body)
             return res.json(tripsByName)
         } catch (error) {
             next(error)
         }
+    },
+    async setUserComment(req, res, next) {
+        try {
+            return res.json(await TripService.setUserComment(req.body))
+        } catch (error) {
+            next(error)
+        }
     }
-
 }

@@ -42,4 +42,6 @@ router.post('/update-included-locations', tripController.updateIncludedLocations
 router.post('/update-transports', tripController.updateTransports)
 router.post('/find-trip-by-name', tripController.findTripsByName)
 
+router.put('/set-user-comment', tripController.setUserComment)
+
 module.exports = router

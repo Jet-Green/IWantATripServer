@@ -474,5 +474,8 @@ module.exports = {
         let clearTrips = tempTrips.map((trip) => { return trip.tripId })
         let trips = await TripModel.find({ _id: clearTrips, author: userId }, { name: 1, start: 1, end: 1, author: 1 })
         return trips
+    },
+    async setUserComment({ tripId, comment }) {
+        return await TripModel.findByIdAndUpdate(tripId, { $set: { userComment: comment } })
     }
 }

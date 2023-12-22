@@ -53,7 +53,8 @@ const TripSchema = new Schema({
     transports: {
         type: [Object]
     },
-    createdDay: { type: Number }
+    createdDay: { type: Number },
+    userComment: { type: String }
 })
 
 module.exports = model('Trip', TripSchema);
