@@ -54,6 +54,7 @@ module.exports = {
                         touristsList: 1,
                         tinkoff: 1,
                         selectedStartLocation: 1,
+                        userComment: 1,
                     }
                 },
                 select: { start: 1, end: 1, billsList: 1, touristsList: 1, selectedStartLocation: 1 },
@@ -76,7 +77,7 @@ module.exports = {
             trip.billsList = billsList
         }
 
-        await trip.populate('billsList', { cart: 1, payment: 1, userInfo: 1, touristsList: 1, selectedStartLocation: 1, tinkoff: 1 })
+        await trip.populate('billsList', { cart: 1, payment: 1, userInfo: 1, touristsList: 1, selectedStartLocation: 1, tinkoff: 1, userComment: 1 })
         return trip
     },
     async getCustomers(customersIds) {
@@ -477,5 +478,8 @@ module.exports = {
     },
     async setUserComment({ tripId, comment }) {
         return await TripModel.findByIdAndUpdate(tripId, { $set: { userComment: comment } })
+    },
+    async editBillUserComment({ billId, comment }) {
+        return await BillModel.findByIdAndUpdate(billId, { $set: { userComment: comment } })
     }
 }

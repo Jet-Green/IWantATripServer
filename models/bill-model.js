@@ -19,7 +19,8 @@ const BillSchema = new Schema({
         fullname: String,
         phone: String,
         _id: false,
-    }]
+    }],
+    userComment: { type: String }
 })
 
 module.exports = model('Bill', BillSchema);

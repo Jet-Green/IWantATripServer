@@ -339,9 +339,28 @@ module.exports = {
             next(error)
         }
     },
+    /*
+    * req.body {
+    *   tripId
+    *   comment
+    * }
+    */
     async setUserComment(req, res, next) {
         try {
             return res.json(await TripService.setUserComment(req.body))
+        } catch (error) {
+            next(error)
+        }
+    },
+    /*
+    * req.body {
+    *   billId
+    *   comment
+    * }
+    */
+    async editBillUserComment(req, res, next) {
+        try {
+            return res.json(await TripService.editBillUserComment(req.body))
         } catch (error) {
             next(error)
         }
