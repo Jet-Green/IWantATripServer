@@ -102,7 +102,8 @@ const ContractSchema = new Schema({
         company: { $type: String, default: 'OrangeData' },
     },
 
-    userEmail: String
+    userEmail: String,
+    shopInfo: Object
 }, { typeKey: '$type' })
 
 module.exports = model('Contract', ContractSchema);
