@@ -364,5 +364,19 @@ module.exports = {
         } catch (error) {
             next(error)
         }
+    },
+    async updateAllTripsWithShopCode() {
+        try {
+            await TripModel.updateMany({}, {
+                shopInfo: {
+                    ShopCode: 1347849,
+                    Name: "ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ \"ВЕАКОМ\"",
+                    Inn: "1837013663",
+                    Phones: ["89128523316"],
+                }
+            })
+        } catch (error) {
+            console.log(error);
+        }
     }
 }

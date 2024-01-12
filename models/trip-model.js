@@ -56,7 +56,7 @@ const TripSchema = new Schema({
     createdDay: { type: Number },
     userComment: { type: String },
     tinkoffContract: {
-        ShopCode: String,
+        ShopCode: Number,
         Name: String,
         Inn: String,
         Phones: Array,
