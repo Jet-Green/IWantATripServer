@@ -28,7 +28,7 @@ const UserSchema = new Schema({
 
     tripCalc: [{ type: Schema.Types.ObjectId, ref: 'TripCalc' }],
 
-    tinkoffContracts: [{ type: Schema.Types.ObjectId, ref: 'Contract' }],
+    tinkoffContract: { type: Schema.Types.ObjectId, ref: 'Contract' },
 
     notifications: {
         type: [Object], default: [{

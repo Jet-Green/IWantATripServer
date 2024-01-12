@@ -131,7 +131,7 @@ module.exports = {
         }
     },
     async login(email, password) {
-        const user = await UserModel.findOne({ email }).populate('tripCalc').exec()
+        const user = await UserModel.findOne({ email }).populate('tripCalc').populate('tinkoffContract').exec()
 
         if (!user) {
             throw ApiError.BadRequest('Пользователь с таким email не найден')
@@ -163,7 +163,7 @@ module.exports = {
             throw ApiError.UnauthorizedError();
         }
 
-        const user = await UserModel.findById(userData._id).populate('tripCalc').exec()
+        const user = await UserModel.findById(userData._id).populate('tripCalc').populate('tinkoffContract').exec()
         if (user) {
             const tokens = TokenService.generateTokens({ email: user.email, password: user.password, _id: user._id })
             await TokenService.removeToken(refreshToken)
@@ -236,9 +236,9 @@ module.exports = {
         }
 
         let users_registered_today = await UserModel.find(
-            { 
+            {
                 date: { $gte: new Date().setHours(0, 0, 0, 0) }
-            }, 
+            },
             { fullname: 1, email: 1 }
         )
         let user = users_registered_today[getRandomInt(users_registered_today.length)]
