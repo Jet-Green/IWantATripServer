@@ -54,7 +54,13 @@ const TripSchema = new Schema({
         type: [Object]
     },
     createdDay: { type: Number },
-    userComment: { type: String }
+    userComment: { type: String },
+    tinkoffContract: {
+        ShopCode: String,
+        Name: String,
+        Inn: String,
+        Phones: Array,
+    }
 })
 
 module.exports = model('Trip', TripSchema);
