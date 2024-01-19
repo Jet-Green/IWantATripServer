@@ -14,5 +14,15 @@ module.exports = {
         } catch (error) {
             next(error)
         }
+    },
+    async addContractEmail(req, res, next) {
+        try {
+            let result = await ContractService.addContractEmail(req.body)
+
+            return res.status(result.code).json(result)
+        } catch (error) {
+            console.log(error);
+            next(error)
+        }
     }
 }
