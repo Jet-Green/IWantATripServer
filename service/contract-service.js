@@ -13,24 +13,33 @@ module.exports = {
         return ContractModel.find({})
     },
     async addContractEmail({ contractId, contractEmail }) {
-        let candidate = await UserModel.findOne({ email: contractEmail })
-        if (!candidate) {
-            return { code: 400, message: 'Нет такого пользователя' }
+        let userUpdate = await UserModel.findOneAndUpdate({ email: contractEmail }, { tinkoffContract: contractId })
+        if (!userUpdate) {
+            return { code: 201, message: 'Нет такого пользователя' }
         }
-
 
         let result = {
             code: 200,
             message: 'ok',
             data: null
         }
-        candidate.tinkoffContract = contractId
+        result.data = await ContractModel.findByIdAndUpdate(contractId, { $push: { userEmails: contractEmail } })
 
-        try {
-            result.data = await candidate.save()
-        } catch (error) {
-            return { code: 400, message: 'Ошибка при сохранении' }
+        return result
+    },
+    async deleteContractEmail({ _id: contractId, email: contractEmail }) {
+        let userUpdate = await UserModel.findOneAndUpdate({ email: contractEmail }, { tinkoffContract: null })
+        if (!userUpdate) {
+            return { code: 201, message: 'Нет такого пользователя' }
         }
+        let result = {
+            code: 200,
+            message: 'ok',
+            data: null
+        }
+
+        result.data = await ContractModel.findByIdAndUpdate(contractId, { $pull: { userEmails: contractEmail } })
+
         return result
     }
 }

@@ -21,7 +21,17 @@ module.exports = {
 
             return res.status(result.code).json(result)
         } catch (error) {
+            next(error)
+        }
+    },
+    async deleteContractEmail(req, res, next) {
+        try {
+            let result = await ContractService.deleteContractEmail(req.query)
+
+            return res.json(result)
+        } catch (error) {
             console.log(error);
+
             next(error)
         }
     }

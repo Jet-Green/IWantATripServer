@@ -103,6 +103,8 @@ const ContractSchema = new Schema({
     },
 
     userEmail: String,
+    userEmails: Array,
+
     shopInfo: Object
 }, { typeKey: '$type' })
 
