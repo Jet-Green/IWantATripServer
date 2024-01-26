@@ -3,7 +3,7 @@ const UserModel = require('../models/user-model.js')
 
 module.exports = {
     async createContract({ contract, userEmail }) {
-        let contractFromDb = await ContractModel.create({ ...contract, userEmail: userEmail })
+        let contractFromDb = await ContractModel.create({ ...contract, userEmails: [userEmail] })
 
         await UserModel.findOneAndUpdate({ email: userEmail }, { $set: { tinkoffContract: contractFromDb._id } })
 
