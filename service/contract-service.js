@@ -13,6 +13,11 @@ module.exports = {
         return ContractModel.find({})
     },
     async addContractEmail({ contractId, contractEmail }) {
+        let foundContracts = await ContractModel.find({ userEmails: { $in: contractEmail } })
+        if (foundContracts.length > 0) {
+            return { code: 201, message: `Уже есть в ${foundContracts[0].name}` }
+        }
+
         let userUpdate = await UserModel.findOneAndUpdate({ email: contractEmail }, { tinkoffContract: contractId })
         if (!userUpdate) {
             return { code: 201, message: 'Нет такого пользователя' }
