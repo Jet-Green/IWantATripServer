@@ -2,6 +2,7 @@ const TripService = require('../service/trips-service.js')
 const LocationService = require('../service/location-service.js')
 const TripModel = require('../models/trip-model.js');
 const AppStateModel = require('../models/app-state-model.js')
+const UserModel = require('../models/user-model.js')
 
 const ApiError = require('../exceptions/api-error.js')
 
@@ -79,12 +80,11 @@ module.exports = {
     async buyTrip(req, res, next) {
         try {
             let tripFromDb = await TripModel.findById(req.query._id).populate('author', { email: 1 }).populate('billsList')
-
             if (tripFromDb.parent) {
                 await tripFromDb.populate('parent', { maxPeople: 1 })
                 tripFromDb.maxPeople = tripFromDb.parent.maxPeople
             }
-
+            
             let countToBuy = 0
             for (let cartItem of req.body.bill.cart) {
                 countToBuy += cartItem.count
@@ -99,11 +99,12 @@ module.exports = {
             if (boughtCount + countToBuy > tripFromDb.maxPeople) {
                 throw ApiError.BadRequest('Слишком много человек в туре')
             }
-
+            let email = await UserModel.findById(req.body.bill.userInfo._id)
+            email=email.email
             let eventEmailsBuy = await AppStateModel.findOne({ 'sendMailsTo.type': 'BuyTrip' }, { 'sendMailsTo.$': 1 })
             let emailsFromDbBuy = eventEmailsBuy.sendMailsTo[0]?.emails
-
-            sendMail(req.body.emailHtml, [tripFromDb?.author?.email, ...emailsFromDbBuy], 'Куплена поездка')
+            sendMail(req.body.emailHtmlForAdmins, [tripFromDb?.author?.email, ...emailsFromDbBuy], 'Куплена поездка')
+            sendMail(req.body.emailHtmlForUser, [email], 'Куплена поездка')
 
             let buyCallBack = await TripService.buyTrip(req)
 
