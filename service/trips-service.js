@@ -421,6 +421,9 @@ module.exports = {
     async updatePartner({ partner, _id }) {
         return TripModel.findByIdAndUpdate(_id, { partner: partner })
     },
+    async updateIsCatalog({ _id, isCatalog }) {
+        return TripModel.findByIdAndUpdate(_id, { isCatalog: isCatalog })
+    },
     async updateIncludedLocations({ newLocation, locationsToDelete, tripId }) {
         if (newLocation) {
             let locFromDb = await LocationService.createLocation(newLocation)

@@ -294,6 +294,14 @@ module.exports = {
             next(error)
         }
     },
+    async updateIsCatalog(req, res, next) {
+        try {
+            return res.json(await TripService.updateIsCatalog(req.body))
+        } catch (error) {
+            logger.fatal({ error, logType: 'trip error', brokenMethod: 'updateIsCatalog' })
+            next(error)
+        }
+    },
     /*
     * req.body {
     *   newLocation
