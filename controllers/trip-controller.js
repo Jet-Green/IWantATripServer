@@ -347,6 +347,13 @@ module.exports = {
             next(error)
         }
     },
+    async getCatalogTrips(req, res, next) {
+        try {
+            return res.json( await TripService.getCatalogTrips())
+        } catch (error) {
+            next(error)
+        }
+    },
     /*
     * req.body {
     *   tripId

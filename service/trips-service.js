@@ -359,6 +359,12 @@ module.exports = {
             { "parent": { $exists: false } }]
         }).populate('author', { 'fullinfo.fullname': 1 })
     },
+    async getCatalogTrips() {
+        return TripModel.find({
+            $and: [{ isCatalog: true },
+            { "parent": { $exists: false } }]
+        }).populate('author', { 'fullinfo.fullname': 1 })
+    },
     async moderate(_id, t) {
         return TripModel.findByIdAndUpdate(_id, { isModerated: t, rejected: false })
     },
