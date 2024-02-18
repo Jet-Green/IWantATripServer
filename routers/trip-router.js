@@ -45,4 +45,6 @@ router.post('/find-trip-by-name', tripController.findTripsByName)
 router.put('/set-user-comment', tripController.setUserComment)
 router.put('/bill-user-comment', tripController.editBillUserComment)
 
+router.get('/bought', tripController.getBoughtTrips)
+
 module.exports = router

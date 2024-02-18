@@ -481,5 +481,21 @@ module.exports = {
     },
     async editBillUserComment({ billId, comment }) {
         return await BillModel.findByIdAndUpdate(billId, { $set: { userComment: comment } })
+    },
+    async getBoughtTrips(userId) {
+        let userFromDb = await UserModel.findById(userId).populate('boughtTrips').populate({
+            path: 'boughtTrips',
+            populate: {
+                path: 'tripId',
+                model: 'Trip'
+            },
+        })
+        let result = []
+        for (let i of userFromDb.boughtTrips) {
+            if (i.tinkoff) {
+                result.push(i)
+            }
+        }
+        return result
     }
 }

@@ -294,7 +294,7 @@ module.exports = {
             next(error)
         }
     },
-    /*
+    /**
     * req.body {
     *   newLocation
     *   locationsToDelete
@@ -313,7 +313,7 @@ module.exports = {
             next(error)
         }
     },
-    /*
+    /** 
     * req.body {
     *   newTransport
     *   transportToDelete
@@ -339,7 +339,7 @@ module.exports = {
             next(error)
         }
     },
-    /*
+    /**
     * req.body {
     *   tripId
     *   comment
@@ -352,7 +352,7 @@ module.exports = {
             next(error)
         }
     },
-    /*
+    /**
     * req.body {
     *   billId
     *   comment
@@ -363,6 +363,18 @@ module.exports = {
             return res.json(await TripService.editBillUserComment(req.body))
         } catch (error) {
             next(error)
+        }
+    },
+    /**
+     * req.query {
+     *  userId
+     * }
+     */
+    async getBoughtTrips(req, res, next) {
+        try {
+            return res.json(await TripService.getBoughtTrips(req.query.userId))
+        } catch (err) {
+            next(err)
         }
     },
     async updateAllTripsWithShopCode() {
@@ -380,5 +392,5 @@ module.exports = {
         } catch (error) {
             console.log(error);
         }
-    }
+    },
 }
