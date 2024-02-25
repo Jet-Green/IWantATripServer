@@ -115,6 +115,18 @@ module.exports = {
             next(error)
         }
     },
+    async payTinkoffBill(req, res, next) {
+        try {
+            let eventEmailsBuy = await AppStateModel.findOne({ 'sendMailsTo.type': 'BuyTrip' }, { 'sendMailsTo.$': 1 })
+            let emailsFromDbBuy = eventEmailsBuy.sendMailsTo[0]?.emails
+
+            sendMail(req.body.emailHtml, [req.body.author, ...emailsFromDbBuy], 'Куплена поездка')
+
+            return res.json(await TripService.payTinkoffBill(req.body))
+        } catch (error) {
+            next(error)
+        }
+    },
     async search(req, res, next) {
         try {
             let s = req.body

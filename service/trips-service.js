@@ -111,8 +111,10 @@ module.exports = {
 
         return { billId: billFromDb._id, userCallback: await UserModel.findOneAndUpdate({ _id: userId }, { $push: { boughtTrips: billFromDb._id } }) }
     },
+    async payTinkoffBill({ billId, tinkoffData }) {
+        return BillModel.findByIdAndUpdate(billId, { tinkoff: tinkoffData })
+    },
     async insertOne(trip) {
-
         return TripModel.create(trip)
     },
     async updateOne(trip) {
@@ -490,12 +492,6 @@ module.exports = {
                 model: 'Trip'
             },
         })
-        let result = []
-        for (let i of userFromDb.boughtTrips) {
-            if (i.tinkoff) {
-                result.push(i)
-            }
-        }
-        return result
+        return userFromDb.boughtTrips
     }
 }
