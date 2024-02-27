@@ -76,6 +76,14 @@ module.exports = {
             next(error)
         }
     },
+    async getCatalog(req, res, next) {
+        try {
+            const q = req.query
+            return res.json(await TripService.getCatalog(q.cursor, q.lon, q.lat, q.query, q.type))
+        } catch (error) {
+            next(error)
+        }
+    },
     async buyTrip(req, res, next) {
         try {
             let tripFromDb = await TripModel.findById(req.query._id).populate('author', { email: 1 }).populate('billsList')
@@ -306,7 +314,15 @@ module.exports = {
             next(error)
         }
     },
-    /**
+    async updateIsCatalog(req, res, next) {
+        try {
+            return res.json(await TripService.updateIsCatalog(req.body))
+        } catch (error) {
+            logger.fatal({ error, logType: 'trip error', brokenMethod: 'updateIsCatalog' })
+            next(error)
+        }
+    },
+    /*
     * req.body {
     *   newLocation
     *   locationsToDelete
@@ -351,7 +367,14 @@ module.exports = {
             next(error)
         }
     },
-    /**
+    async getCatalogTrips(req, res, next) {
+        try {
+            return res.json(await TripService.getCatalogTrips())
+        } catch (error) {
+            next(error)
+        }
+    },
+    /*
     * req.body {
     *   tripId
     *   comment

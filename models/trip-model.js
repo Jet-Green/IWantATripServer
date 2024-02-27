@@ -60,7 +60,8 @@ const TripSchema = new Schema({
         Name: String,
         Inn: String,
         Phones: Array,
-    }
+    },
+    isCatalog: { type: Boolean, default: false },
 })
 
 module.exports = model('Trip', TripSchema);

@@ -311,6 +311,63 @@ module.exports = {
 
         return sortedByDateResults
     },
+    async findCatalog(sitePage, lon, lat, strQuery, tripType) {
+        const limit = 20;
+        const page = sitePage || 1;
+        const skip = (page - 1) * limit;
+        let query = {}
+
+        // geo $near must be top-level expr
+        query = {
+            $and: [
+
+                { isHidden: false, isModerated: true, rejected: false, isCatalog: true},
+                { "parent": { $exists: false } },
+            ]
+        }
+        if (lat && lon) {
+            query.$and.push({
+                includedLocations: {
+                    $near: {
+                        $geometry: {
+                            type: 'Point',
+                            coordinates: [Number(lon), Number(lat)]
+                        },
+                        // 50 km
+                        $maxDistance: 50000
+                    }
+                }
+            })
+        }
+        if (strQuery) {
+            query.$and.push(
+                {
+                    $or: [
+                        { name: { $regex: strQuery, $options: 'i' } },
+                        { tripRoute: { $regex: strQuery, $options: 'i' } },
+                        { offer: { $regex: strQuery, $options: 'i' } },
+                        { description: { $regex: strQuery, $options: 'i' } },
+                    ]
+                }
+            )
+        }
+        if (tripType) {
+            query.$and.push(
+                {
+
+                    tripType: { $regex: tripType, $options: 'i' },
+
+                }
+            )
+        }
+
+        const cursor = TripModel.find(query, null, { sort: 'start' }).skip(skip).limit(limit).cursor();
+
+        const results = [];
+        for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
+            results.push(doc);
+        }
+    },
     async findForSearch(s, cursor) {
         const { query, when } = s
 
@@ -358,6 +415,12 @@ module.exports = {
     async findRejectedTrips() {
         return TripModel.find({
             $and: [{ rejected: true },
+            { "parent": { $exists: false } }]
+        }).populate('author', { 'fullinfo.fullname': 1 })
+    },
+    async getCatalogTrips() {
+        return TripModel.find({
+            $and: [{ isCatalog: true },
             { "parent": { $exists: false } }]
         }).populate('author', { 'fullinfo.fullname': 1 })
     },
@@ -422,6 +485,9 @@ module.exports = {
     },
     async updatePartner({ partner, _id }) {
         return TripModel.findByIdAndUpdate(_id, { partner: partner })
+    },
+    async updateIsCatalog({ _id, isCatalog }) {
+        return TripModel.findByIdAndUpdate(_id, { isCatalog: isCatalog })
     },
     async updateIncludedLocations({ newLocation, locationsToDelete, tripId }) {
         if (newLocation) {

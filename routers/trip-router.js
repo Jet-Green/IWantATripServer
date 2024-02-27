@@ -17,6 +17,7 @@ router.post('/get-customers', tripController.getCustomers)
 router.post('/buy-trip', authMiddleware, tripController.buyTrip)
 router.post('/pay-tinkoff', authMiddleware, tripController.payTinkoffBill)
 router.get('/get-all', tripController.getAll)
+router.get('/get-all-catalog', tripController.getCatalog)
 router.post('/search', tripController.search)
 router.get('/get-by-id', tripController.getById)
 router.post('/delete-by-id', tripController.deleteById)
@@ -31,11 +32,14 @@ router.get('/created-trips-info', tripController.createdTripsInfo)
 
 router.get('/get-full-trip', tripController.getFullTripById)
 
+router.get('/catalog-trips', tripController.getCatalogTrips)
+
 router.post('/set-payment', tripController.setPayment)
 router.get('/delete-payment', tripController.deletePayment)
 
 router.post('/update-bills-tourists', tripController.updateBillsTourists)
 router.post('/update-partner', tripController.updatePartner)
+router.post('/update-iscatalog', tripController.updateIsCatalog)
 
 router.post('/create-many-by-dates', tripController.createManyByDates)
 router.post('/update-included-locations', tripController.updateIncludedLocations)
