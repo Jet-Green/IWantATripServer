@@ -301,6 +301,35 @@ module.exports = {
             next(error)
         }
     },
+    async uploadCatalogImages(req, res, next) {
+        try {
+            let _id = req.files[0]?.originalname.split('_')[0]
+
+            let filenames = []
+            let buffers = []
+            for (let file of req.files) {
+                buffers.push({ buffer: file.buffer, name: file.originalname, });    // Буфер загруженного файла
+            }
+
+            if (buffers.length) {
+                let uploadResult = await s3.Upload(buffers, '/iwat/');
+
+                for (let upl of uploadResult) {
+                    filenames.push(upl.Location)
+                }
+            }
+
+            if (filenames.length) {
+                await TripService.updateCatalogTripImagesUrls(_id, filenames)
+                logger.info({ filenames, logType: 'trip' }, 'catalog images uploaded')
+            }
+
+            res.status(200).send('Ok')
+        } catch (error) {
+            logger.fatal({ error, logType: 'trip error', brokenMethod: 'uploadCatalogImages' })
+            next(error)
+        }
+    },
     async uploadPdf(req, res, next) {
         try {
             let _id = req.files[0]?.originalname.split('_')[0]
