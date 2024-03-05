@@ -518,5 +518,8 @@ module.exports = {
             },
         })
         return userFromDb.boughtTrips
+    },
+    async getCatalogTripById(_id) {
+        return await CatalogTripModel.findById(_id)
     }
 }

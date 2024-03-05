@@ -94,7 +94,7 @@ module.exports = {
                 await tripFromDb.populate('parent', { maxPeople: 1 })
                 tripFromDb.maxPeople = tripFromDb.parent.maxPeople
             }
-            
+
             let countToBuy = 0
             for (let cartItem of req.body.bill.cart) {
                 countToBuy += cartItem.count
@@ -110,7 +110,7 @@ module.exports = {
                 throw ApiError.BadRequest('Слишком много человек в туре')
             }
             let email = await UserModel.findById(req.body.bill.userInfo._id)
-            email=email.email
+            email = email.email
             let eventEmailsBuy = await AppStateModel.findOne({ 'sendMailsTo.type': 'BuyTrip' }, { 'sendMailsTo.$': 1 })
             let emailsFromDbBuy = eventEmailsBuy.sendMailsTo[0]?.emails
             sendMail(req.body.emailHtmlForAdmins, [tripFromDb?.author?.email, ...emailsFromDbBuy], 'Куплена поездка')
@@ -483,6 +483,13 @@ module.exports = {
             return res.json(await TripService.getBoughtTrips(req.query.userId))
         } catch (err) {
             next(err)
+        }
+    },
+    async getCatalogTripById(req, res, next) {
+        try {
+            return res.json(await TripService.getCatalogTripById(req.query._id))
+        } catch (error) {
+            next(error)
         }
     },
     async updateAllTripsWithShopCode() {
