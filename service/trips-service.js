@@ -213,7 +213,6 @@ module.exports = {
             return tripToDelete.remove()
         }
         return null
-
     },
     async findMany(sitePage, lon, lat, strQuery, start, end, tripType) {
         const limit = 20;
@@ -327,63 +326,6 @@ module.exports = {
         })
 
         return sortedByDateResults
-    },
-    async findCatalog(sitePage, lon, lat, strQuery, tripType) {
-        const limit = 20;
-        const page = sitePage || 1;
-        const skip = (page - 1) * limit;
-        let query = {}
-
-        // geo $near must be top-level expr
-        query = {
-            $and: [
-
-                { isHidden: false, isModerated: true, rejected: false, isCatalog: true },
-                { "parent": { $exists: false } },
-            ]
-        }
-        if (lat && lon) {
-            query.$and.push({
-                includedLocations: {
-                    $near: {
-                        $geometry: {
-                            type: 'Point',
-                            coordinates: [Number(lon), Number(lat)]
-                        },
-                        // 50 km
-                        $maxDistance: 50000
-                    }
-                }
-            })
-        }
-        if (strQuery) {
-            query.$and.push(
-                {
-                    $or: [
-                        { name: { $regex: strQuery, $options: 'i' } },
-                        { tripRoute: { $regex: strQuery, $options: 'i' } },
-                        { offer: { $regex: strQuery, $options: 'i' } },
-                        { description: { $regex: strQuery, $options: 'i' } },
-                    ]
-                }
-            )
-        }
-        if (tripType) {
-            query.$and.push(
-                {
-
-                    tripType: { $regex: tripType, $options: 'i' },
-
-                }
-            )
-        }
-
-        const cursor = TripModel.find(query, null, { sort: 'start' }).skip(skip).limit(limit).cursor();
-
-        const results = [];
-        for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
-            results.push(doc);
-        }
     },
     async findForSearch(s, cursor) {
         const { query, when } = s
