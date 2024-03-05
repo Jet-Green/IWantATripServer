@@ -388,6 +388,17 @@ module.exports = {
             next(error)
         }
     },
+    async updateCatalogTrip(req, res, next) {
+        try {   
+            let trip = await catalogTripModel.findById(req.body._id)
+            if (req.user._id != trip.author._id.toString())
+                throw ApiError.BadRequest('Не ваш')
+            return res.json(trip.updateOne(req.body.trip, { new: true }))
+        } catch (error) {
+            logger.fatal({ error, logType: 'trip error', brokenMethod: 'updateCatalogTrip' })
+            next(error)
+        }
+    },
     /*
     * req.body {
     *   newLocation
