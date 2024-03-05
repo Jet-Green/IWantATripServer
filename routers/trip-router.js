@@ -55,4 +55,6 @@ router.put('/bill-user-comment', tripController.editBillUserComment)
 
 router.get('/bought', tripController.getBoughtTrips)
 
+router.get('/catalog', tripController.getCatalogTripById)
+
 module.exports = router
