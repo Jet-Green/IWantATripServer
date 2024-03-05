@@ -81,7 +81,7 @@ module.exports = {
     async getCatalog(req, res, next) {
         try {
             const q = req.query
-            return res.json(await TripService.getCatalog(q.cursor, q.lon, q.lat, q.query, q.type))
+            return res.json(await TripService.getCatalogTrips(q.cursor, q.lon, q.lat, q.query, q.type))
         } catch (error) {
             next(error)
         }
