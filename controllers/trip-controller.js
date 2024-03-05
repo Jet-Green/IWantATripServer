@@ -9,6 +9,7 @@ let EasyYandexS3 = require('easy-yandex-s3').default;
 const { sendMail } = require('../middleware/mailer')
 const logger = require('../logger.js');
 const catalogTripModel = require('../models/catalog-trip-model.js');
+const { default: mongoose } = require('mongoose');
 
 // Указываем аутентификацию в Yandex Object Storage
 let s3 = new EasyYandexS3({
@@ -398,6 +399,13 @@ module.exports = {
 
             let tripsByName = await TripService.findTripsByName(req.body)
             return res.json(tripsByName)
+        } catch (error) {
+            next(error)
+        }
+    },
+    async getMyCatalogTrips(req, res, next) {
+        try {
+            return res.json(await catalogTripModel.find({ author: new mongoose.Types.ObjectId(req.user._id) }))
         } catch (error) {
             next(error)
         }
