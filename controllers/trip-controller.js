@@ -8,7 +8,8 @@ const ApiError = require('../exceptions/api-error.js')
 
 let EasyYandexS3 = require('easy-yandex-s3').default;
 const { sendMail } = require('../middleware/mailer')
-const logger = require('../logger.js')
+const logger = require('../logger.js');
+const catalogTripModel = require('../models/catalog-trip-model.js');
 
 // Указываем аутентификацию в Yandex Object Storage
 let s3 = new EasyYandexS3({
@@ -205,6 +206,40 @@ module.exports = {
             next(error)
         }
     },
+    async createCatalogTrip(req, res, next) {
+        try {
+            let location = await LocationService.createLocation(req.body.trip.startLocation)
+
+            // if (!req.body.trip.includedLocations?.coordinates > 1) {
+            req.body.trip.startLocation = location
+            req.body.trip.includedLocations = {
+                'type': 'MultiPoint',
+                coordinates: [location.coordinates],
+            }
+            req.body.trip.locationNames = [location]
+            // }
+
+            const tripFromDB = await catalogTripModel.create(req.body.trip)
+
+            logger.info({ _id: tripFromDB._id.toString(), logType: 'trip' }, 'trip created')
+
+            let trip = Object.assign({}, tripFromDB._doc)
+
+            // format to send the mail
+            trip.start = new Date(Number(trip.start)).toLocaleDateString("ru-RU")
+            trip.end = new Date(Number(trip.end)).toLocaleDateString("ru-RU")
+
+            // let eventEmailsBook = await AppStateModel.findOne({ 'sendMailsTo.type': 'CreateTrip' }, { 'sendMailsTo.$': 1 })
+            // let emailsFromDbBook = eventEmailsBook.sendMailsTo[0].emails
+
+            // // req.body.emails - это емейл пользователя
+            // sendMail(req.body.emailHtml, [...req.body.emails, ...emailsFromDbBook], 'Создан тур')
+            return res.json({ _id: trip._id })
+        } catch (error) {
+            logger.fatal({ error, logType: 'trip error', brokenMethod: 'create' })
+            next(error)
+        }
+    },
     async booking(req, res, next) {
         try {
             const tripCb = await TripService.booking(req.body)
@@ -264,6 +299,35 @@ module.exports = {
             res.status(200).send('Ok')
         } catch (error) {
             logger.fatal({ error, logType: 'trip error', brokenMethod: 'uploadImages' })
+            next(error)
+        }
+    },
+    async uploadCatalogImages(req, res, next) {
+        try {
+            let _id = req.files[0]?.originalname.split('_')[0]
+
+            let filenames = []
+            let buffers = []
+            for (let file of req.files) {
+                buffers.push({ buffer: file.buffer, name: file.originalname, });    // Буфер загруженного файла
+            }
+
+            if (buffers.length) {
+                let uploadResult = await s3.Upload(buffers, '/iwat/');
+
+                for (let upl of uploadResult) {
+                    filenames.push(upl.Location)
+                }
+            }
+
+            if (filenames.length) {
+                await TripService.updateCatalogTripImagesUrls(_id, filenames)
+                logger.info({ filenames, logType: 'trip' }, 'catalog images uploaded')
+            }
+
+            res.status(200).send('Ok')
+        } catch (error) {
+            logger.fatal({ error, logType: 'trip error', brokenMethod: 'uploadCatalogImages' })
             next(error)
         }
     },
