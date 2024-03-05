@@ -1,6 +1,7 @@
 const TripModel = require('../models/trip-model.js');
 const UserModel = require('../models/user-model.js')
 const BillModel = require('../models/bill-model.js')
+const CatalogTripModel = require('../models/catalog-trip-model.js');
 const LocationModel = require('../models/location-model.js')
 
 const ApiError = require('../exceptions/api-error.js')
@@ -11,7 +12,7 @@ const { sendMail } = require('../middleware/mailer');
 
 const LocationService = require('./location-service.js')
 
-const _ = require('lodash')
+const _ = require('lodash');
 
 module.exports = {
     async createManyByDates({ dates, parentId }) {
@@ -160,6 +161,22 @@ module.exports = {
         }
         return trip.save()
     },
+    async updateCatalogTripImagesUrls(_id, filenames) {
+        const trip = await CatalogTripModel.findById(_id)
+        for (let f of filenames) {
+            let isUnique = true;
+            for (let i = 0; i < trip.images.length; i++) {
+                if (trip.images[i] == f) {
+                    isUnique = false
+                    break
+                }
+            }
+            if (isUnique) {
+                trip.images.push(f)
+            }
+        }
+        return trip.save()
+    },
     async deleteMany() {
         return TripModel.deleteMany({})
     },
@@ -196,7 +213,6 @@ module.exports = {
             return tripToDelete.remove()
         }
         return null
-
     },
     async findMany(sitePage, lon, lat, strQuery, start, end, tripType) {
         const limit = 20;
@@ -310,63 +326,6 @@ module.exports = {
         })
 
         return sortedByDateResults
-    },
-    async findCatalog(sitePage, lon, lat, strQuery, tripType) {
-        const limit = 20;
-        const page = sitePage || 1;
-        const skip = (page - 1) * limit;
-        let query = {}
-
-        // geo $near must be top-level expr
-        query = {
-            $and: [
-
-                { isHidden: false, isModerated: true, rejected: false, isCatalog: true},
-                { "parent": { $exists: false } },
-            ]
-        }
-        if (lat && lon) {
-            query.$and.push({
-                includedLocations: {
-                    $near: {
-                        $geometry: {
-                            type: 'Point',
-                            coordinates: [Number(lon), Number(lat)]
-                        },
-                        // 50 km
-                        $maxDistance: 50000
-                    }
-                }
-            })
-        }
-        if (strQuery) {
-            query.$and.push(
-                {
-                    $or: [
-                        { name: { $regex: strQuery, $options: 'i' } },
-                        { tripRoute: { $regex: strQuery, $options: 'i' } },
-                        { offer: { $regex: strQuery, $options: 'i' } },
-                        { description: { $regex: strQuery, $options: 'i' } },
-                    ]
-                }
-            )
-        }
-        if (tripType) {
-            query.$and.push(
-                {
-
-                    tripType: { $regex: tripType, $options: 'i' },
-
-                }
-            )
-        }
-
-        const cursor = TripModel.find(query, null, { sort: 'start' }).skip(skip).limit(limit).cursor();
-
-        const results = [];
-        for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
-            results.push(doc);
-        }
     },
     async findForSearch(s, cursor) {
         const { query, when } = s

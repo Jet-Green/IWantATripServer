@@ -2,6 +2,7 @@ const TripService = require('../service/trips-service.js')
 const LocationService = require('../service/location-service.js')
 const TripModel = require('../models/trip-model.js');
 const AppStateModel = require('../models/app-state-model.js')
+const UserModel = require('../models/user-model.js')
 
 const ApiError = require('../exceptions/api-error.js')
 
@@ -81,7 +82,7 @@ module.exports = {
     async getCatalog(req, res, next) {
         try {
             const q = req.query
-            return res.json(await TripService.getCatalog(q.cursor, q.lon, q.lat, q.query, q.type))
+            return res.json(await TripService.getCatalogTrips(q.cursor, q.lon, q.lat, q.query, q.type))
         } catch (error) {
             next(error)
         }
@@ -89,12 +90,11 @@ module.exports = {
     async buyTrip(req, res, next) {
         try {
             let tripFromDb = await TripModel.findById(req.query._id).populate('author', { email: 1 }).populate('billsList')
-
             if (tripFromDb.parent) {
                 await tripFromDb.populate('parent', { maxPeople: 1 })
                 tripFromDb.maxPeople = tripFromDb.parent.maxPeople
             }
-
+            
             let countToBuy = 0
             for (let cartItem of req.body.bill.cart) {
                 countToBuy += cartItem.count
@@ -109,11 +109,12 @@ module.exports = {
             if (boughtCount + countToBuy > tripFromDb.maxPeople) {
                 throw ApiError.BadRequest('Слишком много человек в туре')
             }
-
+            let email = await UserModel.findById(req.body.bill.userInfo._id)
+            email=email.email
             let eventEmailsBuy = await AppStateModel.findOne({ 'sendMailsTo.type': 'BuyTrip' }, { 'sendMailsTo.$': 1 })
             let emailsFromDbBuy = eventEmailsBuy.sendMailsTo[0]?.emails
-
-            sendMail(req.body.emailHtml, [tripFromDb?.author?.email, ...emailsFromDbBuy], 'Куплена поездка')
+            sendMail(req.body.emailHtmlForAdmins, [tripFromDb?.author?.email, ...emailsFromDbBuy], 'Куплена поездка')
+            sendMail(req.body.emailHtmlForUser, [email], 'Куплена поездка')
 
             let buyCallBack = await TripService.buyTrip(req)
 
@@ -299,6 +300,35 @@ module.exports = {
             res.status(200).send('Ok')
         } catch (error) {
             logger.fatal({ error, logType: 'trip error', brokenMethod: 'uploadImages' })
+            next(error)
+        }
+    },
+    async uploadCatalogImages(req, res, next) {
+        try {
+            let _id = req.files[0]?.originalname.split('_')[0]
+
+            let filenames = []
+            let buffers = []
+            for (let file of req.files) {
+                buffers.push({ buffer: file.buffer, name: file.originalname, });    // Буфер загруженного файла
+            }
+
+            if (buffers.length) {
+                let uploadResult = await s3.Upload(buffers, '/iwat/');
+
+                for (let upl of uploadResult) {
+                    filenames.push(upl.Location)
+                }
+            }
+
+            if (filenames.length) {
+                await TripService.updateCatalogTripImagesUrls(_id, filenames)
+                logger.info({ filenames, logType: 'trip' }, 'catalog images uploaded')
+            }
+
+            res.status(200).send('Ok')
+        } catch (error) {
+            logger.fatal({ error, logType: 'trip error', brokenMethod: 'uploadCatalogImages' })
             next(error)
         }
     },

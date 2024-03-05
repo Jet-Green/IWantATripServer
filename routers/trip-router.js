@@ -28,6 +28,8 @@ router.post('/booking', tripController.booking)
 router.post('/update', authMiddleware, tripController.update)
 router.get('/hide', authMiddleware, tripController.hideTrip)
 router.post('/upload-images', MULTER().any(), tripController.uploadImages)
+router.post('/upload-catalog-images', MULTER().any(), tripController.uploadCatalogImages)
+
 router.post('/upload-pdf', MULTER().any(), tripController.uploadPdf)
 router.get('/clear', tripController.clear)
 router.get('/created-trips-info', tripController.createdTripsInfo)
