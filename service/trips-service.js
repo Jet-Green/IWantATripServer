@@ -521,5 +521,12 @@ module.exports = {
     },
     async getCatalogTripById(_id) {
         return await CatalogTripModel.findById(_id)
+    },
+    async moveToCatalog(_id) {
+        let candidate = await TripModel.findById(_id)
+        delete candidate._doc._id
+        let toSave = Object.assign({}, candidate._doc)
+
+        return CatalogTripModel.create(toSave)
     }
 }

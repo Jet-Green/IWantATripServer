@@ -59,4 +59,6 @@ router.get('/bought', tripController.getBoughtTrips)
 
 router.get('/catalog', tripController.getCatalogTripById)
 
+router.post('/move-to-catalog', tripController.moveToCatalog)
+
 module.exports = router
