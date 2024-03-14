@@ -18,6 +18,20 @@ module.exports = {
             next(error)
         }
     },
+    async findCatalogTripsOnModeration(req, res, next) {
+        try {
+            return res.json(await tripsService.findCatalogTripsOnModeration())
+        } catch (error) {
+            next(error)
+        }
+    },
+    async findRejectedCatalogTrips(req, res, next) {
+        try {
+            return res.json(await tripsService.findRejectedCatalogTrips())
+        } catch (error) {
+            next(error)
+        }
+    },
     async moderateTrip(req, res, next) {
         try {
             let tripFromDb = await tripsService.moderate(req.query._id, true)

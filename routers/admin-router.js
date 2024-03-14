@@ -9,6 +9,10 @@ router.get('/moderate-trip', AdminController.moderateTrip)
 router.post('/send-moderation-message', AdminController.sendModerationMessage)
 router.get('/rejected-trips', AdminController.findRejectedTrips)
 
+router.get('/rejected-catalog-trips', AdminController.findRejectedCatalogTrips)
+router.get('/catalog-trips-on-moderation', AdminController.findCatalogTripsOnModeration)
+
+
 router.post('/get-users', AdminController.fetchUsers)
 router.post('/change-user-roles', AdminController.changeUserRoles)
 
