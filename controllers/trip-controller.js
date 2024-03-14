@@ -389,7 +389,7 @@ module.exports = {
         }
     },
     async updateCatalogTrip(req, res, next) {
-        try {   
+        try {
             let trip = await catalogTripModel.findById(req.body._id)
             if (req.user._id != trip.author._id.toString())
                 throw ApiError.BadRequest('Не ваш')
@@ -499,6 +499,13 @@ module.exports = {
     async getCatalogTripById(req, res, next) {
         try {
             return res.json(await TripService.getCatalogTripById(req.query._id))
+        } catch (error) {
+            next(error)
+        }
+    },
+    async moveToCatalog(req, res, next) {
+        try {
+            return res.json(await TripService.moveToCatalog(req.body.tripId))
         } catch (error) {
             next(error)
         }
