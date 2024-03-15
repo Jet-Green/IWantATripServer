@@ -285,9 +285,14 @@ module.exports = {
     async hideTrip(req, res, next) {
         try {
             await TripService.hide(req.query._id, req.query.v)
-
-            logger.info({ _id: req.query._id, isHidden: Boolean(req.query.v), logType: 'trip' }, 'trip hide')
-
+            return res.json('OK')
+        } catch (error) {
+            next(error)
+        }
+    },
+    async hideCatalogTrip(req, res, next) {
+        try {
+            await TripService.hideCatalog(req.query._id, req.query.v)
             return res.json('OK')
         } catch (error) {
             next(error)

@@ -391,6 +391,9 @@ module.exports = {
     async hide(_id, v) {
         return TripModel.findByIdAndUpdate(_id, { isHidden: v })
     },
+    async hideCatalog(_id, v) {
+        return CatalogTripModel.findByIdAndUpdate(_id, { isHidden: v })
+    },
     async findForModeration() {
         return TripModel.find({
             $and: [{ isModerated: false },
@@ -419,7 +422,7 @@ module.exports = {
     },
 
     async getCatalogTrips() {
-        return CatalogTripModel.find({ isModerated: true, rejected: false }).populate('author', { 'fullinfo.fullname': 1 })
+        return CatalogTripModel.find({ isModerated: true, rejected: false, isHidden: false }).populate('author', { 'fullinfo.fullname': 1 })
     },
 
     // async getCatalogTrips(sitePage, lon, lat, strQuery, tripType) {

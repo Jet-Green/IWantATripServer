@@ -29,6 +29,7 @@ router.post('/booking', tripController.booking)
 router.post('/update', authMiddleware, tripController.update)
 router.post('/update-catalog-trip', authMiddleware, tripController.updateCatalogTrip)
 router.get('/hide', authMiddleware, tripController.hideTrip)
+router.get('/hide-catalog', authMiddleware, tripController.hideCatalogTrip)
 router.post('/upload-images', MULTER().any(), tripController.uploadImages)
 router.post('/upload-catalog-images', MULTER().any(), tripController.uploadCatalogImages)
 
