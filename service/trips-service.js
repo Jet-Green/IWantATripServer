@@ -419,7 +419,7 @@ module.exports = {
     },
 
     async getCatalogTrips() {
-        return CatalogTripModel.find({}).populate('author', { 'fullinfo.fullname': 1 })
+        return CatalogTripModel.find({ isModerated: true, rejected: false }).populate('author', { 'fullinfo.fullname': 1 })
     },
 
     // async getCatalogTrips(sitePage, lon, lat, strQuery, tripType) {
@@ -630,7 +630,7 @@ module.exports = {
         return await CatalogTripModel.findById(_id).populate({
             path: 'author',
             select: {
-                fullinfo:1
+                fullinfo: 1
             }
         })
     },
@@ -642,6 +642,9 @@ module.exports = {
         return CatalogTripModel.create(toSave)
     },
     async getMyCatalogTrips(ids) {
-        return await CatalogTripModel.find({ _id: { $in: ids } })
+        return await CatalogTripModel.find({ $and: [{ _id: { $in: ids } }, { isModerated: true, rejected: false }] })
+    },
+    async myCatalogOnModeration(ids) {
+        return await CatalogTripModel.find({ _id: { $in: ids }, isModerated: false })
     }
 }

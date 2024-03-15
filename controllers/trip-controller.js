@@ -530,6 +530,18 @@ module.exports = {
             next(error)
         }
     },
+    /**
+    * req.body {
+    *  catalogTrips: array of CatalogTrip ids
+    * }
+    */
+    async myCatalogOnModeration(req, res, next) {
+        try {
+            return res.json(await TripService.myCatalogOnModeration(req.body.catalogTrips))
+        } catch (error) {
+            next(error)
+        }
+    },
     async updateAllTripsWithShopCode() {
         try {
             await TripModel.updateMany({}, {

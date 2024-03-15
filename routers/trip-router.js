@@ -63,4 +63,6 @@ router.get('/catalog', tripController.getCatalogTripById)
 
 router.post('/move-to-catalog', tripController.moveToCatalog)
 
+router.post('/my-catalog-on-moderation', tripController.myCatalogOnModeration)
+
 module.exports = router
