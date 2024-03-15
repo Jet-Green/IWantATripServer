@@ -6,7 +6,9 @@ const router = Router()
 
 router.get('/trips-on-moderation', AdminController.findForModeration)
 router.get('/moderate-trip', AdminController.moderateTrip)
+router.get('/moderate-catalog-trip', AdminController.moderateCatalogTrip)
 router.post('/send-moderation-message', AdminController.sendModerationMessage)
+router.post('/send-catalog-moderation-message', AdminController.sendCatalogModerationMessage)
 router.get('/rejected-trips', AdminController.findRejectedTrips)
 
 router.get('/rejected-catalog-trips', AdminController.findRejectedCatalogTrips)

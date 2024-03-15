@@ -43,6 +43,28 @@ module.exports = {
             next(error)
         }
     },
+    async moderateCatalogTrip(req, res, next) {
+        try {
+            let catalogFromDb = await tripsService.moderateCatalog(req.query._id, true)
+
+            logger.info({ _id: catalogFromDb._id.toString(), isModerated: true, rejected: false, logType: 'catalog' }, 'catalog moderated and published')
+
+            return res.json(catalogFromDb)
+        } catch (error) {
+            next(error)
+        }
+    },
+    async sendCatalogModerationMessage(req, res, next) {
+        try {
+            let catalogFromDb = await tripsService.sendCatalogModerationMessage(req.query.tripId, req.body.msg)
+
+            logger.info({ _id: req.query.tripId, moderationMessage: req.body.msg, isModerated: false, rejected: true, logType: 'catalog' }, 'catalog trip rejected')
+
+            return res.json(catalogFromDb)
+        } catch (error) {
+            next(error)
+        }
+    },
     async sendModerationMessage(req, res, next) {
         try {
             let tripFromDb = await tripsService.sendModerationMessage(req.query.tripId, req.body.msg)

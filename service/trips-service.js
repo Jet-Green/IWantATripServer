@@ -13,6 +13,7 @@ const { sendMail } = require('../middleware/mailer');
 const LocationService = require('./location-service.js')
 
 const _ = require('lodash');
+const catalogTripModel = require('../models/catalog-trip-model.js');
 
 module.exports = {
     async createManyByDates({ dates, parentId }) {
@@ -403,13 +404,13 @@ module.exports = {
             $and: [{ isModerated: false },
             { rejected: false },
             { "parent": { $exists: false } }]
-        }).populate('author', { 'fullinfo.fullname': 1 }).sort({ 'createdDay': -1 })
+        }).populate('author', { 'fullinfo.fullname': 1, 'fullinfo.phone': 1 }).sort({ 'createdDay': -1 })
     },
     async findRejectedCatalogTrips() {
         return CatalogTripModel.find({
             $and: [{ rejected: true },
             { "parent": { $exists: false } }]
-        }).populate('author', { 'fullinfo.fullname': 1 })
+        }).populate('author', { 'fullinfo.fullname': 1, 'fullinfo.phone': 1 })
     },
     async getCatalogTrips() {
         return TripModel.find({
@@ -419,6 +420,12 @@ module.exports = {
     },
     async moderate(_id, t) {
         return TripModel.findByIdAndUpdate(_id, { isModerated: t, rejected: false })
+    },
+    async moderateCatalog(_id, t) {
+        return catalogTripModel.findByIdAndUpdate(_id, { isModerated: t, rejected: false })
+    },
+    async sendCatalogModerationMessage(tripId, msg) {
+        return catalogTripModel.findByIdAndUpdate(tripId, { isModerated: false, moderationMessage: msg, rejected: true })
     },
     async sendModerationMessage(tripId, msg) {
         return TripModel.findByIdAndUpdate(tripId, { isModerated: false, moderationMessage: msg, rejected: true })
@@ -554,7 +561,12 @@ module.exports = {
         return userFromDb.boughtTrips
     },
     async getCatalogTripById(_id) {
-        return await CatalogTripModel.findById(_id)
+        return await CatalogTripModel.findById(_id).populate({
+            path: 'author',
+            select: {
+                fullinfo:1
+            }
+        })
     },
     async moveToCatalog(_id) {
         let candidate = await TripModel.findById(_id)
