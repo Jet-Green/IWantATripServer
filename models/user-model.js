@@ -16,6 +16,7 @@ const UserSchema = new Schema({
         }
     },
     trips: { type: Array },
+    catalogTrips: [{ type: Schema.Types.ObjectId, ref: 'CatalogTrip' }],
     guideElements: { type: Array },
     createdCompanions: { type: Array },
     boughtTrips: [{ type: Schema.Types.ObjectId, ref: 'Bill' }],
