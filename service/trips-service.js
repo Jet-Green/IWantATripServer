@@ -42,8 +42,13 @@ module.exports = {
             $push: { 'payment.documents': bill.doc }
         })
     },
+    async getFullCatalogById(_id) {
+        let trip = await CatalogTripModel.findById(_id)
+        return trip
+    },
     async getFullTripById(_id) {
-        let trip = await TripModel.findById(_id).populate('author', { fullinfo: 1 }).populate('parent')
+        let trip = await TripModel.findById(_id)
+            .populate('author', { fullinfo: 1 }).populate('parent')
             .populate({
                 path: 'children._id',
                 populate: {

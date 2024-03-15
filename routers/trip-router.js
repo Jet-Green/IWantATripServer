@@ -36,6 +36,7 @@ router.get('/clear', tripController.clear)
 router.get('/created-trips-info', tripController.createdTripsInfo)
 
 router.get('/get-full-trip', tripController.getFullTripById)
+router.get('/get-full-catalog', tripController.getFullCatalogById)
 
 router.get('/catalog-trips', tripController.getCatalogTrips)
 
