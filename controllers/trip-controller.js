@@ -64,6 +64,13 @@ module.exports = {
             next(error)
         }
     },
+    async getFullCatalogById(req, res, next) {
+        try {
+            return res.json(await TripService.getFullCatalogById(req.query._id))
+        } catch (error) {
+            next(error)
+        }
+    },
     async getCustomers(req, res, next) {
         try {
             return res.json(await TripService.getCustomers(req.body))
