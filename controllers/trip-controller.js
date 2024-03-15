@@ -173,6 +173,18 @@ module.exports = {
             next(error)
         }
     },
+    async deleteCatalogById(req, res, next) {
+        try {
+            const _id = req.body._id
+            let removeCatalogTripCallback = await TripService.deleteOneCatalog(_id, s3)
+
+            logger.info({ _id: removeCatalogTripCallback._id, logType: 'catalog' }, 'catalog trip deleted')
+
+            return res.json(removeCatalogTripCallback);
+        } catch (error) {
+            next(error)
+        }
+    },
     async clear(req, res, next) {
         try {
             TripService.deleteMany()

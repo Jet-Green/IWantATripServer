@@ -18,6 +18,20 @@ module.exports = {
             next(error)
         }
     },
+    async findCatalogTripsOnModeration(req, res, next) {
+        try {
+            return res.json(await tripsService.findCatalogTripsOnModeration())
+        } catch (error) {
+            next(error)
+        }
+    },
+    async findRejectedCatalogTrips(req, res, next) {
+        try {
+            return res.json(await tripsService.findRejectedCatalogTrips())
+        } catch (error) {
+            next(error)
+        }
+    },
     async moderateTrip(req, res, next) {
         try {
             let tripFromDb = await tripsService.moderate(req.query._id, true)
@@ -25,6 +39,28 @@ module.exports = {
             logger.info({ _id: tripFromDb._id.toString(), isModerated: true, rejected: false, logType: 'trip' }, 'trip moderated and published')
 
             return res.json(tripFromDb)
+        } catch (error) {
+            next(error)
+        }
+    },
+    async moderateCatalogTrip(req, res, next) {
+        try {
+            let catalogFromDb = await tripsService.moderateCatalog(req.query._id, true)
+
+            logger.info({ _id: catalogFromDb._id.toString(), isModerated: true, rejected: false, logType: 'catalog' }, 'catalog moderated and published')
+
+            return res.json(catalogFromDb)
+        } catch (error) {
+            next(error)
+        }
+    },
+    async sendCatalogModerationMessage(req, res, next) {
+        try {
+            let catalogFromDb = await tripsService.sendCatalogModerationMessage(req.query.tripId, req.body.msg)
+
+            logger.info({ _id: req.query.tripId, moderationMessage: req.body.msg, isModerated: false, rejected: true, logType: 'catalog' }, 'catalog trip rejected')
+
+            return res.json(catalogFromDb)
         } catch (error) {
             next(error)
         }

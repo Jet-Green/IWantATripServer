@@ -13,6 +13,7 @@ const { sendMail } = require('../middleware/mailer');
 const LocationService = require('./location-service.js')
 
 const _ = require('lodash');
+const catalogTripModel = require('../models/catalog-trip-model.js');
 
 module.exports = {
     async createManyByDates({ dates, parentId }) {
@@ -219,6 +220,27 @@ module.exports = {
         }
         return null
     },
+    async deleteOneCatalog(_id, s3) {
+        let catalogTripToDelete = await CatalogTripModel.findById(_id)
+        if (catalogTripToDelete) {
+            // у userа нет поля с каталожными турами
+            // await UserModel.findByIdAndUpdate(catalogTripToDelete.author, {
+            //     $pull: { trips: { $in: _id } }
+            // })
+
+            let images = catalogTripToDelete.images
+            // multer.deleteImages(images)
+            for (let image of images) {
+                let s = image.split('/')
+                let filename = s[s.length - 1]
+
+                let remove = await s3.Remove('/iwat/' + filename)
+            }
+
+            return catalogTripToDelete.remove()
+        }
+        return null
+    },
     async findMany(sitePage, lon, lat, strQuery, start, end, tripType) {
         const limit = 20;
         const page = sitePage || 1;
@@ -382,6 +404,19 @@ module.exports = {
             { "parent": { $exists: false } }]
         }).populate('author', { 'fullinfo.fullname': 1 })
     },
+    async findCatalogTripsOnModeration() {
+        return CatalogTripModel.find({
+            $and: [{ isModerated: false },
+            { rejected: false },
+            { "parent": { $exists: false } }]
+        }).populate('author', { 'fullinfo.fullname': 1, 'fullinfo.phone': 1 }).sort({ 'createdDay': -1 })
+    },
+    async findRejectedCatalogTrips() {
+        return CatalogTripModel.find({
+            $and: [{ rejected: true },
+            { "parent": { $exists: false } }]
+        }).populate('author', { 'fullinfo.fullname': 1, 'fullinfo.phone': 1 })
+    },
 
     async getCatalogTrips() {
         return CatalogTripModel.find({}).populate('author', { 'fullinfo.fullname': 1 })
@@ -451,6 +486,12 @@ module.exports = {
 
     async moderate(_id, t) {
         return TripModel.findByIdAndUpdate(_id, { isModerated: t, rejected: false })
+    },
+    async moderateCatalog(_id, t) {
+        return catalogTripModel.findByIdAndUpdate(_id, { isModerated: t, rejected: false })
+    },
+    async sendCatalogModerationMessage(tripId, msg) {
+        return catalogTripModel.findByIdAndUpdate(tripId, { isModerated: false, moderationMessage: msg, rejected: true })
     },
     async sendModerationMessage(tripId, msg) {
         return TripModel.findByIdAndUpdate(tripId, { isModerated: false, moderationMessage: msg, rejected: true })
@@ -586,7 +627,12 @@ module.exports = {
         return userFromDb.boughtTrips
     },
     async getCatalogTripById(_id) {
-        return await CatalogTripModel.findById(_id)
+        return await CatalogTripModel.findById(_id).populate({
+            path: 'author',
+            select: {
+                fullinfo:1
+            }
+        })
     },
     async moveToCatalog(_id) {
         let candidate = await TripModel.findById(_id)
