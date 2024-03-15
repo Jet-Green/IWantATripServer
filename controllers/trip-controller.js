@@ -446,8 +446,9 @@ module.exports = {
     },
     async getMyCatalogTrips(req, res, next) {
         try {
-            return res.json(await catalogTripModel.find({ author: new mongoose.Types.ObjectId(req.user._id) }))
+            return res.json(await TripService.getMyCatalogTrips(req.body.catalogTrips))
         } catch (error) {
+            console.log(error);
             next(error)
         }
     },

@@ -589,5 +589,8 @@ module.exports = {
         let toSave = Object.assign({}, candidate._doc)
 
         return CatalogTripModel.create(toSave)
+    },
+    async getMyCatalogTrips(ids) {
+        return await CatalogTripModel.find({ _id: { $in: ids } })
     }
 }
