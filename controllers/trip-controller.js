@@ -470,7 +470,8 @@ module.exports = {
     },
     async getMyCatalogTrips(req, res, next) {
         try {
-            return res.json(await TripService.getMyCatalogTrips(req.body.catalogTrips))
+          
+            return res.json(await TripService.getMyCatalogTrips(req.body.id))
         } catch (error) {
             console.log(error);
             next(error)
@@ -542,7 +543,7 @@ module.exports = {
     */
     async myCatalogOnModeration(req, res, next) {
         try {
-            return res.json(await TripService.myCatalogOnModeration(req.body.catalogTrips))
+            return res.json(await TripService.myCatalogOnModeration(req.body.id))
         } catch (error) {
             next(error)
         }

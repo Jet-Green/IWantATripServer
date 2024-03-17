@@ -644,10 +644,10 @@ module.exports = {
 
         return CatalogTripModel.create(toSave)
     },
-    async getMyCatalogTrips(ids) {
-        return await CatalogTripModel.find({ $and: [{ _id: { $in: ids } }, { isModerated: true, rejected: false }] })
+    async getMyCatalogTrips(id) {
+        return await CatalogTripModel.find({ author: id, isModerated: true, rejected: false })
     },
-    async myCatalogOnModeration(ids) {
-        return await CatalogTripModel.find({ _id: { $in: ids }, isModerated: false })
+    async myCatalogOnModeration(id) {
+        return await CatalogTripModel.find({ author: id, isModerated: false })
     }
 }
