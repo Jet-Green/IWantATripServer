@@ -140,9 +140,6 @@ module.exports = {
     async sendCatalogModerationMessage(tripId, msg) {
         return catalogTripModel.findByIdAndUpdate(tripId, { isModerated: false, moderationMessage: msg, rejected: true })
     },
-    async updateIsCatalog({ _id, isCatalog }) {
-        return TripModel.findByIdAndUpdate(_id, { isCatalog: isCatalog })
-    },
     async getCatalogTripById(_id) {
         return await CatalogTripModel.findById(_id).populate({
             path: 'author',

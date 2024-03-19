@@ -27,8 +27,6 @@ router.get('/get-full-catalog', catalogController.getFullCatalogById)
 
 router.get('/catalog-trips', catalogController.getCatalogTrips)
 
-router.post('/update-iscatalog', catalogController.updateIsCatalog)
-
 router.get('/catalog', catalogController.getCatalogTripById)
 
 router.post('/move-to-catalog', catalogController.moveToCatalog)
@@ -36,6 +34,6 @@ router.post('/move-to-catalog', catalogController.moveToCatalog)
 router.post('/my-catalog-on-moderation', catalogController.myCatalogOnModeration)
 
 // not realisated func
-router.post('/catalog-trips-on-moderation', catalogController.myCatalogOnModeration)
+router.get('/catalog-trips-on-moderation', catalogController.myCatalogOnModeration)
 
 module.exports = router

@@ -1,5 +1,5 @@
 const LocationService = require('../service/location-service.js')
-const CatalogService= require('../service/catalog-service.js')
+const CatalogService = require('../service/catalog-service.js')
 
 const ApiError = require('../exceptions/api-error.js')
 
@@ -117,14 +117,6 @@ module.exports = {
             next(error)
         }
     },
-    async updateIsCatalog(req, res, next) {
-        try {
-            return res.json(await CatalogService.updateIsCatalog(req.body))
-        } catch (error) {
-            logger.fatal({ error, logType: 'trip error', brokenMethod: 'updateIsCatalog' })
-            next(error)
-        }
-    },
     async updateCatalogTrip(req, res, next) {
         try {
             let trip = await catalogTripModel.findById(req.body._id)
@@ -145,7 +137,7 @@ module.exports = {
     */
     async getMyCatalogTrips(req, res, next) {
         try {
-          
+
             return res.json(await CatalogService.getMyCatalogTrips(req.body.id))
         } catch (error) {
             console.log(error);
