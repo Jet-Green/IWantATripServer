@@ -100,12 +100,12 @@ module.exports = {
             if (boughtCount + countToBuy > tripFromDb.maxPeople) {
                 throw ApiError.BadRequest('Слишком много человек в туре')
             }
-            let email = await UserModel.findById(req.body.bill.userInfo._id)
-            email = email.email
+            let userFromDb = await UserModel.findById(req.body.bill.userInfo._id)
             let eventEmailsBuy = await AppStateModel.findOne({ 'sendMailsTo.type': 'BuyTrip' }, { 'sendMailsTo.$': 1 })
             let emailsFromDbBuy = eventEmailsBuy.sendMailsTo[0]?.emails
             sendMail(req.body.emailHtmlForAdmins, [tripFromDb?.author?.email, ...emailsFromDbBuy], 'Куплена поездка')
-            sendMail(req.body.emailHtmlForUser, [email], 'Куплена поездка')
+            if (userFromDb)
+                sendMail(req.body.emailHtmlForUser, [userFromDb.email], 'Куплена поездка')
 
             let buyCallBack = await TripService.buyTrip(req)
 
