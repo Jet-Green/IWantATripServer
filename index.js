@@ -27,8 +27,8 @@ const serviceFunctionsRouter = require('./routers/service-functions-router')
 const contractRouter = require('./routers/contract-router')
 const catalogRouter = require('./routers/catalog-router');
 
-const { sendPost } = require('./service/telegram-service');
-sendPost('<b>sus AMOGUS</b>')
+// const { sendPost } = require('./service/telegram-service');
+// sendPost('<b>sus AMOGUS</b>')
 
 
 app.use(history())
