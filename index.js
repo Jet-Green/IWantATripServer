@@ -30,7 +30,7 @@ const ideaRouter = require('./routers/idea-router')
 
 
 app.use(history())
-// app.use(helmet());
+    // app.use(helmet());
 
 // here all .use
 app.use(cors({
@@ -71,7 +71,7 @@ app.use('/admin', adminRouter)
 app.use('/service-functions', serviceFunctionsRouter)
 
 app.use(errorFilter)
-// use error middleware last
+    // use error middleware last
 app.use(errorMiddleware)
 
 function startServer() {
@@ -81,13 +81,12 @@ function startServer() {
         console.error('Error while starting server: ', err);
     }
 }
+
 function mongoConnect() {
-    mongoose.connect(process.env.MONGO_URL,
-        {
-            useNewUrlParser: true,
-            useUnifiedTopology: true
-        }
-    )
+    mongoose.connect(process.env.MONGO_URL, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true
+    })
     const db = mongoose.connection;
     db.on('error', console.error.bind(console, 'connection error:'));
 
@@ -98,7 +97,7 @@ function mongoConnect() {
     db.collections.companions.createIndex({ 'startLocation': '2dsphere' })
     db.collections.trips.createIndex({ 'includedLocations': '2dsphere' })
 
-    db.once('open', function () {
+    db.once('open', function() {
         console.log('connection')
     });
 }
