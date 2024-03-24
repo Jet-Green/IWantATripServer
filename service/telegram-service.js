@@ -22,4 +22,4 @@ module.exports = process.argv[2] == 'production' ? {
             console.error(error)
         }
     }
-} : { async sendPost(poster) { return } }
+} : { async sendPost(html) { return } }
