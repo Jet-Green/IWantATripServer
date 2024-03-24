@@ -87,7 +87,7 @@ module.exports = {
 
         if (lat && lon) {
             query.$and.push({
-                includedLocations: {
+                startLocation: {
                     $near: {
                         $geometry: {
                             type: 'Point',
