@@ -40,7 +40,7 @@ module.exports = {
             // })
 
             let images = catalogTripToDelete.images
-            // multer.deleteImages(images)
+                // multer.deleteImages(images)
             for (let image of images) {
                 let s = image.split('/')
                 let filename = s[s.length - 1]
@@ -58,82 +58,73 @@ module.exports = {
     async findCatalogTripsOnModeration() {
         return CatalogTripModel.find({
             $and: [{ isModerated: false },
-            { rejected: false },
-            { "parent": { $exists: false } }]
+                { rejected: false },
+                { "parent": { $exists: false } }
+            ]
         }).populate('author', { 'fullinfo.fullname': 1, 'fullinfo.phone': 1 }).sort({ 'createdDay': -1 })
     },
     async findRejectedCatalogTrips() {
         return CatalogTripModel.find({
             $and: [{ rejected: true },
-            { "parent": { $exists: false } }]
+                { "parent": { $exists: false } }
+            ]
         }).populate('author', { 'fullinfo.fullname': 1, 'fullinfo.phone': 1 })
     },
 
-    async getCatalogTrips() {
-        return CatalogTripModel.find({ isModerated: true, rejected: false, isHidden: false }).populate('author', { 'fullinfo.fullname': 1 })
+    async getCatalogTrips(sitePage, lon, lat, strQuery, tripType) {
+        const limit = 20;
+        const page = sitePage || 1;
+        const skip = (page - 1) * limit;
+        let query = {}
+
+        query = {
+            $and: [
+
+                { isHidden: false, rejected: false },
+                { "parent": { $exists: false } },
+            ]
+        }
+
+        if (lat && lon) {
+            query.$and.push({
+                includedLocations: {
+                    $near: {
+                        $geometry: {
+                            type: 'Point',
+                            coordinates: [Number(lon), Number(lat)]
+                        },
+                        // 50 km
+                        $maxDistance: 50000
+                    }
+                }
+            })
+        }
+
+        if (strQuery) {
+            query.$and.push({
+                $or: [
+                    { name: { $regex: strQuery, $options: 'i' } },
+                    { tripRoute: { $regex: strQuery, $options: 'i' } },
+                    { offer: { $regex: strQuery, $options: 'i' } },
+                    { description: { $regex: strQuery, $options: 'i' } },
+                ]
+            })
+        }
+        if (tripType) {
+            query.$and.push({
+
+                tripType: { $regex: tripType, $options: 'i' },
+
+            })
+        }
+
+        const cursor = CatalogTripModel.find(query, null, { sort: 'start' }).skip(skip).limit(limit).cursor();
+        const results = [];
+        for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
+            results.push(doc);
+        }
+        return results
     },
-
-    // async getCatalogTrips(sitePage, lon, lat, strQuery, tripType) {
-    //     const limit = 20;
-    //     const page = sitePage || 1;
-    //     const skip = (page - 1) * limit;
-    //     let query = {}
-
-    //     // query = {
-    //     //     $and: [
-
-    //     //         { isHidden: false, rejected: false },
-    //     //         { "parent": { $exists: false } },
-    //     //     ]
-    //     // }
-
-    //     if (lat && lon) {
-    //         query.$and.push({
-    //             includedLocations: {
-    //                 $near: {
-    //                     $geometry: {
-    //                         type: 'Point',
-    //                         coordinates: [Number(lon), Number(lat)]
-    //                     },
-    //                     // 50 km
-    //                     $maxDistance: 50000
-    //                 }
-    //             }
-    //         })
-    //     }
-
-    //     if (strQuery) {
-    //         query.$and.push(
-    //             {
-    //                 $or: [
-    //                     { name: { $regex: strQuery, $options: 'i' } },
-    //                     { tripRoute: { $regex: strQuery, $options: 'i' } },
-    //                     { offer: { $regex: strQuery, $options: 'i' } },
-    //                     { description: { $regex: strQuery, $options: 'i' } },
-    //                 ]
-    //             }
-    //         )
-    //     }
-    //     if (tripType) {
-    //         query.$and.push(
-    //             {
-
-    //                 tripType: { $regex: tripType, $options: 'i' },
-
-    //             }
-    //         )
-    //     }
-
-    //     const cursor = CatalogTripModel.find(query, null, { sort: 'start' }).skip(skip).limit(limit).cursor();
-    //     const results = [];
-    //     for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
-    //         results.push(doc);
-    //     }
-    //     // catalog = await CatalogTripModel.find()
-    //     // console.log(catalog)
-    //     // return catalog
-    //     return results
-    // },
     async moderateCatalog(_id, t) {
         return catalogTripModel.findByIdAndUpdate(_id, { isModerated: t, rejected: false })
     },
