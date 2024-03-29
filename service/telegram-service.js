@@ -5,12 +5,12 @@ const chat_id = process.env.TELEGRAM_CHAT_ID
 
 let bot;
 
-if (process.argv[2] == 'production') {
-    bot = new TelegramBot(token, { polling: true })
-}
+
+bot = new TelegramBot(token, { polling: true })
+
 
 // экспортирую объект с пустыми функциями, если если мод development
-module.exports = process.argv[2] == 'production' ? {
+module.exports = {
     async sendPost(html) {
         try {
             await bot.sendMessage(
@@ -22,4 +22,4 @@ module.exports = process.argv[2] == 'production' ? {
             console.error(error)
         }
     }
-} : { async sendPost(html) { return } }
+}
