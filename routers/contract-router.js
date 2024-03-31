@@ -5,7 +5,8 @@ const ContractController = require('../controllers/contract-controller')
 
 
 const router = Router()
-
+router.post('/delete',authMiddleware, ContractController.deleteContract )
+router.post('/register', authMiddleware, ContractController.registerContract)
 router.post('/create', authMiddleware, ContractController.createContract)
 router.post('/get-all', authMiddleware, ContractController.getAll)
 router.put('/contract-email', authMiddleware, ContractController.addContractEmail)

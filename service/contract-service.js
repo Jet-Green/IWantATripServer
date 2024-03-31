@@ -2,12 +2,22 @@ const ContractModel = require('../models/contract-model.js')
 const UserModel = require('../models/user-model.js')
 
 module.exports = {
-    async createContract({ contract, userEmail }) {
+
+    async deleteContract({ _id }) {
+        return ContractModel.deleteOne({ _id: _id })
+    },
+
+    async registerContract({ contract, userEmail }) {
         let contractFromDb = await ContractModel.create({ ...contract, userEmails: [userEmail] })
 
-        await UserModel.findOneAndUpdate({ email: userEmail }, { $set: { tinkoffContract: contractFromDb._id } })
-
         return contractFromDb
+    },
+    async createContract({ contractId, userEmail, shopInfo }) {
+        // let contractFromDb = await ContractModel.create({ ...contract, userEmails: [userEmail] })
+        await ContractModel.findByIdAndUpdate({ _id: contractId}, { $set: { shopInfo: shopInfo}} )
+        await UserModel.findOneAndUpdate({ email: userEmail }, { $set: { tinkoffContract: contractId} })
+
+        return
     },
     async getAll() {
         return ContractModel.find({})
