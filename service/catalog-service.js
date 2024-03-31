@@ -9,7 +9,6 @@ const { sendMail } = require('../middleware/mailer');
 const LocationService = require('./location-service.js')
 
 const _ = require('lodash');
-const catalogTripModel = require('../models/catalog-trip-model.js');
 
 module.exports = {
     async getFullCatalogById(_id) {
@@ -127,10 +126,10 @@ module.exports = {
         return results
     },
     async moderateCatalog(_id, t) {
-        return catalogTripModel.findByIdAndUpdate(_id, { isModerated: t, rejected: false })
+        return CatalogTripModel.findByIdAndUpdate(_id, { isModerated: t, rejected: false })
     },
     async sendCatalogModerationMessage(tripId, msg) {
-        return catalogTripModel.findByIdAndUpdate(tripId, { isModerated: false, moderationMessage: msg, rejected: true })
+        return CatalogTripModel.findByIdAndUpdate(tripId, { isModerated: false, moderationMessage: msg, rejected: true })
     },
     async getCatalogTripById(_id) {
         return await CatalogTripModel.findById(_id).populate({
