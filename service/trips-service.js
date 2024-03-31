@@ -378,7 +378,7 @@ module.exports = {
             tripsIdArray = data.trips
         })
         let result = []
-        await TripModel.find({ _id: { $in: tripsIdArray } }).populate('parent')
+        await TripModel.find({ _id: { $in: tripsIdArray } }).populate('parent').populate('calculator')
             .then((data) => {
 
                 for (let trip of data) {

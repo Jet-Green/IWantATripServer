@@ -128,5 +128,18 @@ module.exports = {
         } catch (error) {
             next(error)
         }
+    },
+    /***
+     * body {
+     *  calcId - new calculator id, may be null or undefined
+     *  tripId - trip id, must be present
+     * }
+     */
+    async setTripCalculator(req, res, next) {
+        try {
+            return res.json(await UserService.setTripCalculator(req.body))
+        } catch (error) {
+            next(error)
+        }
     }
 }
