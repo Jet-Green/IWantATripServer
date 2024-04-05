@@ -14,8 +14,8 @@ module.exports = {
     },
     async createContract({ contractId, userEmail, shopInfo }) {
         // let contractFromDb = await ContractModel.create({ ...contract, userEmails: [userEmail] })
-        await ContractModel.findByIdAndUpdate({ _id: contractId}, { $set: { shopInfo: shopInfo}} )
-        await UserModel.findOneAndUpdate({ email: userEmail }, { $set: { tinkoffContract: contractId} })
+        await ContractModel.findByIdAndUpdate({ _id: contractId }, { $set: { shopInfo: shopInfo } })
+        await UserModel.findOneAndUpdate({ email: userEmail }, { $set: { tinkoffContract: contractId } })
 
         return
     },
@@ -56,5 +56,8 @@ module.exports = {
         result.data = await ContractModel.findByIdAndUpdate(contractId, { $pull: { userEmails: contractEmail } })
 
         return result
+    },
+    getContractById(_id) {
+        return ContractModel.findById(_id)
     }
 }
