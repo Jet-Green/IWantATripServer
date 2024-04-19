@@ -62,7 +62,7 @@ const TripSchema = new Schema({
         Phones: Array,
     },
     isCatalog: { type: Boolean, default: false },
-    calculator: { type: Schema.Types.ObjectId, ref: 'TripCalc', required: false, default: '' },
+    calculator: { type: Schema.Types.ObjectId, ref: 'TripCalc', required: false, default: null },
 })
 
 module.exports = model('Trip', TripSchema);
