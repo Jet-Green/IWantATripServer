@@ -128,5 +128,23 @@ module.exports = {
         } catch (error) {
             next(error)
         }
+    },
+    async showTour(req, res, next) {
+        try {
+            return res.json(await UserService.showTour(req.body))
+        } catch (error) {
+            console.log(error);
+            next(error)
+        }
+
+    },
+    async getTour(req, res, next) {
+        try {
+            return res.json(await UserService.getTour(req.query.user_id))
+        } catch (error) {
+            console.log(error);
+            next(error)
+        }
+
     }
 }

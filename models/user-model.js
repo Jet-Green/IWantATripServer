@@ -49,7 +49,11 @@ const UserSchema = new Schema({
             send: false
         }]
     },
-    date: { type: Schema.Types.Number }
+    date: { type: Schema.Types.Number },
+    educationTours: {
+        landingTour: 0,
+        cabinetTour: 0,
+    },
 })
 
 module.exports = model('User', UserSchema);

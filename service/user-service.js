@@ -246,5 +246,16 @@ module.exports = {
         await new Promise(r => setTimeout(r, 3000))
 
         return user
-    }
+    },
+    async showTour({ step, type, _id }) {
+        if (type == 'cabinetTour') {
+            return await UserModel.findByIdAndUpdate(_id, { $set: { 'educationTours.cabinetTour': step } })
+        }
+        if (type == 'landingTour') {
+            return await UserModel.findByIdAndUpdate(_id, { $set: { 'educationTours.landingTour': step } })
+        }
+    },
+    async getTour(_id) {
+        return await UserModel.findById(_id).select('educationTours')
+    },
 }
