@@ -4,7 +4,6 @@ module.exports = {
     async get(req, res, next) {
         try {
             let buses = await busModel.find()
-            console.log('dfsgsgfds')
             res.status(200).json(buses)
         } catch (error) {
             next(error)
