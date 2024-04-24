@@ -20,6 +20,7 @@ const UserSchema = new Schema({
     guideElements: { type: Array },
     createdCompanions: { type: Array },
     boughtTrips: [{ type: Schema.Types.ObjectId, ref: 'Bill' }],
+    excursions: [{ type: Schema.Types.ObjectId, ref: 'Excursion' }],
 
     roles: { type: Array, default: ['user'] },
     userLocation: {
