@@ -9,7 +9,6 @@ const ApiError = require('../exceptions/api-error.js')
 let EasyYandexS3 = require('easy-yandex-s3').default;
 const { sendMail } = require('../middleware/mailer')
 const logger = require('../logger.js');
-const catalogTripModel = require('../models/catalog-trip-model.js');
 const { default: mongoose } = require('mongoose');
 
 // Указываем аутентификацию в Yandex Object Storage
@@ -64,13 +63,6 @@ module.exports = {
             next(error)
         }
     },
-    async getFullCatalogById(req, res, next) {
-        try {
-            return res.json(await TripService.getFullCatalogById(req.query._id))
-        } catch (error) {
-            next(error)
-        }
-    },
     async getCustomers(req, res, next) {
         try {
             return res.json(await TripService.getCustomers(req.body))
@@ -82,14 +74,6 @@ module.exports = {
         try {
             const q = req.query
             return res.json(await TripService.findMany(q.cursor, q.lon, q.lat, q.query, q.start, q.end, q.type))
-        } catch (error) {
-            next(error)
-        }
-    },
-    async getCatalog(req, res, next) {
-        try {
-            const q = req.query
-            return res.json(await TripService.getCatalogTrips(q.cursor, q.lon, q.lat, q.query, q.type))
         } catch (error) {
             next(error)
         }
@@ -116,12 +100,12 @@ module.exports = {
             if (boughtCount + countToBuy > tripFromDb.maxPeople) {
                 throw ApiError.BadRequest('Слишком много человек в туре')
             }
-            let email = await UserModel.findById(req.body.bill.userInfo._id)
-            email = email.email
+            let userFromDb = await UserModel.findById(req.body.bill.userInfo._id)
             let eventEmailsBuy = await AppStateModel.findOne({ 'sendMailsTo.type': 'BuyTrip' }, { 'sendMailsTo.$': 1 })
             let emailsFromDbBuy = eventEmailsBuy.sendMailsTo[0]?.emails
             sendMail(req.body.emailHtmlForAdmins, [tripFromDb?.author?.email, ...emailsFromDbBuy], 'Куплена поездка')
-            sendMail(req.body.emailHtmlForUser, [email], 'Куплена поездка')
+            if (userFromDb)
+                sendMail(req.body.emailHtmlForUser, [userFromDb.email], 'Куплена поездка')
 
             let buyCallBack = await TripService.buyTrip(req)
 
@@ -173,18 +157,6 @@ module.exports = {
             next(error)
         }
     },
-    async deleteCatalogById(req, res, next) {
-        try {
-            const _id = req.body._id
-            let removeCatalogTripCallback = await TripService.deleteOneCatalog(_id, s3)
-
-            logger.info({ _id: removeCatalogTripCallback._id, logType: 'catalog' }, 'catalog trip deleted')
-
-            return res.json(removeCatalogTripCallback);
-        } catch (error) {
-            next(error)
-        }
-    },
     async clear(req, res, next) {
         try {
             TripService.deleteMany()
@@ -226,40 +198,6 @@ module.exports = {
             next(error)
         }
     },
-    async createCatalogTrip(req, res, next) {
-        try {
-            let location = await LocationService.createLocation(req.body.trip.startLocation)
-
-            // if (!req.body.trip.includedLocations?.coordinates > 1) {
-            req.body.trip.startLocation = location
-            req.body.trip.includedLocations = {
-                'type': 'MultiPoint',
-                coordinates: [location.coordinates],
-            }
-            req.body.trip.locationNames = [location]
-            // }
-
-            const tripFromDB = await catalogTripModel.create(req.body.trip)
-
-            logger.info({ _id: tripFromDB._id.toString(), logType: 'trip' }, 'trip created')
-
-            let trip = Object.assign({}, tripFromDB._doc)
-
-            // format to send the mail
-            trip.start = new Date(Number(trip.start)).toLocaleDateString("ru-RU")
-            trip.end = new Date(Number(trip.end)).toLocaleDateString("ru-RU")
-
-            // let eventEmailsBook = await AppStateModel.findOne({ 'sendMailsTo.type': 'CreateTrip' }, { 'sendMailsTo.$': 1 })
-            // let emailsFromDbBook = eventEmailsBook.sendMailsTo[0].emails
-
-            // // req.body.emails - это емейл пользователя
-            // sendMail(req.body.emailHtml, [...req.body.emails, ...emailsFromDbBook], 'Создан тур')
-            return res.json({ _id: trip._id })
-        } catch (error) {
-            logger.fatal({ error, logType: 'trip error', brokenMethod: 'create' })
-            next(error)
-        }
-    },
     async booking(req, res, next) {
         try {
             const tripCb = await TripService.booking(req.body)
@@ -285,14 +223,6 @@ module.exports = {
     async hideTrip(req, res, next) {
         try {
             await TripService.hide(req.query._id, req.query.v)
-            return res.json('OK')
-        } catch (error) {
-            next(error)
-        }
-    },
-    async hideCatalogTrip(req, res, next) {
-        try {
-            await TripService.hideCatalog(req.query._id, req.query.v)
             return res.json('OK')
         } catch (error) {
             next(error)
@@ -324,35 +254,6 @@ module.exports = {
             res.status(200).send('Ok')
         } catch (error) {
             logger.fatal({ error, logType: 'trip error', brokenMethod: 'uploadImages' })
-            next(error)
-        }
-    },
-    async uploadCatalogImages(req, res, next) {
-        try {
-            let _id = req.files[0]?.originalname.split('_')[0]
-
-            let filenames = []
-            let buffers = []
-            for (let file of req.files) {
-                buffers.push({ buffer: file.buffer, name: file.originalname, });    // Буфер загруженного файла
-            }
-
-            if (buffers.length) {
-                let uploadResult = await s3.Upload(buffers, '/iwat/');
-
-                for (let upl of uploadResult) {
-                    filenames.push(upl.Location)
-                }
-            }
-
-            if (filenames.length) {
-                await TripService.updateCatalogTripImagesUrls(_id, filenames)
-                logger.info({ filenames, logType: 'trip' }, 'catalog images uploaded')
-            }
-
-            res.status(200).send('Ok')
-        } catch (error) {
-            logger.fatal({ error, logType: 'trip error', brokenMethod: 'uploadCatalogImages' })
             next(error)
         }
     },
@@ -404,25 +305,6 @@ module.exports = {
             next(error)
         }
     },
-    async updateIsCatalog(req, res, next) {
-        try {
-            return res.json(await TripService.updateIsCatalog(req.body))
-        } catch (error) {
-            logger.fatal({ error, logType: 'trip error', brokenMethod: 'updateIsCatalog' })
-            next(error)
-        }
-    },
-    async updateCatalogTrip(req, res, next) {
-        try {
-            let trip = await catalogTripModel.findById(req.body._id)
-            if (req.user._id != trip.author._id.toString())
-                throw ApiError.BadRequest('Не ваш')
-            return res.json(trip.updateOne(req.body.trip, { new: true }))
-        } catch (error) {
-            logger.fatal({ error, logType: 'trip error', brokenMethod: 'updateCatalogTrip' })
-            next(error)
-        }
-    },
     /*
     * req.body {
     *   newLocation
@@ -468,22 +350,6 @@ module.exports = {
             next(error)
         }
     },
-    async getMyCatalogTrips(req, res, next) {
-        try {
-          
-            return res.json(await TripService.getMyCatalogTrips(req.body.id))
-        } catch (error) {
-            console.log(error);
-            next(error)
-        }
-    },
-    async getCatalogTrips(req, res, next) {
-        try {
-            return res.json(await TripService.getCatalogTrips())
-        } catch (error) {
-            next(error)
-        }
-    },
     /*
     * req.body {
     *   tripId
@@ -520,20 +386,6 @@ module.exports = {
             return res.json(await TripService.getBoughtTrips(req.query.userId))
         } catch (err) {
             next(err)
-        }
-    },
-    async getCatalogTripById(req, res, next) {
-        try {
-            return res.json(await TripService.getCatalogTripById(req.query._id))
-        } catch (error) {
-            next(error)
-        }
-    },
-    async moveToCatalog(req, res, next) {
-        try {
-            return res.json(await TripService.moveToCatalog(req.body.tripId))
-        } catch (error) {
-            next(error)
         }
     },
     /**

@@ -1,4 +1,5 @@
 const tripsService = require('../service/trips-service')
+const catalogService = require('../service/catalog-service.js')
 const adminService = require('../service/admin-service')
 
 const logger = require('../logger.js')
@@ -20,14 +21,14 @@ module.exports = {
     },
     async findCatalogTripsOnModeration(req, res, next) {
         try {
-            return res.json(await tripsService.findCatalogTripsOnModeration())
+            return res.json(await catalogService.findCatalogTripsOnModeration())
         } catch (error) {
             next(error)
         }
     },
     async findRejectedCatalogTrips(req, res, next) {
         try {
-            return res.json(await tripsService.findRejectedCatalogTrips())
+            return res.json(await catalogService.findRejectedCatalogTrips())
         } catch (error) {
             next(error)
         }
@@ -45,7 +46,7 @@ module.exports = {
     },
     async moderateCatalogTrip(req, res, next) {
         try {
-            let catalogFromDb = await tripsService.moderateCatalog(req.query._id, true)
+            let catalogFromDb = await catalogService.moderateCatalog(req.query._id, true)
 
             logger.info({ _id: catalogFromDb._id.toString(), isModerated: true, rejected: false, logType: 'catalog' }, 'catalog moderated and published')
 
@@ -56,7 +57,7 @@ module.exports = {
     },
     async sendCatalogModerationMessage(req, res, next) {
         try {
-            let catalogFromDb = await tripsService.sendCatalogModerationMessage(req.query.tripId, req.body.msg)
+            let catalogFromDb = await catalogService.sendCatalogModerationMessage(req.query.tripId, req.body.msg)
 
             logger.info({ _id: req.query.tripId, moderationMessage: req.body.msg, isModerated: false, rejected: true, logType: 'catalog' }, 'catalog trip rejected')
 

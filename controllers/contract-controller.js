@@ -1,6 +1,21 @@
 const ContractService = require('../service/contract-service.js')
 
 module.exports = {
+
+    async deleteContract(req, res, next) {
+        try {
+            return res.json(await ContractService.deleteContract(req.body))
+        } catch (error) {
+            next(error)
+        }
+    },
+    async registerContract(req, res, next) {
+        try {
+            return res.json(await ContractService.registerContract(req.body))
+        } catch (error) {
+            next(error)
+        }
+    },
     async createContract(req, res, next) {
         try {
             return res.json(await ContractService.createContract(req.body))
@@ -30,8 +45,13 @@ module.exports = {
 
             return res.json(result)
         } catch (error) {
-            console.log(error);
-
+            next(error)
+        }
+    },
+    async getContractById(req, res, next) {
+        try {
+            return res.json(await ContractService.getContractById(req.query._id))
+        } catch (error) {
             next(error)
         }
     }

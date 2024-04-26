@@ -29,5 +29,6 @@ router.get('/determine-winner', userController.determineTheWinner)
 
 router.post('/show-tour', userController.showTour)
 router.get('/get-tour', userController.getTour)
+router.put('/set-trip-calculator', userController.setTripCalculator)
 
 module.exports = router

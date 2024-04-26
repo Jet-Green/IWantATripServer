@@ -258,4 +258,11 @@ module.exports = {
     async getTour(_id) {
         return await UserModel.findById(_id).select('educationTours')
     },
+
+    async setTripCalculator({ tripId, calcId }) {
+        if (!calcId) {
+            return TripModel.findByIdAndUpdate(tripId, { calculator: null })
+        }
+        return TripModel.findByIdAndUpdate(tripId, { calculator: calcId })
+    }
 }
