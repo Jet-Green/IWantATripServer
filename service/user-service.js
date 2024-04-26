@@ -246,5 +246,12 @@ module.exports = {
         await new Promise(r => setTimeout(r, 3000))
 
         return user
+    },
+
+    async setTripCalculator({ tripId, calcId }) {
+        if (!calcId) {
+            return TripModel.findByIdAndUpdate(tripId, { calculator: null })
+        }
+        return TripModel.findByIdAndUpdate(tripId, { calculator: calcId })
     }
 }

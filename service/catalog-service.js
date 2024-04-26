@@ -1,4 +1,5 @@
 const CatalogTripModel = require('../models/catalog-trip-model.js');
+const TripModel = require('../models/trip-model.js')
 
 const ApiError = require('../exceptions/api-error.js')
 const multer = require('../middleware/multer-middleware')
@@ -8,7 +9,6 @@ const { sendMail } = require('../middleware/mailer');
 const LocationService = require('./location-service.js')
 
 const _ = require('lodash');
-const catalogTripModel = require('../models/catalog-trip-model.js');
 
 module.exports = {
     async getFullCatalogById(_id) {
@@ -40,7 +40,7 @@ module.exports = {
             // })
 
             let images = catalogTripToDelete.images
-                // multer.deleteImages(images)
+            // multer.deleteImages(images)
             for (let image of images) {
                 let s = image.split('/')
                 let filename = s[s.length - 1]
@@ -58,15 +58,15 @@ module.exports = {
     async findCatalogTripsOnModeration() {
         return CatalogTripModel.find({
             $and: [{ isModerated: false },
-                { rejected: false },
-                { "parent": { $exists: false } }
+            { rejected: false },
+            { "parent": { $exists: false } }
             ]
         }).populate('author', { 'fullinfo.fullname': 1, 'fullinfo.phone': 1 }).sort({ 'createdDay': -1 })
     },
     async findRejectedCatalogTrips() {
         return CatalogTripModel.find({
             $and: [{ rejected: true },
-                { "parent": { $exists: false } }
+            { "parent": { $exists: false } }
             ]
         }).populate('author', { 'fullinfo.fullname': 1, 'fullinfo.phone': 1 })
     },
@@ -126,10 +126,10 @@ module.exports = {
         return results
     },
     async moderateCatalog(_id, t) {
-        return catalogTripModel.findByIdAndUpdate(_id, { isModerated: t, rejected: false })
+        return CatalogTripModel.findByIdAndUpdate(_id, { isModerated: t, rejected: false })
     },
     async sendCatalogModerationMessage(tripId, msg) {
-        return catalogTripModel.findByIdAndUpdate(tripId, { isModerated: false, moderationMessage: msg, rejected: true })
+        return CatalogTripModel.findByIdAndUpdate(tripId, { isModerated: false, moderationMessage: msg, rejected: true })
     },
     async getCatalogTripById(_id) {
         return await CatalogTripModel.findById(_id).populate({
@@ -142,6 +142,8 @@ module.exports = {
     async moveToCatalog(_id) {
         let candidate = await TripModel.findById(_id)
         delete candidate._doc._id
+        delete candidate._doc.isModerated
+        delete candidate._doc.rejected
         let toSave = Object.assign({}, candidate._doc)
 
         return CatalogTripModel.create(toSave)
