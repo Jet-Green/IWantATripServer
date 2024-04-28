@@ -247,17 +247,17 @@ module.exports = {
 
         return user
     },
-    async showTour({ step, type, _id }) {
-        if (type == 'cabinetTour') {
-            return await UserModel.findByIdAndUpdate(_id, { $set: { 'educationTours.cabinetTour': step } })
-        }
-        if (type == 'landingTour') {
-            return await UserModel.findByIdAndUpdate(_id, { $set: { 'educationTours.landingTour': step } })
-        }
-    },
-    async getTour(_id) {
-        return await UserModel.findById(_id).select('educationTours')
-    },
+    // async showTour({ step, type, _id }) {
+    //     if (type == 'cabinetTour') {
+    //         return await UserModel.findByIdAndUpdate(_id, { $set: { 'educationTours.cabinetTour': step } })
+    //     }
+    //     if (type == 'landingTour') {
+    //         return await UserModel.findByIdAndUpdate(_id, { $set: { 'educationTours.landingTour': step } })
+    //     }
+    // },
+    // async getTour(_id) {
+    //     return await UserModel.findById(_id).select('educationTours')
+    // },
 
     async setTripCalculator({ tripId, calcId }) {
         if (!calcId) {
