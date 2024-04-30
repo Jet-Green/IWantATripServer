@@ -4,6 +4,7 @@ const Router = require('express').Router
 const router = Router()
 
 router.get('/get', busController.get)
+router.get('/get-by-id', busController.getById)
 router.post('/create', authMiddleware, busController.create)
 
 module.exports = router
