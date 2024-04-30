@@ -145,6 +145,7 @@ module.exports = {
             console.log(error);
             next(error)
         }
+    },
 
     /***
      * body {
