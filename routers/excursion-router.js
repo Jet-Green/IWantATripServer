@@ -6,5 +6,6 @@ const ExcursionController = require('../controllers/excursion-controller.js')
 
 const router = Router()
 router.post('/', authMiddleware, ExcursionController.create)
+router.get('/get-excursions', authMiddleware, ExcursionController.getUserExcursions)
 
 module.exports = router

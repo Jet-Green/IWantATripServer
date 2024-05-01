@@ -8,5 +8,12 @@ module.exports = {
         } catch (error) {
             next(error)
         }
+    },
+    async getUserExcursions(req, res, next) {
+        try {
+            return res.json(await ExcursionService.getByUserId(req.query.user_id))
+        } catch (error) {
+            next(error)
+        }
     }
 }
