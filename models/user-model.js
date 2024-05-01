@@ -21,6 +21,7 @@ const UserSchema = new Schema({
     createdCompanions: { type: Array },
     boughtTrips: [{ type: Schema.Types.ObjectId, ref: 'Bill' }],
     excursions: [{ type: Schema.Types.ObjectId, ref: 'Excursion' }],
+    excursionDates: [{ type: Schema.Types.ObjectId, ref: 'ExcursionDates' }],
 
     roles: { type: Array, default: ['user'] },
     userLocation: {
