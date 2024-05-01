@@ -4,7 +4,6 @@ const ExcursionSchema = new Schema({
     name: { type: String, required: true },
     author: { type: Schema.Types.ObjectId, ref: 'User' },
     contacts: { type: Object},
-    time: { type: Schema.Types.ObjectId, ref: 'ExcursionDate'},
     description: { type: String },
     location: { type: Schema.Types.ObjectId, ref: 'Location' },
     duration: { type: String},
