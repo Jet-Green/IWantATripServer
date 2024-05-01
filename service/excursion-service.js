@@ -21,5 +21,13 @@ module.exports = {
             created.push(result._id.toString())
         }
         return await UserModel.findByIdAndUpdate(userId, { $push: { excursionDates: { $each: created } } })
+    },
+    async getAll() {
+        return await ExcursionDateModel.find(
+            // filters here
+        ).populate('excursion')
+    },
+    async getDateById(_id) {
+        return await ExcursionDateModel.findById(_id).populate('excursion')
     }
 }

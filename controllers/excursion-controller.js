@@ -33,5 +33,19 @@ module.exports = {
         } catch (error) {
             next(error)
         }
+    },
+    async getAll(req, res, next) {
+        try {
+            return res.json(await ExcursionService.getAll())
+        } catch (error) {
+            next(error)
+        }
+    },
+    async getDateById(req, res, next) {
+        try {
+            return res.json(await ExcursionService.getDateById(req.query._id))
+        } catch (error) {
+            next(error)
+        }
     }
 }

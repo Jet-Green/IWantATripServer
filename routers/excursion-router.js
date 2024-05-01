@@ -10,5 +10,8 @@ router.get('/', authMiddleware, ExcursionController.getById)
 router.get('/get-excursions', authMiddleware, ExcursionController.getUserExcursions)
 
 router.post('/dates', authMiddleware, ExcursionController.createDates)
+router.post('/all', authMiddleware, ExcursionController.getAll)
+
+router.get('/date', ExcursionController.getDateById)
 
 module.exports = router
