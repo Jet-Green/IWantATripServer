@@ -9,7 +9,7 @@ const ExcursionSchema = new Schema({
     duration: { type: String},
     minPeople:{type: Number},
     maxPeople: { type: Number},
-    guedes: [{ type: [Schema.Types.ObjectId], ref: 'Guide' }],
+    guides: [{ type: [Schema.Types.ObjectId], ref: 'Guide' }],
     excursionType: { type: String},
     startPlace: { type: String },
     prices: { type: [Object]},
