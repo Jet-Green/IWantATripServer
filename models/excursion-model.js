@@ -18,7 +18,7 @@ const ExcursionSchema = new Schema({
     minAge: { type: Number },
     deadline: { type: String },
     requirements: { type: String },
-    availability: { type: String }
+    availability: { type: Boolean }
 })
 
 module.exports = model('Excursion', ExcursionSchema);
