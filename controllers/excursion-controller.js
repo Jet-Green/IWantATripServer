@@ -1,8 +1,12 @@
 const ExcursionService = require('../service/excursion-service.js')
+const LocationService = require('../service/location-service.js')
 
 module.exports = {
     async create(req, res, next) {
         try {
+            let location = await LocationService.createLocation(req.body.excursion.location)
+            if (location?._id)
+                req.body.excursion.location = location._id.toString()
             let callback = await ExcursionService.create(req.body)
             return res.json(callback)
         } catch (error) {
