@@ -5,7 +5,11 @@ const ExcursionDateModel = require('../models/excursion-date-model.js')
 module.exports = {
     async create({ excursion, userId }) {
         let exFromDb = await ExcursionModel.create(excursion)
-        return UserModel.findByIdAndUpdate(userId, { $push: { excursions: exFromDb._id } })
+        await UserModel.findByIdAndUpdate(userId, { $push: { excursions: exFromDb._id } })
+        return exFromDb
+    },
+    async updateImagesUrls(_id, filenames) {
+        return ExcursionModel.findByIdAndUpdate(_id, { $set: { images: filenames } })
     },
     async getByUserId(userId) {
         const userFromDb = await UserModel.findById(userId)

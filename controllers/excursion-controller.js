@@ -1,5 +1,7 @@
 const ExcursionService = require('../service/excursion-service.js')
 const LocationService = require('../service/location-service.js')
+const s3 = require('../yandex-cloud.js')
+const logger = require('../logger.js');
 
 module.exports = {
     async create(req, res, next) {
@@ -8,7 +10,33 @@ module.exports = {
             if (location?._id)
                 req.body.excursion.location = location._id.toString()
             let callback = await ExcursionService.create(req.body)
-            return res.json(callback)
+            return res.json({ _id: callback._id.toString() })
+        } catch (error) {
+            next(error)
+        }
+    },
+    async uploadImages(req, res, next) {
+        try {
+            let _id = req.files[0]?.originalname.split('_')[0]
+
+            let filenames = []
+            let buffers = []
+            for (let file of req.files) {
+                buffers.push({ buffer: file.buffer, name: file.originalname, });    // Буфер загруженного файла
+            }
+
+            if (buffers.length) {
+                let uploadResult = await s3.Upload(buffers, '/iwat/');
+
+                for (let upl of uploadResult) {
+                    filenames.push(upl.Location)
+                }
+            }
+            if (filenames.length) {
+                await ExcursionService.updateImagesUrls(_id, filenames)
+                logger.info({ filenames, logType: 'excursion' }, 'images uploaded')
+            }
+            return res.json({ status: 'ok' })
         } catch (error) {
             next(error)
         }

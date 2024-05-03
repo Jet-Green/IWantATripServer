@@ -14,7 +14,7 @@ const ExcursionSchema = new Schema({
     excursionType: { type: Object },
     startPlace: { type: String },
     prices: { type: [Object] },
-    images: { type: [String] },
+    images: { type: [] },
     minAge: { type: Number },
     deadline: { type: String },
     requirements: { type: String },

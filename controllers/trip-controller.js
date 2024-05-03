@@ -6,20 +6,11 @@ const UserModel = require('../models/user-model.js')
 
 const ApiError = require('../exceptions/api-error.js')
 
-let EasyYandexS3 = require('easy-yandex-s3').default;
 const { sendMail } = require('../middleware/mailer')
 const logger = require('../logger.js');
 const { default: mongoose } = require('mongoose');
-
+const s3 = require('../yandex-cloud.js')
 // Указываем аутентификацию в Yandex Object Storage
-let s3 = new EasyYandexS3({
-    auth: {
-        accessKeyId: process.env.YC_KEY_ID,
-        secretAccessKey: process.env.YC_SECRET,
-    },
-    Bucket: process.env.YC_BUCKET_NAME, // Название бакета
-    debug: false, // Дебаг в консоли
-});
 
 module.exports = {
     async createManyByDates(req, res, next) {
