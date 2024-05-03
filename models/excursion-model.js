@@ -10,16 +10,14 @@ const ExcursionSchema = new Schema({
     minPeople:{type: Number},
     maxPeople: { type: Number},
     guides: [{ type: [Schema.Types.ObjectId], ref: 'Guide' }],
-    excursionType: { type: String},
+    excursionType: { type: Object},
     startPlace: { type: String },
     prices: { type: [Object]},
     images: { type: [String]},
     minAge: { type: Number},
-    type: { type: Object},
     deadline: { type: String},
     requirements: { type: String},
     availability: { type: String}
-
 
 })
 
