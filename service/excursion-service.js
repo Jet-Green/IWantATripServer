@@ -24,14 +24,15 @@ module.exports = {
             let result = await ExcursionDateModel.create({ date: date.date, times: date.times, excursion: excursionId })
             created.push(result._id.toString())
         }
+        await ExcursionModel.findByIdAndUpdate(excursionId, { $push: { dates: { $each: created } } })
         return await UserModel.findByIdAndUpdate(userId, { $push: { excursionDates: { $each: created } } })
     },
     async getAll() {
-        return await ExcursionDateModel.find(
+        return await ExcursionModel.find(
             // filters here
-        ).populate('excursion')
+        )
     },
-    async getDateById(_id) {
-        return await ExcursionDateModel.findById(_id).populate('excursion')
+    async getExcursionById(_id) {
+        return await ExcursionModel.findById(_id).populate('dates')
     }
 }

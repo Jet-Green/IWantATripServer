@@ -73,9 +73,9 @@ module.exports = {
             next(error)
         }
     },
-    async getDateById(req, res, next) {
+    async getExcursionById(req, res, next) {
         try {
-            return res.json(await ExcursionService.getDateById(req.query._id))
+            return res.json(await ExcursionService.getExcursionById(req.query._id))
         } catch (error) {
             next(error)
         }
