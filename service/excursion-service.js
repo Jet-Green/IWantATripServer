@@ -34,5 +34,11 @@ module.exports = {
     },
     async getExcursionById(_id) {
         return await ExcursionModel.findById(_id).populate('dates')
+    },
+    async deleteById(_id) {
+       
+        return ExcursionModel.findByIdAndDelete(_id)
+
     }
+    
 }

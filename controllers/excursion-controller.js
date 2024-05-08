@@ -79,5 +79,23 @@ module.exports = {
         } catch (error) {
             next(error)
         }
-    }
+    },
+    async deleteById(req, res, next) {
+        try {
+            return res.json(await ExcursionService.deleteById(req.body._id));
+        } catch (error) {
+            next(error)
+        }
+    },
+
+
+    async hideTrip(req, res, next) {
+        try {
+            await TripService.hide(req.query._id, req.query.v)
+            return res.json('OK')
+        } catch (error) {
+            next(error)
+        }
+    },
+
 }
