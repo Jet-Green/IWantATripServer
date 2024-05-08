@@ -28,6 +28,21 @@ const contractRouter = require('./routers/contract-router')
 const catalogRouter = require('./routers/catalog-router')
 const ideaRouter = require('./routers/idea-router')
 const excursionRouter = require('./routers/excursion-router')
+const { rateLimit } = require('express-rate-limit')
+
+const limiter = rateLimit({
+	windowMs: 5 * 60 * 1000, // 5 minutes
+	limit: 5, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
+	standardHeaders: 'draft-7', // draft-6: `RateLimit-*` headers; draft-7: combined `RateLimit` header
+	legacyHeaders: false, // Disable the `X-RateLimit-*` headers.
+    message: async (req, res) => {
+	
+			return  {message:'Превышен лимит попыток, попробуйте через 15 минут'}
+    }
+	// store: ... , // Redis, Memcached, etc. See below.
+})
+
+
 
 
 app.use(history())
@@ -55,7 +70,7 @@ app.get('/', (req, res) => {
 
 
 // routes
-app.use('/auth', authRouter)
+app.use('/auth',limiter, authRouter)
 app.use('/trips', tripRouter);
 app.use('/guide', guideRouter);
 app.use('/app-state', appStateRouter)
@@ -71,7 +86,6 @@ app.use('/excursion', excursionRouter)
 app.use('/admin', adminRouter)
 
 app.use('/service-functions', serviceFunctionsRouter)
-
 app.use(errorFilter)
 // use error middleware last
 app.use(errorMiddleware)
