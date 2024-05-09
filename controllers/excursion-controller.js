@@ -66,6 +66,23 @@ module.exports = {
             next(error)
         }
     },
+    async deleteTime(req, res, next) {
+        try {
+            return res.json(await ExcursionService.deleteTime(req.body))
+        } catch (error) {
+            next(error)
+        }
+    },
+    async deleteDate(req, res, next) {
+        try {
+            return res.json(await ExcursionService.deleteDate(req.body))
+        } catch (error) {
+            next(error)
+        }
+    },
+
+    
+    
     async getAll(req, res, next) {
         try {
             return res.json(await ExcursionService.getAll())

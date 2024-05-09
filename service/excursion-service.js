@@ -27,6 +27,23 @@ module.exports = {
         await ExcursionModel.findByIdAndUpdate(excursionId, { $push: { dates: { $each: created } } })
         return await UserModel.findByIdAndUpdate(userId, { $push: { excursionDates: { $each: created } } })
     },
+
+    async deleteTime({ dateId, timeId }) {
+        return await ExcursionDateModel.findByIdAndUpdate(
+            dateId,
+            { $pull: { times: { _id: timeId } } },
+            { new: true } // Возвращает обновленный документ
+        );
+
+    },
+    async deleteDate({ dateId }) {
+        // добавить удаление date у юзера
+        return await ExcursionDateModel.findByIdAndDelete(
+            dateId
+        );
+        
+    },
+
     async getAll() {
         return await ExcursionModel.find(
             // filters here
@@ -36,14 +53,14 @@ module.exports = {
         return await ExcursionModel.findById(_id).populate('dates')
     },
     async deleteById(_id) {
-       
+
         return ExcursionModel.findByIdAndDelete(_id)
     },
-    async hideById(_id, isHide) {   
-    
-        return await ExcursionModel.findByIdAndUpdate(_id, { isHidden: isHide} )
+    async hideById(_id, isHide) {
+
+        return await ExcursionModel.findByIdAndUpdate(_id, { isHidden: isHide })
 
     }
-    
-    
+
+
 }
