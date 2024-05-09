@@ -38,7 +38,12 @@ module.exports = {
     async deleteById(_id) {
        
         return ExcursionModel.findByIdAndDelete(_id)
+    },
+    async hideById(_id, isHide) {   
+    
+        return await ExcursionModel.findByIdAndUpdate(_id, { isHidden: isHide} )
 
     }
+    
     
 }

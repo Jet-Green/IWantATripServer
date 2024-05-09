@@ -89,9 +89,9 @@ module.exports = {
     },
 
 
-    async hideTrip(req, res, next) {
+    async hideById(req, res, next) {
         try {
-            await TripService.hide(req.query._id, req.query.v)
+            await ExcursionService.hideById(req.body._id, req.body.isHide)
             return res.json('OK')
         } catch (error) {
             next(error)
