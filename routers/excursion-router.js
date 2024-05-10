@@ -20,4 +20,6 @@ router.get('/one', ExcursionController.getExcursionById)
 router.post('/delete-by-id', ExcursionController.deleteById)
 router.post('/hide-by-id', ExcursionController.hideById)
 
+router.post('/buy', ExcursionController.buy)
+
 module.exports = router

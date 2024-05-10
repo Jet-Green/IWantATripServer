@@ -1,6 +1,7 @@
 const ExcursionModel = require('../models/excursion-model.js')
 const UserModel = require('../models/user-model.js')
 const ExcursionDateModel = require('../models/excursion-date-model.js')
+const ExcursionBillModel = require('../models/excursion-bill-model.js')
 
 module.exports = {
     async create({ excursion, userId }) {
@@ -37,11 +38,11 @@ module.exports = {
 
     },
     async deleteDate({ dateId, userId }) {
-        await UserModel.findByIdAndUpdate(userId, { $pull: { excursionDates: dateId  } })
+        await UserModel.findByIdAndUpdate(userId, { $pull: { excursionDates: dateId } })
         return await ExcursionDateModel.findByIdAndDelete(
             dateId
         );
-        
+
     },
 
     async getAll() {
@@ -57,10 +58,18 @@ module.exports = {
         return ExcursionModel.findByIdAndDelete(_id)
     },
     async hideById(_id, isHide) {
-
         return await ExcursionModel.findByIdAndUpdate(_id, { isHidden: isHide })
-
+    },
+    async buy({ timeId, userId, bill }) {
+        let billFromDb = await ExcursionBillModel.create({ time: timeId, userId, cart: bill })
+        let exDateFromDb = await ExcursionDateModel.findOne({ times: { $elemMatch: { _id: timeId } } })
+        for (let i = 0; i < exDateFromDb.times.length; i++) {
+            if (exDateFromDb.times[i]._id == timeId) {
+                exDateFromDb.times[i].bills.push(billFromDb._id)
+                break
+            }
+        }
+        exDateFromDb.markModified('times')
+        return await exDateFromDb.save()
     }
-
-
 }

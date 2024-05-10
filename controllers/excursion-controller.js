@@ -114,5 +114,11 @@ module.exports = {
             next(error)
         }
     },
-
+    async buy(req, res, next) {
+        try {
+            return res.json(await ExcursionService.buy(req.body))
+        } catch (error) {
+            next(error)
+        }
+    }
 }
