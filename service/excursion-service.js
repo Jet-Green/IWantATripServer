@@ -36,8 +36,8 @@ module.exports = {
         );
 
     },
-    async deleteDate({ dateId }) {
-        // добавить удаление date у юзера
+    async deleteDate({ dateId, userId }) {
+        await UserModel.findByIdAndUpdate(userId, { $pull: { excursionDates: dateId  } })
         return await ExcursionDateModel.findByIdAndDelete(
             dateId
         );
