@@ -29,9 +29,10 @@ const catalogRouter = require('./routers/catalog-router')
 const ideaRouter = require('./routers/idea-router')
 const busRouter = require('./routers/bus-router')
 
+const excursionRouter = require('./routers/excursion-router')
 
 app.use(history())
-    // app.use(helmet());
+// app.use(helmet());
 
 // here all .use
 app.use(cors({
@@ -67,13 +68,13 @@ app.use('/contract', contractRouter)
 app.use('/catalog', catalogRouter)
 app.use('/idea', ideaRouter)
 app.use('/bus', busRouter)
+app.use('/excursion', excursionRouter)
 
 app.use('/admin', adminRouter)
 
 app.use('/service-functions', serviceFunctionsRouter)
-
 app.use(errorFilter)
-    // use error middleware last
+// use error middleware last
 app.use(errorMiddleware)
 
 function startServer() {
@@ -98,7 +99,7 @@ function mongoConnect() {
     db.collections.companions.createIndex({ 'startLocation': '2dsphere' })
     db.collections.trips.createIndex({ 'includedLocations': '2dsphere' })
 
-    db.once('open', function() {
+    db.once('open', function () {
         console.log('connection')
     });
 }
