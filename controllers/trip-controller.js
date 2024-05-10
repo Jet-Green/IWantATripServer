@@ -6,20 +6,13 @@ const UserModel = require('../models/user-model.js')
 
 const ApiError = require('../exceptions/api-error.js')
 
-let EasyYandexS3 = require('easy-yandex-s3').default;
 const { sendMail } = require('../middleware/mailer')
 const logger = require('../logger.js');
 const { default: mongoose } = require('mongoose');
+const s3 = require('../yandex-cloud.js')
+const billModel = require('../models/bill-model.js');
 
 // Указываем аутентификацию в Yandex Object Storage
-let s3 = new EasyYandexS3({
-    auth: {
-        accessKeyId: process.env.YC_KEY_ID,
-        secretAccessKey: process.env.YC_SECRET,
-    },
-    Bucket: process.env.YC_BUCKET_NAME, // Название бакета
-    debug: false, // Дебаг в консоли
-});
 
 module.exports = {
     async createManyByDates(req, res, next) {
@@ -396,6 +389,13 @@ module.exports = {
     async myCatalogOnModeration(req, res, next) {
         try {
             return res.json(await TripService.myCatalogOnModeration(req.body.id))
+        } catch (error) {
+            next(error)
+        }
+    },
+    async getBoughtSeats(req, res, next) {
+        try {
+            return res.json((await billModel.find({ tripId: mongoose.Types.ObjectId(req.query._id), seats: { $exists: true } }, { seats: 1, _id: 0 })).map(bill => bill.seats).flat())
         } catch (error) {
             next(error)
         }

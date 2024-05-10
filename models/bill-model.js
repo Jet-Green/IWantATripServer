@@ -15,6 +15,9 @@ const BillSchema = new Schema({
         phone: String,
         fullname: String,
     },
+    seats: {
+        type: [String],
+    },
     touristsList: [{
         fullname: String,
         phone: String,
