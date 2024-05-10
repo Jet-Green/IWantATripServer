@@ -68,7 +68,6 @@ app.use('/catalog', catalogRouter)
 app.use('/idea', ideaRouter)
 app.use('/excursion', excursionRouter)
 app.use('/bus', busRouter)
-
 app.use('/admin', adminRouter)
 
 app.use('/service-functions', serviceFunctionsRouter)
