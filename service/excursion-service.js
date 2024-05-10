@@ -24,14 +24,43 @@ module.exports = {
             let result = await ExcursionDateModel.create({ date: date.date, times: date.times, excursion: excursionId })
             created.push(result._id.toString())
         }
+        await ExcursionModel.findByIdAndUpdate(excursionId, { $push: { dates: { $each: created } } })
         return await UserModel.findByIdAndUpdate(userId, { $push: { excursionDates: { $each: created } } })
     },
-    async getAll() {
-        return await ExcursionDateModel.find(
-            // filters here
-        ).populate('excursion')
+
+    async deleteTime({ dateId, timeId }) {
+        return await ExcursionDateModel.findByIdAndUpdate(
+            dateId,
+            { $pull: { times: { _id: timeId } } },
+            { new: true } // Возвращает обновленный документ
+        );
+
     },
-    async getDateById(_id) {
-        return await ExcursionDateModel.findById(_id).populate('excursion')
+    async deleteDate({ dateId, userId }) {
+        await UserModel.findByIdAndUpdate(userId, { $pull: { excursionDates: dateId  } })
+        return await ExcursionDateModel.findByIdAndDelete(
+            dateId
+        );
+        
+    },
+
+    async getAll() {
+        return await ExcursionModel.find(
+            // filters here
+        )
+    },
+    async getExcursionById(_id) {
+        return await ExcursionModel.findById(_id).populate('dates')
+    },
+    async deleteById(_id) {
+
+        return ExcursionModel.findByIdAndDelete(_id)
+    },
+    async hideById(_id, isHide) {
+
+        return await ExcursionModel.findByIdAndUpdate(_id, { isHidden: isHide })
+
     }
+
+
 }

@@ -18,7 +18,13 @@ const ExcursionSchema = new Schema({
     minAge: { type: Number },
     deadline: { type: String },
     requirements: { type: String },
-    availability: { type: Boolean }
+    availability: { type: Boolean },
+     // меняет только пользователь
+     isHidden: { type: Boolean, default: false },
+     // меняет модератор
+     isModerated: { type: Boolean, default: false },
+    
+    dates: { type: [Schema.Types.ObjectId], ref: 'ExcursionDate' },
 })
 
 module.exports = model('Excursion', ExcursionSchema);

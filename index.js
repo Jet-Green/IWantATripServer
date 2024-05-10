@@ -30,7 +30,6 @@ const ideaRouter = require('./routers/idea-router')
 const busRouter = require('./routers/bus-router')
 const excursionRouter = require('./routers/excursion-router')
 
-
 app.use(history())
 // app.use(helmet());
 
@@ -73,7 +72,6 @@ app.use('/bus', busRouter)
 app.use('/admin', adminRouter)
 
 app.use('/service-functions', serviceFunctionsRouter)
-
 app.use(errorFilter)
 // use error middleware last
 app.use(errorMiddleware)

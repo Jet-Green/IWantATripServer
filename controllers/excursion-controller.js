@@ -66,6 +66,23 @@ module.exports = {
             next(error)
         }
     },
+    async deleteTime(req, res, next) {
+        try {
+            return res.json(await ExcursionService.deleteTime(req.body))
+        } catch (error) {
+            next(error)
+        }
+    },
+    async deleteDate(req, res, next) {
+        try {
+            return res.json(await ExcursionService.deleteDate(req.body))
+        } catch (error) {
+            next(error)
+        }
+    },
+
+    
+    
     async getAll(req, res, next) {
         try {
             return res.json(await ExcursionService.getAll())
@@ -73,11 +90,29 @@ module.exports = {
             next(error)
         }
     },
-    async getDateById(req, res, next) {
+    async getExcursionById(req, res, next) {
         try {
-            return res.json(await ExcursionService.getDateById(req.query._id))
+            return res.json(await ExcursionService.getExcursionById(req.query._id))
         } catch (error) {
             next(error)
         }
-    }
+    },
+    async deleteById(req, res, next) {
+        try {
+            return res.json(await ExcursionService.deleteById(req.body._id));
+        } catch (error) {
+            next(error)
+        }
+    },
+
+
+    async hideById(req, res, next) {
+        try {
+            await ExcursionService.hideById(req.body._id, req.body.isHide)
+            return res.json('OK')
+        } catch (error) {
+            next(error)
+        }
+    },
+
 }
