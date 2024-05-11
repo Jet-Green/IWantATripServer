@@ -114,5 +114,36 @@ module.exports = {
             next(error)
         }
     },
+    async buy(req, res, next) {
+        try {
+            return res.json(await ExcursionService.buy(req.body))
+        } catch (error) {
+            next(error)
+        }
+    },
+    async getExcursionsOnModeration (req, res, next) {
+        try {
+            return res.json(await ExcursionService.getExcursionsOnModeration())
+        } catch (error) {
+            next(error)
+        }
+    },
+    async deleteExcursion (req, res, next) {
+        try {
+            return res.json(await ExcursionService.deleteExcursion(req.body._id))
+        } catch (error) {
+            next(error)
+        }
+    },
+    async approvExcursion (req, res, next) {
+        try {
+            return res.json(await ExcursionService.approvExcursion(req.body._id))
+        } catch (error) {
+            next(error)
+        }
+    },
+    
 
+
+    
 }

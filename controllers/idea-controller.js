@@ -14,7 +14,7 @@ module.exports = {
             <b>Количество людей:</b> ${idea.maxPeople}
             <b>Описание:</b> ${idea.description}
             `)
-            res.sendStatus(200)
+            return res.json(idea)
         } catch (error) {
             next(error)
         }

@@ -2,6 +2,7 @@ const ApiError = require("./api-error");
 const logger = require('../logger')
 
 function errorFilter(err, req, res, next) {
+
     if (err instanceof ApiError) {
         return res.status(err.status).json({ message: err.message, errors: err.errors });
     }

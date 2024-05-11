@@ -5,6 +5,7 @@ const ExcursionDateSchema = new Schema({
     times: [{
         hours: Number,
         minutes: Number,
+        bills: [{ type: Schema.Types.ObjectId, ref: 'ExcursionBill' }]
     }],
     excursion: { type: Schema.Types.ObjectId, ref: 'Excursion' },
 })

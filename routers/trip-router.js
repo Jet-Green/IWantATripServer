@@ -36,6 +36,7 @@ router.get('/created-trips-info', tripController.createdTripsInfo)
 
 router.get('/get-full-trip', tripController.getFullTripById)
 
+router.get('/get-bought-seats', tripController.getBoughtSeats)
 
 router.post('/set-payment', tripController.setPayment)
 router.get('/delete-payment', tripController.deletePayment)

@@ -9,6 +9,14 @@ module.exports = {
             next(error)
         }
     },    
+    async getById(req, res, next) {
+        try {
+            let buses = await busModel.findById(req.query._id)
+            res.status(200).json(buses)
+        } catch (error) {
+            next(error)
+        }
+    },    
     async create(req, res, next) {
         try {
             await busModel.create(req.body)
