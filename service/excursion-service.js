@@ -71,5 +71,18 @@ module.exports = {
         }
         exDateFromDb.markModified('times')
         return await exDateFromDb.save()
-    }
+    },
+    async getExcursionsOnModeration() {
+        return await ExcursionModel.find({ isModerated: false }).populate('author', 'fullinfo').exec()
+    },
+    async deleteExcursion(_id) {
+       // поставить защиту на удаление проданных экскурсий
+        return await ExcursionModel.findByIdAndDelete(_id)
+    },
+    async approvExcursion(_id) {
+        // поставить защиту на удаление проданных экскурсий
+         return await ExcursionModel.findByIdAndUpdate(_id,{ isModerated: true })
+     },
+
+    
 }
