@@ -2,6 +2,10 @@ const ExcursionModel = require('../models/excursion-model.js')
 const UserModel = require('../models/user-model.js')
 const ExcursionDateModel = require('../models/excursion-date-model.js')
 const ExcursionBillModel = require('../models/excursion-bill-model.js')
+const LocationModel = require('../models/location-model.js')
+
+
+
 
 module.exports = {
     async create({ excursion, userId }) {
@@ -45,26 +49,32 @@ module.exports = {
 
     },
 
-    async getAll() {
+    async getAll(locationId) {
+      let location =  await LocationModel.findById(locationId)
+      
         let query = {
             $and: [
                 { isHidden: false, isModerated: true},           
             ]
         }
-        // if (lat && lon) {
-        //     query.$and.push({
-        //         includedLocations: {
-        //             $near: {
-        //                 $geometry: {
-        //                     type: 'Point',
-        //                     coordinates: [Number(lon), Number(lat)]
-        //                 },
-        //                 // 50 km
-        //                 $maxDistance: 50000
-        //             }
-        //         }
-        //     })
-        // }
+      if (locationId) {
+        query.$and.push ({ location: locationId})
+      
+            // query.$and.push({
+            //     location: {
+            //         $near: {
+            //             $geometry: {
+            //                 type: 'Point',
+            //                 coordinates: location.coordinates,
+            //             },
+            //             // 50 km
+            //             $maxDistance: 50000
+            //         }
+            //     }
+            // })
+       
+      }
+       
 
         return await ExcursionModel.find(query
             // filters here
