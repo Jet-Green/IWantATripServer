@@ -46,7 +46,27 @@ module.exports = {
     },
 
     async getAll() {
-        return await ExcursionModel.find(
+        let query = {
+            $and: [
+                { isHidden: false, isModerated: true},           
+            ]
+        }
+        if (lat && lon) {
+            query.$and.push({
+                includedLocations: {
+                    $near: {
+                        $geometry: {
+                            type: 'Point',
+                            coordinates: [Number(lon), Number(lat)]
+                        },
+                        // 50 km
+                        $maxDistance: 50000
+                    }
+                }
+            })
+        }
+
+        return await ExcursionModel.find(query
             // filters here
         )
     },
