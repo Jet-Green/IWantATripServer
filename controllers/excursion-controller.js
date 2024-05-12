@@ -98,6 +98,26 @@ module.exports = {
             next(error)
         }
     },
+    async getWithBills(req, res, next) {
+        try {
+            return res.json(await ExcursionService.getWithBills(req.query._id))
+        } catch (error) {
+            next(error)
+        }
+    },
+    /**
+     * req.body {
+     *  excursionId
+     *  timeId
+     * }
+     */
+    async getTimeCustomers(req, res, next) {
+        try {
+            return res.json(await ExcursionService.getTimeCustomers(req.body))      
+        } catch (error) {
+            next(error)
+        }
+    },
     async deleteById(req, res, next) {
         try {
             return res.json(await ExcursionService.deleteById(req.body._id));

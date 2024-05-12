@@ -4,7 +4,7 @@ const ExcursionDateModel = require('./excursion-date-model')
 
 const ExcursionBillSchema = new Schema({
   time: { type: Schema.Types.ObjectId },
-  userId: { type: Schema.Types.ObjectId, ref: 'User' },
+  user: { type: Schema.Types.ObjectId, ref: 'User' },
   cart: { type: Array },
 },
   {

@@ -17,6 +17,8 @@ router.post('/delete-date', authMiddleware, ExcursionController.deleteDate)
 router.post('/all', ExcursionController.getAll)
 
 router.get('/one', ExcursionController.getExcursionById)
+router.get('/with-bills', ExcursionController.getWithBills)
+router.post('/time-customers', ExcursionController.getTimeCustomers)
 router.post('/delete-by-id', ExcursionController.deleteById)
 router.post('/hide-by-id', ExcursionController.hideById)
 
