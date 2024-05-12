@@ -100,6 +100,13 @@ module.exports = {
             next(error)
         }
     },
+    async getWithBookings(req, res, next) {
+        try {
+            return res.json(await ExcursionService.getWithBookings(req.query._id))
+        } catch (error) {
+            next(error)
+        }
+    },
     /**
      * req.body {
      *  excursionId
@@ -109,6 +116,13 @@ module.exports = {
     async getTimeCustomers(req, res, next) {
         try {
             return res.json(await ExcursionService.getTimeCustomers(req.body))
+        } catch (error) {
+            next(error)
+        }
+    },
+    async getTimeBookings(req, res, next) {
+        try {
+            return res.json(await ExcursionService.getTimeBookings(req.body))
         } catch (error) {
             next(error)
         }

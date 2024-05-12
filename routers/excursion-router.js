@@ -18,7 +18,9 @@ router.post('/all', ExcursionController.getAll)
 
 router.get('/one', ExcursionController.getExcursionById)
 router.get('/with-bills', ExcursionController.getWithBills)
+router.get('/with-bookings', ExcursionController.getWithBookings)
 router.post('/time-customers', ExcursionController.getTimeCustomers)
+router.post('/time-bookings', ExcursionController.getTimeBookings)
 router.post('/delete-by-id', ExcursionController.deleteById)
 router.post('/hide-by-id', ExcursionController.hideById)
 

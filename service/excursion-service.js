@@ -8,6 +8,12 @@ const ExcursionBookingModel = require('../models/excursion-booking-model.js')
 const LocationService = require('../service/location-service.js')
 
 module.exports = {
+    async getTimeBookings({ excursionId, timeId }) {
+        let excursion = await ExcursionModel.findById(excursionId).select({ name: 1, dates: 1 })
+        let bookings = await ExcursionBookingModel.find({ time: { $eq: timeId } })
+            .populate({ path: 'user', select: { fullinfo: 1, userLocation: 1 } })
+        return { excursion, bookings }
+    },
     async getTimeCustomers({ excursionId, timeId }) {
         let excursion = await ExcursionModel.findById(excursionId)
         let result = {
@@ -59,6 +65,9 @@ module.exports = {
                     select: { cart: 1 }
                 }
             })
+    },
+    async getWithBookings(excursionId) {
+        return await ExcursionModel.findById(excursionId).populate('bookings').populate('dates')
     },
     async create({ excursion, userId }) {
         await LocationService.createLocation(excursion.location)
