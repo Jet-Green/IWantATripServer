@@ -109,7 +109,6 @@ module.exports = {
         let query = {
             $and: [
                 { isHidden: false, isModerated: true },
-                { isHidden: false, isModerated: true },
             ]
         }
         if (locationId) {
@@ -176,9 +175,5 @@ module.exports = {
         // поставить защиту на удаление проданных экскурсий
         return await ExcursionModel.findByIdAndUpdate(_id, { isModerated: true })
     },
-        return await ExcursionModel.findByIdAndUpdate(_id, { isModerated: true })
-    },
-
-
-
+  
 }
