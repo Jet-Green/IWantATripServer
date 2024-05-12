@@ -30,6 +30,7 @@ const ExcursionSchema = new Schema({
     isModerated: { type: Boolean, default: false },
 
     dates: { type: [Schema.Types.ObjectId], ref: 'ExcursionDate' },
+    bookings: {type: [Schema.Types.ObjectId], ref: 'ExcursionBooking'}
 })
 
 module.exports = model('Excursion', ExcursionSchema);

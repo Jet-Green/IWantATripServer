@@ -3,9 +3,9 @@ const UserModel = require('../models/user-model.js')
 const ExcursionDateModel = require('../models/excursion-date-model.js')
 const ExcursionBillModel = require('../models/excursion-bill-model.js')
 const LocationModel = require('../models/location-model.js')
+const ExcursionBookingModel = require('../models/excursion-booking-model.js')
+
 const LocationService = require('../service/location-service.js')
-
-
 
 module.exports = {
     async getTimeCustomers({ excursionId, timeId }) {
@@ -175,5 +175,9 @@ module.exports = {
         // поставить защиту на удаление проданных экскурсий
         return await ExcursionModel.findByIdAndUpdate(_id, { isModerated: true })
     },
-  
+    async book(booking) {
+        let bookingFromDb = await ExcursionBookingModel.create(booking)
+
+        return await ExcursionModel.findByIdAndUpdate(bookingFromDb.excursion, bookingFromDb._id)
+    }
 }

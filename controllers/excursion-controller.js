@@ -4,7 +4,7 @@ const logger = require('../logger.js');
 
 module.exports = {
     async create(req, res, next) {
-        try {    
+        try {
             return res.json(await ExcursionService.create(req.body))
         } catch (error) {
             next(error)
@@ -76,10 +76,10 @@ module.exports = {
         }
     },
 
-    
-    
+
+
     async getAll(req, res, next) {
-      
+
         try {
             return res.json(await ExcursionService.getAll(req.body.locationId))
         } catch (error) {
@@ -108,7 +108,7 @@ module.exports = {
      */
     async getTimeCustomers(req, res, next) {
         try {
-            return res.json(await ExcursionService.getTimeCustomers(req.body))      
+            return res.json(await ExcursionService.getTimeCustomers(req.body))
         } catch (error) {
             next(error)
         }
@@ -137,29 +137,35 @@ module.exports = {
             next(error)
         }
     },
-    async getExcursionsOnModeration (req, res, next) {
+    async getExcursionsOnModeration(req, res, next) {
         try {
             return res.json(await ExcursionService.getExcursionsOnModeration())
         } catch (error) {
             next(error)
         }
     },
-    async deleteExcursion (req, res, next) {
+    async deleteExcursion(req, res, next) {
         try {
             return res.json(await ExcursionService.deleteExcursion(req.body._id))
         } catch (error) {
             next(error)
         }
     },
-    async approvExcursion (req, res, next) {
+    async approvExcursion(req, res, next) {
         try {
             return res.json(await ExcursionService.approvExcursion(req.body._id))
         } catch (error) {
             next(error)
         }
     },
-    
-
-
-    
+    /**
+     * { time: timeId, excursion: excursionId, user: userStore.user._id, count }
+     */
+    async book(req, res, next) {
+        try {
+            return res.json(await ExcursionService.book(req.body))
+        } catch (error) {
+            next(error)
+        }
+    }
 }

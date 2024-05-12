@@ -22,7 +22,8 @@ router.post('/time-customers', ExcursionController.getTimeCustomers)
 router.post('/delete-by-id', ExcursionController.deleteById)
 router.post('/hide-by-id', ExcursionController.hideById)
 
-router.post('/buy', ExcursionController.buy)
+router.post('/buy', authMiddleware, ExcursionController.buy)
+router.post('/book', authMiddleware, ExcursionController.book)
 router.get('/get-on-moderation', ExcursionController.getExcursionsOnModeration)
 
 router.post('/delete-excursion',ExcursionController.deleteExcursion ) 
