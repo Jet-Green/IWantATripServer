@@ -8,6 +8,58 @@ const LocationService = require('../service/location-service.js')
 
 
 module.exports = {
+    async getTimeCustomers({ excursionId, timeId }) {
+        let excursion = await ExcursionModel.findById(excursionId)
+        let result = {
+            excursion: {
+                name: excursion.name
+            },
+            time: {}
+        }
+        for (let dateId of excursion.dates) {
+            let candidate = await ExcursionDateModel.findOne({ $and: [{ id: dateId.toString() }, { times: { $elemMatch: { _id: timeId } } }] })
+            if (candidate?._id) {
+                let populatedDate = await candidate.populate({
+                    path: 'times.bills',
+                    model: 'ExcursionBill',
+                    select: {
+                        cart: 1,
+                        user: 1
+                    },
+                    populate: {
+                        path: 'user',
+                        model: 'User',
+                        select: {
+                            fullinfo: 1,
+                            userLocation: 1
+                        }
+                    }
+                })
+                let foundTimes = populatedDate.times
+                for (let t of foundTimes) {
+                    if (t._id == timeId) {
+                        result.time = t
+                        break
+                    }
+                }
+                if (result.time._id) break
+            }
+        }
+        return result
+    },
+    async getWithBills(excursionId) {
+        return await ExcursionModel.findById(excursionId)
+            .select({ name: 1, dates: 1 })
+            .populate({
+                path: 'dates',
+                model: 'ExcursionDate',
+                populate: {
+                    path: 'times.bills',
+                    model: 'ExcursionBill',
+                    select: { cart: 1 }
+                }
+            })
+    },
     async create({ excursion, userId }) {
         await LocationService.createLocation(excursion.location)
         let exFromDb = await ExcursionModel.create(excursion)
@@ -57,6 +109,7 @@ module.exports = {
         let query = {
             $and: [
                 { isHidden: false, isModerated: true },
+                { isHidden: false, isModerated: true },
             ]
         }
         if (locationId) {
@@ -100,7 +153,7 @@ module.exports = {
         return await ExcursionModel.findByIdAndUpdate(_id, { isHidden: isHide })
     },
     async buy({ timeId, userId, bill }) {
-        let billFromDb = await ExcursionBillModel.create({ time: timeId, userId, cart: bill })
+        let billFromDb = await ExcursionBillModel.create({ time: timeId, user: userId, cart: bill })
         let exDateFromDb = await ExcursionDateModel.findOne({ times: { $elemMatch: { _id: timeId } } })
         for (let i = 0; i < exDateFromDb.times.length; i++) {
             if (exDateFromDb.times[i]._id == timeId) {
@@ -116,12 +169,16 @@ module.exports = {
     },
     async deleteExcursion(_id) {
         // поставить защиту на удаление проданных экскурсий
+        // поставить защиту на удаление проданных экскурсий
         return await ExcursionModel.findByIdAndDelete(_id)
     },
     async approvExcursion(_id) {
         // поставить защиту на удаление проданных экскурсий
         return await ExcursionModel.findByIdAndUpdate(_id, { isModerated: true })
     },
+        return await ExcursionModel.findByIdAndUpdate(_id, { isModerated: true })
+    },
+
 
 
 }
