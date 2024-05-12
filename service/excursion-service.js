@@ -50,6 +50,121 @@ module.exports = {
             // filters here
         )
     },
+
+    async fetchExcursions(sitePage, lon, lat, strQuery, start, end, tripType) {
+        const limit = 20;
+        const page = sitePage || 1;
+        const skip = (page - 1) * limit;
+        let query = {}
+
+        // geo $near must be top-level expr
+        query = {
+            $and: [
+
+                { isHidden: false, isModerated: true, rejected: false },
+                { "parent": { $exists: false } },
+            ]
+        }
+        if (lat && lon) {
+            query.$and.push({
+                includedLocations: {
+                    $near: {
+                        $geometry: {
+                            type: 'Point',
+                            coordinates: [Number(lon), Number(lat)]
+                        },
+                        // 50 km
+                        $maxDistance: 50000
+                    }
+                }
+            })
+        }
+        if (start && end) {
+            query.$and.push({
+                $or: [
+                    {
+                        // всё, что относится к родителю
+                        $and: [
+                            { 'start': { $gte: start } },
+                            { 'end': { $lte: end } },
+                        ]
+                    },
+                    // все, что относится к children
+                    {
+                        children: {
+                            $elemMatch:
+                            {
+                                $and: [
+                                    { 'start': { $gte: start } },
+                                    { 'end': { $lte: end } },
+                                ]
+                            }
+                        }
+                    }
+                ]
+            })
+        } else {
+            query.$and.push({
+                $or: [
+                    {
+                        // всё, что относится к родителю
+                        $and: [
+                            { 'start': { $gte: Date.now() } },
+                        ]
+                    },
+                    // все, что относится к children
+                    {
+                        children: {
+                            $elemMatch: {
+                                start: { $gte: Date.now() },
+                            }
+                        }
+                    }
+                ]
+            })
+        }
+        if (strQuery) {
+            query.$and.push(
+                {
+                    $or: [
+                        { name: { $regex: strQuery, $options: 'i' } },
+                        { tripRoute: { $regex: strQuery, $options: 'i' } },
+                        { offer: { $regex: strQuery, $options: 'i' } },
+                        { description: { $regex: strQuery, $options: 'i' } },
+                    ]
+                }
+            )
+        }
+        if (tripType) {
+            query.$and.push(
+                {
+
+                    tripType: { $regex: tripType, $options: 'i' },
+
+                }
+            )
+        }
+
+        const cursor = ExcursionModel.find(query, null, { sort: 'start' }).skip(skip).limit(limit).cursor();
+
+        const results = [];
+        for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
+            results.push(doc);
+        }
+
+        let sortedByDateResults = _.sortBy(results, function (excursion) {
+            if (excursion.children.length > 0 && excursion.start < Date.now()) {
+                for (let ch of excursion.children) {
+                    if (ch.start >= Date.now())
+                        return ch.start
+                }
+            }
+            return excursion.start
+        })
+
+        return sortedByDateResults
+    },
+
     async getExcursionById(_id) {
         return await ExcursionModel.findById(_id).populate('dates')
     },

@@ -80,12 +80,17 @@ module.exports = {
             next(error)
         }
     },
-
-    
-    
     async getAll(req, res, next) {
         try {
             return res.json(await ExcursionService.getAll())
+        } catch (error) {
+            next(error)
+        }
+    },
+    async fetchExcursions(req, res, next) {
+        try {
+            const q = req.query
+            return res.json(await ExcursionService.fetchExcursions(q.cursor, q.lon, q.lat, q.query, q.start, q.end, q.type))
         } catch (error) {
             next(error)
         }
