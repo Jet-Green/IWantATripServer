@@ -104,15 +104,15 @@ module.exports = {
     },
 
     async getAll(locationId) {
-       
-       
+
+
         let query = {
             $and: [
                 { isHidden: false, isModerated: true },
             ]
         }
         if (locationId) {
-            let location = await LocationModel.findById(locationId) 
+            let location = await LocationModel.findById(locationId)
             // query.$and.push({ location: locationId })
             if (location) {
                 try {
@@ -178,6 +178,6 @@ module.exports = {
     async book(booking) {
         let bookingFromDb = await ExcursionBookingModel.create(booking)
 
-        return await ExcursionModel.findByIdAndUpdate(bookingFromDb.excursion, bookingFromDb._id)
+        return await ExcursionModel.findByIdAndUpdate(bookingFromDb.excursion, { $push: { bookings: bookingFromDb._id } })
     }
 }
