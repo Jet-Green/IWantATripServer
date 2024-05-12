@@ -5,7 +5,12 @@ const ExcursionSchema = new Schema({
     author: { type: Schema.Types.ObjectId, ref: 'User' },
     contacts: { type: Object },
     description: { type: String },
-    location: { type: Schema.Types.ObjectId, ref: 'Location' },
+    location: {
+        name: String,
+        shortName: String,
+        type: { type: String, default: 'Point' },
+        coordinates:  [Number],
+    },
     duration: { type: String },
     minPeople: { type: Number },
     maxPeople: { type: Number },

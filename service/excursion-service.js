@@ -3,13 +3,15 @@ const UserModel = require('../models/user-model.js')
 const ExcursionDateModel = require('../models/excursion-date-model.js')
 const ExcursionBillModel = require('../models/excursion-bill-model.js')
 const LocationModel = require('../models/location-model.js')
-
+const LocationService = require('../service/location-service.js')
 
 
 
 module.exports = {
     async create({ excursion, userId }) {
+        await LocationService.createLocation(excursion.location)
         let exFromDb = await ExcursionModel.create(excursion)
+
         await UserModel.findByIdAndUpdate(userId, { $push: { excursions: exFromDb._id } })
         return exFromDb
     },
@@ -50,31 +52,38 @@ module.exports = {
     },
 
     async getAll(locationId) {
-      let location =  await LocationModel.findById(locationId)
-      
+       
+       
         let query = {
             $and: [
-                { isHidden: false, isModerated: true},           
+                { isHidden: false, isModerated: true },
             ]
         }
-      if (locationId) {
-        query.$and.push ({ location: locationId})
-      
-            // query.$and.push({
-            //     location: {
-            //         $near: {
-            //             $geometry: {
-            //                 type: 'Point',
-            //                 coordinates: location.coordinates,
-            //             },
-            //             // 50 km
-            //             $maxDistance: 50000
-            //         }
-            //     }
-            // })
-       
-      }
-       
+        if (locationId) {
+            let location = await LocationModel.findById(locationId) 
+            // query.$and.push({ location: locationId })
+            if (location) {
+                try {
+                    query.$and.push({
+                        'location.coordinates': {
+                            $near: {
+                                $geometry: {
+                                    type: 'Point',
+                                    coordinates: location.coordinates,
+                                },
+                                $maxDistance: 50000 // 50 km
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.log(error);
+                }
+            } else {
+                console.log('Координаты не найдены для данной локации');
+            }
+
+        }
+
 
         return await ExcursionModel.find(query
             // filters here
@@ -106,13 +115,13 @@ module.exports = {
         return await ExcursionModel.find({ isModerated: false }).populate('author', 'fullinfo').exec()
     },
     async deleteExcursion(_id) {
-       // поставить защиту на удаление проданных экскурсий
+        // поставить защиту на удаление проданных экскурсий
         return await ExcursionModel.findByIdAndDelete(_id)
     },
     async approvExcursion(_id) {
         // поставить защиту на удаление проданных экскурсий
-         return await ExcursionModel.findByIdAndUpdate(_id,{ isModerated: true })
-     },
+        return await ExcursionModel.findByIdAndUpdate(_id, { isModerated: true })
+    },
 
-    
+
 }

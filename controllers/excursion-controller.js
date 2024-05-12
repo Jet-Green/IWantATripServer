@@ -1,16 +1,11 @@
 const ExcursionService = require('../service/excursion-service.js')
-const LocationService = require('../service/location-service.js')
 const s3 = require('../yandex-cloud.js')
 const logger = require('../logger.js');
 
 module.exports = {
     async create(req, res, next) {
-        try {
-            let location = await LocationService.createLocation(req.body.excursion.location)
-            if (location?._id)
-                req.body.excursion.location = location._id.toString()
-            let callback = await ExcursionService.create(req.body)
-            return res.json({ _id: callback._id.toString() })
+        try {    
+            return res.json(await ExcursionService.create(req.body))
         } catch (error) {
             next(error)
         }
