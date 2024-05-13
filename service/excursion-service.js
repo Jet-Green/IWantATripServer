@@ -181,7 +181,12 @@ module.exports = {
         return await ExcursionModel.findByIdAndDelete(_id)
     },
     async deleteBill(_id) {
-        // посмотреть у user
+      
+       await ExcursionDateModel.updateMany(
+        { 'times.bills': _id },
+        { $pull: { 'times.$.bills': _id } },
+        { multi: true, new: true }  // Возвращает обновленный документ
+        );
         return await ExcursionBillModel.findByIdAndDelete(_id)
     },
 
