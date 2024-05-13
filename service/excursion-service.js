@@ -180,6 +180,12 @@ module.exports = {
         // поставить защиту на удаление проданных экскурсий
         return await ExcursionModel.findByIdAndDelete(_id)
     },
+    async deleteBill(_id) {
+        // посмотреть у user
+        return await ExcursionBillModel.findByIdAndDelete(_id)
+    },
+
+
     async approvExcursion(_id) {
         // поставить защиту на удаление проданных экскурсий
         return await ExcursionModel.findByIdAndUpdate(_id, { isModerated: true })

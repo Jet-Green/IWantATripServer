@@ -165,6 +165,15 @@ module.exports = {
             next(error)
         }
     },
+    async deleteBill(req, res, next) {
+        try {
+            console.log()
+            return res.json(await ExcursionService.deleteBill(req.query._id))
+        } catch (error) {
+            next(error)
+        }
+    },
+    
     async approvExcursion(req, res, next) {
         try {
             return res.json(await ExcursionService.approvExcursion(req.body._id))
