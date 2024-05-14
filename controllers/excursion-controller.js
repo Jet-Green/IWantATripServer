@@ -1,16 +1,11 @@
 const ExcursionService = require('../service/excursion-service.js')
-const LocationService = require('../service/location-service.js')
 const s3 = require('../yandex-cloud.js')
 const logger = require('../logger.js');
 
 module.exports = {
     async create(req, res, next) {
         try {
-            let location = await LocationService.createLocation(req.body.excursion.location)
-            if (location?._id)
-                req.body.excursion.location = location._id.toString()
-            let callback = await ExcursionService.create(req.body)
-            return res.json({ _id: callback._id.toString() })
+            return res.json(await ExcursionService.create(req.body))
         } catch (error) {
             next(error)
         }
@@ -81,11 +76,12 @@ module.exports = {
         }
     },
 
-    
-    
+
+
     async getAll(req, res, next) {
+
         try {
-            return res.json(await ExcursionService.getAll())
+            return res.json(await ExcursionService.getAll(req.body.locationId))
         } catch (error) {
             next(error)
         }
@@ -93,6 +89,40 @@ module.exports = {
     async getExcursionById(req, res, next) {
         try {
             return res.json(await ExcursionService.getExcursionById(req.query._id))
+        } catch (error) {
+            next(error)
+        }
+    },
+    async getWithBills(req, res, next) {
+        try {
+            return res.json(await ExcursionService.getWithBills(req.query._id))
+        } catch (error) {
+            next(error)
+        }
+    },
+    async getWithBookings(req, res, next) {
+        try {
+            return res.json(await ExcursionService.getWithBookings(req.query._id))
+        } catch (error) {
+            next(error)
+        }
+    },
+    /**
+     * req.body {
+     *  excursionId
+     *  timeId
+     * }
+     */
+    async getTimeCustomers(req, res, next) {
+        try {
+            return res.json(await ExcursionService.getTimeCustomers(req.body))
+        } catch (error) {
+            next(error)
+        }
+    },
+    async getTimeBookings(req, res, next) {
+        try {
+            return res.json(await ExcursionService.getTimeBookings(req.body))
         } catch (error) {
             next(error)
         }
@@ -121,29 +151,44 @@ module.exports = {
             next(error)
         }
     },
-    async getExcursionsOnModeration (req, res, next) {
+    async getExcursionsOnModeration(req, res, next) {
         try {
             return res.json(await ExcursionService.getExcursionsOnModeration())
         } catch (error) {
             next(error)
         }
     },
-    async deleteExcursion (req, res, next) {
+    async deleteExcursion(req, res, next) {
         try {
             return res.json(await ExcursionService.deleteExcursion(req.body._id))
         } catch (error) {
             next(error)
         }
     },
-    async approvExcursion (req, res, next) {
+    async deleteBill(req, res, next) {
+        try {
+            console.log()
+            return res.json(await ExcursionService.deleteBill(req.query._id))
+        } catch (error) {
+            next(error)
+        }
+    },
+    
+    async approvExcursion(req, res, next) {
         try {
             return res.json(await ExcursionService.approvExcursion(req.body._id))
         } catch (error) {
             next(error)
         }
     },
-    
-
-
-    
+    /**
+     * { time: timeId, excursion: excursionId, user: userStore.user._id, count }
+     */
+    async book(req, res, next) {
+        try {
+            return res.json(await ExcursionService.book(req.body))
+        } catch (error) {
+            next(error)
+        }
+    }
 }

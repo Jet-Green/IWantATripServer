@@ -5,7 +5,12 @@ const ExcursionSchema = new Schema({
     author: { type: Schema.Types.ObjectId, ref: 'User' },
     contacts: { type: Object },
     description: { type: String },
-    location: { type: Schema.Types.ObjectId, ref: 'Location' },
+    location: {
+        name: String,
+        shortName: String,
+        type: { type: String, default: 'Point' },
+        coordinates:  [Number],
+    },
     duration: { type: String },
     minPeople: { type: Number },
     maxPeople: { type: Number },
@@ -25,6 +30,7 @@ const ExcursionSchema = new Schema({
     isModerated: { type: Boolean, default: false },
 
     dates: { type: [Schema.Types.ObjectId], ref: 'ExcursionDate' },
+    bookings: {type: [Schema.Types.ObjectId], ref: 'ExcursionBooking'}
 })
 
 module.exports = model('Excursion', ExcursionSchema);
