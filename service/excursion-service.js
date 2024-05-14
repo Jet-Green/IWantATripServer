@@ -15,10 +15,12 @@ module.exports = {
         return { excursion, bookings }
     },
     async getTimeCustomers({ excursionId, timeId }) {
-        let excursion = await ExcursionModel.findById(excursionId)
+        let excursion = await ExcursionModel.findById(excursionId).populate('dates')
         let result = {
             excursion: {
-                name: excursion.name
+                name: excursion.name,
+                prices: excursion.prices,
+                dates: excursion.dates
             },
             time: {}
         }
@@ -30,7 +32,8 @@ module.exports = {
                     model: 'ExcursionBill',
                     select: {
                         cart: 1,
-                        user: 1
+                        user: 1,
+                        userInfo: 1
                     },
                     populate: {
                         path: 'user',
@@ -162,6 +165,18 @@ module.exports = {
     },
     async buy({ timeId, userId, bill }) {
         let billFromDb = await ExcursionBillModel.create({ time: timeId, user: userId, cart: bill })
+        let exDateFromDb = await ExcursionDateModel.findOne({ times: { $elemMatch: { _id: timeId } } })
+        for (let i = 0; i < exDateFromDb.times.length; i++) {
+            if (exDateFromDb.times[i]._id == timeId) {
+                exDateFromDb.times[i].bills.push(billFromDb._id)
+                break
+            }
+        }
+        exDateFromDb.markModified('times')
+        return await exDateFromDb.save()
+    },
+    async buyFromCabinet({timeId, bill, fullinfo}) {
+        let billFromDb = await ExcursionBillModel.create({ time: timeId, cart: bill, userInfo: fullinfo })
         let exDateFromDb = await ExcursionDateModel.findOne({ times: { $elemMatch: { _id: timeId } } })
         for (let i = 0; i < exDateFromDb.times.length; i++) {
             if (exDateFromDb.times[i]._id == timeId) {
