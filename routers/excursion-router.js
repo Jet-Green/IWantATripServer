@@ -10,6 +10,7 @@ router.post('/create', authMiddleware, ExcursionController.create)
 router.post('/images', MULTER().any(), authMiddleware, ExcursionController.uploadImages)
 
 router.get('/get-excursions', authMiddleware, ExcursionController.getUserExcursions)
+router.get('/time-has-bills', ExcursionController.timeHasBills)
 
 router.post('/dates', authMiddleware, ExcursionController.createDates)
 router.post('/delete-time', authMiddleware, ExcursionController.deleteTime)

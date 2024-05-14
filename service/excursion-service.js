@@ -6,6 +6,7 @@ const LocationModel = require('../models/location-model.js')
 const ExcursionBookingModel = require('../models/excursion-booking-model.js')
 
 const LocationService = require('../service/location-service.js')
+const excursionBillModel = require('../models/excursion-bill-model.js')
 
 module.exports = {
     async getTimeBookings({ excursionId, timeId }) {
@@ -94,6 +95,10 @@ module.exports = {
         }
         await ExcursionModel.findByIdAndUpdate(excursionId, { $push: { dates: { $each: created } } })
         return await UserModel.findByIdAndUpdate(userId, { $push: { excursionDates: { $each: created } } })
+    },
+
+    async timeHasBills(timeId) {
+        return (await excursionBillModel.find({ time: timeId })).length > 0
     },
 
     async deleteTime({ dateId, timeId }) {
