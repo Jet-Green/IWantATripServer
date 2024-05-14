@@ -6,5 +6,6 @@ const router = Router()
 router.get('/get', busController.get)
 router.get('/get-by-id', busController.getById)
 router.post('/create', authMiddleware, busController.create)
+router.delete('/delete', busController.deleteBus)
 
 module.exports = router
