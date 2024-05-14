@@ -197,5 +197,12 @@ module.exports = {
         } catch (error) {
             next(error)
         }
+    },
+    async bookFromCabinet(req, res, next) {
+        try {
+            return res.json(await ExcursionService.bookFromCabinet(req.body))
+        } catch (error) {
+            next(error)
+        }
     }
 }

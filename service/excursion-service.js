@@ -9,10 +9,19 @@ const LocationService = require('../service/location-service.js')
 
 module.exports = {
     async getTimeBookings({ excursionId, timeId }) {
-        let excursion = await ExcursionModel.findById(excursionId).select({ name: 1, dates: 1 })
+        let excursion = await ExcursionModel.findById(excursionId).select({ name: 1, dates: 1 }).populate('dates')
         let bookings = await ExcursionBookingModel.find({ time: { $eq: timeId } })
-            .populate({ path: 'user', select: { fullinfo: 1, userLocation: 1 } })
-        return { excursion, bookings }
+            .populate({ path: 'user', select: { fullinfo: 1 } })
+        let timeToSend = {}
+        for (let date of excursion.dates) {
+            for (let time of date.times) {
+                if (time._id == timeId) {
+                    timeToSend = time
+                    break
+                }
+            }
+        }
+        return { excursion, bookings, time: timeToSend }
     },
     async getTimeCustomers({ excursionId, timeId }) {
         let excursion = await ExcursionModel.findById(excursionId).populate('dates')
@@ -40,7 +49,6 @@ module.exports = {
                         model: 'User',
                         select: {
                             fullinfo: 1,
-                            userLocation: 1
                         }
                     }
                 })
@@ -213,6 +221,10 @@ module.exports = {
     async book(booking) {
         let bookingFromDb = await ExcursionBookingModel.create(booking)
 
+        return await ExcursionModel.findByIdAndUpdate(bookingFromDb.excursion, { $push: { bookings: bookingFromDb._id } })
+    },
+    async bookFromCabinet(booking) {
+        let bookingFromDb = await ExcursionBookingModel.create(booking)
         return await ExcursionModel.findByIdAndUpdate(bookingFromDb.excursion, { $push: { bookings: bookingFromDb._id } })
     }
 }
