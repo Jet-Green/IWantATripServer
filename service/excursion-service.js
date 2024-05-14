@@ -9,7 +9,7 @@ const LocationService = require('../service/location-service.js')
 
 module.exports = {
     async getTimeBookings({ excursionId, timeId }) {
-        let excursion = await ExcursionModel.findById(excursionId).select({ name: 1, dates: 1 }).populate('dates')
+        let excursion = await ExcursionModel.findById(excursionId).select({ name: 1, dates: 1, bookings: 1 }).populate('dates').populate('bookings')
         let bookings = await ExcursionBookingModel.find({ time: { $eq: timeId } })
             .populate({ path: 'user', select: { fullinfo: 1 } })
         let timeToSend = {}
