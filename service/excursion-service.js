@@ -112,14 +112,14 @@ module.exports = {
 
     },
 
-    async getAll(locationId) {
-
-
-        let query = {
+    async getAll(locationId,strQuery) {
+        let query = {}
+        query = {
             $and: [
                 { isHidden: false, isModerated: true },
             ]
         }
+        console.log(locationId)
         if (locationId) {
             let location = await LocationModel.findById(locationId)
             // query.$and.push({ location: locationId })
@@ -144,8 +144,18 @@ module.exports = {
             }
 
         }
+        if (strQuery) {
+            query.$and.push(
+                {
+                    $or: [
+                        { name: { $regex: strQuery, $options: 'i' } },
+                        { description: { $regex: strQuery, $options: 'i' } },
+                    ]
+                }
+            )
+        }
 
-
+        console.log(locationId,strQuery,query,query.$or)
         return await ExcursionModel.find(query
             // filters here
         )
