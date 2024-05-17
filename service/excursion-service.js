@@ -100,6 +100,7 @@ module.exports = {
     async createDates({ dates, excursionId, userId }) {
         let created = []
         for (let date of dates) {
+            console.log(date)
             let result = await ExcursionDateModel.create({ date: date.date, times: date.times, excursion: excursionId })
             created.push(result._id.toString())
         }
@@ -123,14 +124,33 @@ module.exports = {
 
     },
 
-    async getAll(locationId,strQuery) {
+    async getAll(locationId,strQuery,start,end,type) {
         let query = {}
+        function getDate(dateObj) {
+            const dayjsDate = dayjs({ years: dateObj.year, months: dateObj.month, date: dateObj.day })
+            if (!dayjsDate.$d) return ''
+            let russianDate = (new Date(dayjsDate.$d)).toLocaleDateString('ru-RU', {
+              month: 'long',
+              day: 'numeric',
+              weekday: 'long',
+            }).replaceAll(',', '').split(' ')
+          
+            return { weekday: russianDate[0], day: russianDate[1], month: russianDate[2] }
+          }
+          function getTime(timeObj) {
+            let result = timeObj.hours + ':'
+            if (timeObj.minutes < 10) {
+              result += '0' + timeObj.minutes
+            } else {
+              result += timeObj.minutes
+            }
+            return result
+          }
         query = {
             $and: [
                 { isHidden: false, isModerated: true },
             ]
         }
-        console.log(locationId)
         if (locationId) {
             let location = await LocationModel.findById(locationId)
             // query.$and.push({ location: locationId })
@@ -155,6 +175,50 @@ module.exports = {
             }
 
         }
+        if (start && end) {
+            query.$and.push({
+                $or: [
+                    {
+                        // всё, что относится к родителю
+                        $and: [
+                            { 'start': { $gte: start } },
+                            { 'end': { $lte: end } },
+                        ]
+                    },
+                    // все, что относится к children
+                    {
+                        children: {
+                            $elemMatch:
+                            {
+                                $and: [
+                                    { 'start': { $gte: start } },
+                                    { 'end': { $lte: end } },
+                                ]
+                            }
+                        }
+                    }
+                ]
+            })
+        } else {
+            query.$and.push({
+                $or: [
+                    {
+                        // всё, что относится к родителю
+                        $and: [
+                            { 'start': { $gte: Date.now() } },
+                        ]
+                    },
+                    // все, что относится к children
+                    {
+                        children: {
+                            $elemMatch: {
+                                start: { $gte: Date.now() },
+                            }
+                        }
+                    }
+                ]
+            })
+        }
         if (strQuery) {
             query.$and.push(
                 {
@@ -165,8 +229,16 @@ module.exports = {
                 }
             )
         }
+        if (type) {
+            query.$and.push(
+                {
 
-        console.log(locationId,strQuery,query,query.$or)
+                    "excursionType.type": { $regex: type, $options: 'i' },
+
+                }
+            )
+        }
+
         return await ExcursionModel.find(query
             // filters here
         )
