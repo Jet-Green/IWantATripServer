@@ -132,9 +132,9 @@ module.exports = {
     },
     async login(email, password) {
         const user = await UserModel.findOne({ email }).populate('tripCalc').populate('tinkoffContract').exec()
-       
+
         if (!user) {
-           
+
             throw ApiError.BadRequest('Пользователь с таким email не найден')
         }
 
@@ -265,5 +265,8 @@ module.exports = {
             return TripModel.findByIdAndUpdate(tripId, { calculator: null })
         }
         return TripModel.findByIdAndUpdate(tripId, { calculator: calcId })
+    },
+    updateFullinfo({ userId, fullinfo }) {
+        return UserModel.findByIdAndUpdate(userId, { fullinfo })
     }
 }

@@ -159,5 +159,12 @@ module.exports = {
         } catch (error) {
             next(error)
         }
+    },
+    async updateFullinfo(req, res, next) {
+        try {
+            return res.json(await UserService.updateFullinfo(req.body))
+        } catch (error) {
+            next(error)
+        }
     }
 }
