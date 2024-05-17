@@ -158,6 +158,13 @@ module.exports = {
             next(error)
         }
     },
+    async buyFromCabinet(req, res, next) {
+        try {
+            return res.json(await ExcursionService.buyFromCabinet(req.body))
+        } catch (error) {
+            next(error)
+        }
+    },
     async getExcursionsOnModeration(req, res, next) {
         try {
             return res.json(await ExcursionService.getExcursionsOnModeration())
@@ -194,6 +201,13 @@ module.exports = {
     async book(req, res, next) {
         try {
             return res.json(await ExcursionService.book(req.body))
+        } catch (error) {
+            next(error)
+        }
+    },
+    async bookFromCabinet(req, res, next) {
+        try {
+            return res.json(await ExcursionService.bookFromCabinet(req.body))
         } catch (error) {
             next(error)
         }

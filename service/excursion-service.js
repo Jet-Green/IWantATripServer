@@ -10,16 +10,27 @@ const excursionBillModel = require('../models/excursion-bill-model.js')
 
 module.exports = {
     async getTimeBookings({ excursionId, timeId }) {
-        let excursion = await ExcursionModel.findById(excursionId).select({ name: 1, dates: 1 })
+        let excursion = await ExcursionModel.findById(excursionId).select({ name: 1, dates: 1, bookings: 1 }).populate('dates').populate('bookings')
         let bookings = await ExcursionBookingModel.find({ time: { $eq: timeId } })
-            .populate({ path: 'user', select: { fullinfo: 1, userLocation: 1 } })
-        return { excursion, bookings }
+            .populate({ path: 'user', select: { fullinfo: 1 } })
+        let timeToSend = {}
+        for (let date of excursion.dates) {
+            for (let time of date.times) {
+                if (time._id == timeId) {
+                    timeToSend = time
+                    break
+                }
+            }
+        }
+        return { excursion, bookings, time: timeToSend }
     },
     async getTimeCustomers({ excursionId, timeId }) {
-        let excursion = await ExcursionModel.findById(excursionId)
+        let excursion = await ExcursionModel.findById(excursionId).populate('dates')
         let result = {
             excursion: {
-                name: excursion.name
+                name: excursion.name,
+                prices: excursion.prices,
+                dates: excursion.dates
             },
             time: {}
         }
@@ -31,14 +42,14 @@ module.exports = {
                     model: 'ExcursionBill',
                     select: {
                         cart: 1,
-                        user: 1
+                        user: 1,
+                        userInfo: 1
                     },
                     populate: {
                         path: 'user',
                         model: 'User',
                         select: {
                             fullinfo: 1,
-                            userLocation: 1
                         }
                     }
                 })
@@ -177,6 +188,18 @@ module.exports = {
         exDateFromDb.markModified('times')
         return await exDateFromDb.save()
     },
+    async buyFromCabinet({timeId, bill, fullinfo}) {
+        let billFromDb = await ExcursionBillModel.create({ time: timeId, cart: bill, userInfo: fullinfo })
+        let exDateFromDb = await ExcursionDateModel.findOne({ times: { $elemMatch: { _id: timeId } } })
+        for (let i = 0; i < exDateFromDb.times.length; i++) {
+            if (exDateFromDb.times[i]._id == timeId) {
+                exDateFromDb.times[i].bills.push(billFromDb._id)
+                break
+            }
+        }
+        exDateFromDb.markModified('times')
+        return await exDateFromDb.save()
+    },
     async getExcursionsOnModeration() {
         return await ExcursionModel.find({ isModerated: false }).populate('author', 'fullinfo').exec()
     },
@@ -203,6 +226,10 @@ module.exports = {
     async book(booking) {
         let bookingFromDb = await ExcursionBookingModel.create(booking)
 
+        return await ExcursionModel.findByIdAndUpdate(bookingFromDb.excursion, { $push: { bookings: bookingFromDb._id } })
+    },
+    async bookFromCabinet(booking) {
+        let bookingFromDb = await ExcursionBookingModel.create(booking)
         return await ExcursionModel.findByIdAndUpdate(bookingFromDb.excursion, { $push: { bookings: bookingFromDb._id } })
     }
 }
