@@ -5,7 +5,8 @@ const BusSchema = new Schema({
     author: { type: String, required: true },
     aspect_ratio: { type: Number, required: true },
     seats: { type: Array, required: true },
-    stuff: { type: Array, required: true }
+    stuff: { type: Array, required: true },
+    hidden: { type: Boolean }
 })
 
 module.exports = model('Bus', BusSchema);

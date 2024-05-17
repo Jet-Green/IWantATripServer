@@ -42,4 +42,6 @@ router.get('/determine-winner', userController.determineTheWinner)
 
 router.put('/set-trip-calculator', userController.setTripCalculator)
 
+router.put('/fullinfo', userController.updateFullinfo)
+
 module.exports = router
