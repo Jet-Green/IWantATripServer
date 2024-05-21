@@ -7,6 +7,7 @@ const ExcursionController = require('../controllers/excursion-controller.js')
 
 const router = Router()
 router.post('/create', authMiddleware, ExcursionController.create)
+router.post('/edit', authMiddleware, ExcursionController.edit)
 router.post('/images', MULTER().any(), authMiddleware, ExcursionController.uploadImages)
 
 router.get('/get-excursions', authMiddleware, ExcursionController.getUserExcursions)
