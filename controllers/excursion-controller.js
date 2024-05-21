@@ -3,6 +3,13 @@ const s3 = require('../yandex-cloud.js')
 const logger = require('../logger.js');
 
 module.exports = {
+    async edit(req, res, next) {
+        try {
+            return res.json(await ExcursionService.edit(req.body))
+        } catch (error) {
+            next(error)
+        }
+    },
     async create(req, res, next) {
         try {
             return res.json(await ExcursionService.create(req.body))

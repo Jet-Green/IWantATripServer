@@ -231,5 +231,10 @@ module.exports = {
     async bookFromCabinet(booking) {
         let bookingFromDb = await ExcursionBookingModel.create(booking)
         return await ExcursionModel.findByIdAndUpdate(bookingFromDb.excursion, { $push: { bookings: bookingFromDb._id } })
+    },
+    async edit({excursion}) {
+        let _id = excursion._id
+        delete excursion._id
+        return await ExcursionModel.findByIdAndUpdate(_id, {})
     }
 }
