@@ -14,6 +14,7 @@ router.get('/get-excursions', authMiddleware, ExcursionController.getUserExcursi
 router.get('/time-has-bills', ExcursionController.timeHasBills)
 
 router.post('/dates', authMiddleware, ExcursionController.createDates)
+router.post('/add-time', authMiddleware, ExcursionController.addTime)
 router.post('/delete-time', authMiddleware, ExcursionController.deleteTime)
 router.post('/delete-date', authMiddleware, ExcursionController.deleteDate)
 router.post('/all', ExcursionController.getAll)
