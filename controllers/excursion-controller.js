@@ -68,6 +68,13 @@ module.exports = {
             next(error)
         }
     },
+    async addTime(req, res, next) {
+        try {
+            return res.json(await ExcursionService.addTime(req.body))
+        } catch (error) {
+            next(error)
+        }
+    },
     async deleteTime(req, res, next) {
         try {
             return res.json(await ExcursionService.deleteTime(req.body))
@@ -83,6 +90,13 @@ module.exports = {
         }
     },
 
+    async timeHasBills(req, res, next) {
+        try {
+            return res.json(await ExcursionService.timeHasBills(req.query.timeId))
+        } catch (error) {
+            next(error)
+        }
+    },
 
 
     async getAll(req, res, next) {

@@ -6,6 +6,7 @@ const LocationModel = require('../models/location-model.js')
 const ExcursionBookingModel = require('../models/excursion-booking-model.js')
 
 const LocationService = require('../service/location-service.js')
+const excursionBillModel = require('../models/excursion-bill-model.js')
 
 module.exports = {
     async getTimeBookings({ excursionId, timeId }) {
@@ -100,12 +101,24 @@ module.exports = {
     async createDates({ dates, excursionId, userId }) {
         let created = []
         for (let date of dates) {
-            console.log(date)
+            let exists = await ExcursionDateModel.exists({ date: date.date, excursion: excursionId })
+            if (exists) continue
+
             let result = await ExcursionDateModel.create({ date: date.date, times: date.times, excursion: excursionId })
             created.push(result._id.toString())
         }
         await ExcursionModel.findByIdAndUpdate(excursionId, { $push: { dates: { $each: created } } })
         return await UserModel.findByIdAndUpdate(userId, { $push: { excursionDates: { $each: created } } })
+    },
+
+    async addTime({ date, time, excursionId }) {
+        console.log(JSON.stringify({ date, time, excursionId }))
+        let new_exursion_date = await ExcursionDateModel.findOneAndUpdate({ excursion: excursionId, date }, { $push: { times: time } }, { new: true })
+        return new_exursion_date
+    },
+
+    async timeHasBills(timeId) {
+        return (await excursionBillModel.find({ time: timeId })).length > 0
     },
 
     async deleteTime({ dateId, timeId }) {
