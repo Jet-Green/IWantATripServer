@@ -89,7 +89,9 @@ module.exports = {
         return exFromDb
     },
     async updateImagesUrls(_id, filenames) {
-        return ExcursionModel.findByIdAndUpdate(_id, { $set: { images: filenames } })
+        let excursionFromDb = await ExcursionModel.findById(_id)
+        excursionFromDb.images.push(...filenames)
+        return excursionFromDb.save()
     },
     async getByUserId(userId) {
         const userFromDb = await UserModel.findById(userId)
