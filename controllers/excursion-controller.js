@@ -102,7 +102,7 @@ module.exports = {
     async getAll(req, res, next) {
 
         try {
-            return res.json(await ExcursionService.getAll(req.body.locationId,req.body.query,req.body.start,req.body.end,req.body.type))
+            return res.json(await ExcursionService.getAll(req.body.locationId,req.body.query,req.body.start,req.body.requestTime,req.body.type))
         } catch (error) {
             next(error)
         }

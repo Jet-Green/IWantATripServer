@@ -139,31 +139,13 @@ module.exports = {
 
     async getAll(locationId,strQuery,start,end,type) {
         let query = {}
-        function getDate(dateObj) {
-            const dayjsDate = dayjs({ years: dateObj.year, months: dateObj.month, date: dateObj.day })
-            if (!dayjsDate.$d) return ''
-            let russianDate = (new Date(dayjsDate.$d)).toLocaleDateString('ru-RU', {
-              month: 'long',
-              day: 'numeric',
-              weekday: 'long',
-            }).replaceAll(',', '').split(' ')
-          
-            return { weekday: russianDate[0], day: russianDate[1], month: russianDate[2] }
-          }
-          function getTime(timeObj) {
-            let result = timeObj.hours + ':'
-            if (timeObj.minutes < 10) {
-              result += '0' + timeObj.minutes
-            } else {
-              result += timeObj.minutes
-            }
-            return result
-          }
         query = {
             $and: [
                 { isHidden: false, isModerated: true },
             ]
         }
+        times= await this.getWithBills(locationId)
+        console.log(times)
         if (locationId) {
             let location = await LocationModel.findById(locationId)
             // query.$and.push({ location: locationId })
