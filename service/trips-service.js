@@ -104,6 +104,15 @@ module.exports = {
     async buyTrip(req) {
         let tripId = req.query._id
         let bill = req.body.bill
+
+        if (bill.seats) {
+            let bill_same_seats = await BillModel.find({ tripId, seats: { $in: bill.seats } })
+            let same_seats = bill_same_seats.map(bill => bill.seats).flat()
+            same_seats = Array.from(new Set(same_seats))
+            if (same_seats.length)
+                throw ApiError.BadRequest(`Мест${same_seats.length === 1 ? 'о' : 'а'} ${same_seats.join(', ')} уже куплен${same_seats.length === 1 ? 'о' : 'ы'}`)
+        }
+
         let billFromDb = await BillModel.create(bill)
 
         await TripModel.findOneAndUpdate({ _id: tripId }, { $push: { billsList: billFromDb._id } })
