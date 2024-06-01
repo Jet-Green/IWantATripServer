@@ -5,7 +5,6 @@ const logger = require('../logger.js');
 module.exports = {
     async edit(req, res, next) {
         try {
-            delete req.body.excursion.images
             return res.json(await ExcursionService.edit(req.body))
         } catch (error) {
             next(error)
