@@ -67,16 +67,28 @@ module.exports = {
     },
     async getWithBills(excursionId) {
         return await ExcursionModel.findById(excursionId)
-            .select({ name: 1, dates: 1 })
-            .populate({
-                path: 'dates',
-                model: 'ExcursionDate',
-                populate: {
-                    path: 'times.bills',
-                    model: 'ExcursionBill',
-                    select: { cart: 1 }
-                }
-            })
+            .select({ name: 1, dates: 1, bookings: 1 })
+            .populate(
+                {
+                    path: 'dates',
+                    model: 'ExcursionDate',
+                    populate: {
+                        path: 'times.bills',
+                        model: 'ExcursionBill',
+                        select: { cart: 1 }
+                    },
+                },
+            )
+            .populate(
+                {
+                    path: 'bookings',
+                    model: 'ExcursionBooking',
+                    select: {
+                        time: 1,
+                        count: 1
+                    }
+                },
+            )
     },
     async getWithBookings(excursionId) {
         return await ExcursionModel.findById(excursionId).populate('bookings').populate('dates')
@@ -139,28 +151,29 @@ module.exports = {
 
     },
 
-    async getAll(locationId,strQuery,start,end,type) {
+    async getAll(locationId, strQuery, start, end, type) {
+
         let query = {}
         function getDate(dateObj) {
             const dayjsDate = dayjs({ years: dateObj.year, months: dateObj.month, date: dateObj.day })
             if (!dayjsDate.$d) return ''
             let russianDate = (new Date(dayjsDate.$d)).toLocaleDateString('ru-RU', {
-              month: 'long',
-              day: 'numeric',
-              weekday: 'long',
+                month: 'long',
+                day: 'numeric',
+                weekday: 'long',
             }).replaceAll(',', '').split(' ')
-          
+
             return { weekday: russianDate[0], day: russianDate[1], month: russianDate[2] }
-          }
-          function getTime(timeObj) {
+        }
+        function getTime(timeObj) {
             let result = timeObj.hours + ':'
             if (timeObj.minutes < 10) {
-              result += '0' + timeObj.minutes
+                result += '0' + timeObj.minutes
             } else {
-              result += timeObj.minutes
+                result += timeObj.minutes
             }
             return result
-          }
+        }
         query = {
             $and: [
                 { isHidden: false, isModerated: true },
@@ -168,6 +181,7 @@ module.exports = {
         }
         if (locationId) {
             let location = await LocationModel.findById(locationId)
+
             // query.$and.push({ location: locationId })
             if (location) {
                 try {
@@ -281,7 +295,7 @@ module.exports = {
         exDateFromDb.markModified('times')
         return await exDateFromDb.save()
     },
-    async buyFromCabinet({timeId, bill, fullinfo}) {
+    async buyFromCabinet({ timeId, bill, fullinfo }) {
         let billFromDb = await ExcursionBillModel.create({ time: timeId, cart: bill, userInfo: fullinfo })
         let exDateFromDb = await ExcursionDateModel.findOne({ times: { $elemMatch: { _id: timeId } } })
         for (let i = 0; i < exDateFromDb.times.length; i++) {
@@ -302,23 +316,23 @@ module.exports = {
         return await ExcursionModel.findByIdAndDelete(_id)
     },
     async deleteBill(_id) {
-      
-       await ExcursionDateModel.updateMany(
-        { 'times.bills': _id },
-        { $pull: { 'times.$.bills': _id } },
-        { multi: true, new: true }  // Возвращает обновленный документ
+
+        await ExcursionDateModel.updateMany(
+            { 'times.bills': _id },
+            { $pull: { 'times.$.bills': _id } },
+            { multi: true, new: true }  // Возвращает обновленный документ
         );
         return await ExcursionBillModel.findByIdAndDelete(_id)
     },
     async deleteBooking(_id) {
-      
+
         // await ExcursionDateModel.updateMany(
         //  { 'times.bills': _id },
         //  { $pull: { 'times.$.bills': _id } },
         //  { multi: true, new: true }  // Возвращает обновленный документ
         //  );
-         return await ExcursionBookingModel.findByIdAndDelete(_id)
-     },
+        return await ExcursionBookingModel.findByIdAndDelete(_id)
+    },
 
     async approvExcursion(_id) {
         // поставить защиту на удаление проданных экскурсий
@@ -333,7 +347,7 @@ module.exports = {
         let bookingFromDb = await ExcursionBookingModel.create(booking)
         return await ExcursionModel.findByIdAndUpdate(bookingFromDb.excursion, { $push: { bookings: bookingFromDb._id } })
     },
-    async edit({excursion}) {
+    async edit({ excursion }) {
         let _id = excursion._id
         delete excursion._id
         return await ExcursionModel.findByIdAndUpdate(_id, excursion)
