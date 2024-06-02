@@ -152,7 +152,29 @@ module.exports = {
     },
 
     async getAll(locationId, strQuery, start, end, type) {
-
+        const currentDate = new Date();
+        const currentYear = currentDate.getFullYear();
+        const currentMonth = currentDate.getMonth() + 1; // месяцы в JS начинаются с 0
+        const currentDay = currentDate.getDate();
+       
+        // Находим все даты, которые больше или равны текущей дате
+        const upcomingDates = await ExcursionDateModel.find({
+            $or: [
+                { 'date.year': { $gt: currentYear } },
+                {
+                    'date.year': currentYear,
+                    'date.month': { $gt: currentMonth }
+                },
+                {
+                    'date.year': currentYear,
+                    'date.month': currentMonth,
+                    'date.day': { $gte: currentDay }
+                }
+            ]
+        }).select('_id'); // Получаем только идентификаторы
+        
+        const upcomingDateIds = upcomingDates.map(date => date._id);
+        console.log(upcomingDateIds)
         let query = {}
         function getDate(dateObj) {
             const dayjsDate = dayjs({ years: dateObj.year, months: dateObj.month, date: dateObj.day })
@@ -177,8 +199,13 @@ module.exports = {
         query = {
             $and: [
                 { isHidden: false, isModerated: true },
+                // {
+                //     dates: { $in: upcomingDateIds }
+                // }
+
             ]
         }
+
         if (locationId) {
             let location = await LocationModel.findById(locationId)
 
@@ -267,8 +294,9 @@ module.exports = {
                 }
             )
         }
-
-        return await ExcursionModel.find(query
+      
+      
+        return await ExcursionModel.find( query
             // filters here
         )
     },
