@@ -310,7 +310,15 @@ module.exports = {
         );
         return await ExcursionBillModel.findByIdAndDelete(_id)
     },
-
+    async deleteBooking(_id) {
+      
+        // await ExcursionDateModel.updateMany(
+        //  { 'times.bills': _id },
+        //  { $pull: { 'times.$.bills': _id } },
+        //  { multi: true, new: true }  // Возвращает обновленный документ
+        //  );
+         return await ExcursionBookingModel.findByIdAndDelete(_id)
+     },
 
     async approvExcursion(_id) {
         // поставить защиту на удаление проданных экскурсий

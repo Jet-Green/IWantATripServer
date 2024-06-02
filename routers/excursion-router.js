@@ -36,6 +36,8 @@ router.get('/get-on-moderation', ExcursionController.getExcursionsOnModeration)
 router.post('/delete-excursion',ExcursionController.deleteExcursion ) 
 router.post('/approv-excursion',ExcursionController.approvExcursion ) 
 router.get('/delete-bill',ExcursionController.deleteBill)
+router.get('/delete-booking',ExcursionController.deleteBooking)
+
 
 
 module.exports = router
