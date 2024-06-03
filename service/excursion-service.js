@@ -66,7 +66,11 @@ module.exports = {
         return result
     },
     async getWithBills(excursionId) {
-        return await ExcursionModel.findById(excursionId)
+        const currentDate = new Date();
+        const currentYear = currentDate.getFullYear();
+        const currentMonth = currentDate.getMonth(); // месяцы в JS начинаются с 0
+        const currentDay = currentDate.getDate();
+        let excursion = await ExcursionModel.findById(excursionId)
             .select({ name: 1, dates: 1, bookings: 1 })
             .populate(
                 {
@@ -89,6 +93,20 @@ module.exports = {
                     }
                 },
             )
+            
+        const filteredDates = excursion.dates.filter(date => {
+
+            return date.date.year >= currentYear && date.date.month >= currentMonth && date.date.day >= currentDay
+
+        });
+        // Создаем новый объект для возврата
+        const excursionToReturn = {
+            ...excursion.toObject(),
+            dates: filteredDates
+        };
+        return excursionToReturn;
+
+
     },
     async getWithBookings(excursionId) {
         return await ExcursionModel.findById(excursionId).populate('bookings').populate('dates')
@@ -110,7 +128,25 @@ module.exports = {
         return await ExcursionModel.find({ _id: { $in: userFromDb.excursions } })
     },
     async getById(_id) {
-        return await ExcursionModel.findById(_id)
+        const currentDate = new Date();
+        const currentYear = currentDate.getFullYear();
+        const currentMonth = currentDate.getMonth(); // месяцы в JS начинаются с 0
+        const currentDay = currentDate.getDate();
+
+        let excursion = await ExcursionModel.findById(_id).populate('dates')
+
+        const filteredDates = excursion.dates.filter(date => {
+
+            return date.date.year >= currentYear && date.date.month >= currentMonth && date.date.day >= currentDay
+
+        });
+
+        // Создаем новый объект для возврата
+        const excursionToReturn = {
+            ...excursion.toObject(),
+            dates: filteredDates
+        };
+        return excursionToReturn;
     },
     async createDates({ dates, excursionId, userId }) {
         let created = []
@@ -165,7 +201,7 @@ module.exports = {
                 { 'date.day': { $gte: currentDay } }
             ]
         }).select('_id');
-         // Получаем только идентификаторы
+        // Получаем только идентификаторы
         const upcomingDateIds = upcomingDates.map(date => date._id);
 
         let query = {}
@@ -231,10 +267,31 @@ module.exports = {
             query
 
         ).populate('dates')
+
     },
 
     async getExcursionById(_id) {
-        return await ExcursionModel.findById(_id).populate('dates')
+        const currentDate = new Date();
+        const currentYear = currentDate.getFullYear();
+        const currentMonth = currentDate.getMonth(); // месяцы в JS начинаются с 0
+        const currentDay = currentDate.getDate();
+
+        let excursion = await ExcursionModel.findById(_id).populate('dates')
+
+        const filteredDates = excursion.dates.filter(date => {
+
+            return date.date.year >= currentYear && date.date.month >= currentMonth && date.date.day >= currentDay
+
+        });
+
+        // Создаем новый объект для возврата
+        const excursionToReturn = {
+            ...excursion.toObject(),
+            dates: filteredDates
+        };
+
+        return excursionToReturn;
+
     },
     async deleteById(_id) {
 
