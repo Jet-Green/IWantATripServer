@@ -4,6 +4,7 @@ const ExcursionDateModel = require('../models/excursion-date-model.js')
 const ExcursionBillModel = require('../models/excursion-bill-model.js')
 const LocationModel = require('../models/location-model.js')
 const ExcursionBookingModel = require('../models/excursion-booking-model.js')
+const _ = require('lodash')
 
 const LocationService = require('../service/location-service.js')
 const excursionBillModel = require('../models/excursion-bill-model.js')
@@ -99,10 +100,11 @@ module.exports = {
             return date.date.year >= currentYear && date.date.month >= currentMonth && date.date.day >= currentDay
 
         });
+        const sortedDates = _.sortBy(filteredDates, ['date.year', 'date.month', 'date.day']);
         // Создаем новый объект для возврата
         const excursionToReturn = {
             ...excursion.toObject(),
-            dates: filteredDates
+            dates: sortedDates
         };
         return excursionToReturn;
 
