@@ -154,62 +154,36 @@ module.exports = {
     async getAll(locationId, strQuery, start, end, type) {
         const currentDate = new Date();
         const currentYear = currentDate.getFullYear();
-        const currentMonth = currentDate.getMonth() + 1; // месяцы в JS начинаются с 0
+        const currentMonth = currentDate.getMonth(); // месяцы в JS начинаются с 0
         const currentDay = currentDate.getDate();
-       
+
         // Находим все даты, которые больше или равны текущей дате
         const upcomingDates = await ExcursionDateModel.find({
-            $or: [
-                { 'date.year': { $gt: currentYear } },
-                {
-                    'date.year': currentYear,
-                    'date.month': { $gt: currentMonth }
-                },
-                {
-                    'date.year': currentYear,
-                    'date.month': currentMonth,
-                    'date.day': { $gte: currentDay }
-                }
+            $and: [
+                { 'date.year': { $gte: currentYear } },
+                { 'date.month': { $gte: currentMonth }, },
+                { 'date.day': { $gte: currentDay } }
             ]
-        }).select('_id'); // Получаем только идентификаторы
-        
+        }).select('_id');
+         // Получаем только идентификаторы
         const upcomingDateIds = upcomingDates.map(date => date._id);
-        console.log(upcomingDateIds)
-        let query = {}
-        function getDate(dateObj) {
-            const dayjsDate = dayjs({ years: dateObj.year, months: dateObj.month, date: dateObj.day })
-            if (!dayjsDate.$d) return ''
-            let russianDate = (new Date(dayjsDate.$d)).toLocaleDateString('ru-RU', {
-                month: 'long',
-                day: 'numeric',
-                weekday: 'long',
-            }).replaceAll(',', '').split(' ')
 
-            return { weekday: russianDate[0], day: russianDate[1], month: russianDate[2] }
-        }
-        function getTime(timeObj) {
-            let result = timeObj.hours + ':'
-            if (timeObj.minutes < 10) {
-                result += '0' + timeObj.minutes
-            } else {
-                result += timeObj.minutes
-            }
-            return result
-        }
+        let query = {}
+
         query = {
             $and: [
-                { isHidden: false, isModerated: true },
-                // {
-                //     dates: { $in: upcomingDateIds }
-                // }
-
+                { isHidden: false, isModerated: true, },
+                {
+                    $or: [
+                        { dates: { $elemMatch: { $in: upcomingDateIds } } },
+                        { dates: { $size: 0 } }
+                    ]
+                }
             ]
         }
 
         if (locationId) {
             let location = await LocationModel.findById(locationId)
-
-            // query.$and.push({ location: locationId })
             if (location) {
                 try {
                     query.$and.push({
@@ -231,50 +205,7 @@ module.exports = {
             }
 
         }
-        if (start && end) {
-            query.$and.push({
-                $or: [
-                    {
-                        // всё, что относится к родителю
-                        $and: [
-                            { 'start': { $gte: start } },
-                            { 'end': { $lte: end } },
-                        ]
-                    },
-                    // все, что относится к children
-                    {
-                        children: {
-                            $elemMatch:
-                            {
-                                $and: [
-                                    { 'start': { $gte: start } },
-                                    { 'end': { $lte: end } },
-                                ]
-                            }
-                        }
-                    }
-                ]
-            })
-        } else {
-            query.$and.push({
-                $or: [
-                    {
-                        // всё, что относится к родителю
-                        $and: [
-                            { 'start': { $gte: Date.now() } },
-                        ]
-                    },
-                    // все, что относится к children
-                    {
-                        children: {
-                            $elemMatch: {
-                                start: { $gte: Date.now() },
-                            }
-                        }
-                    }
-                ]
-            })
-        }
+
         if (strQuery) {
             query.$and.push(
                 {
@@ -294,11 +225,12 @@ module.exports = {
                 }
             )
         }
-      
-      
-        return await ExcursionModel.find( query
-            // filters here
-        )
+
+
+        return await ExcursionModel.find(
+            query
+
+        ).populate('dates')
     },
 
     async getExcursionById(_id) {
