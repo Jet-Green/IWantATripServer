@@ -91,11 +91,6 @@ module.exports = {
         await BillModel.findByIdAndDelete(bill_id);
         return UserModel.findByIdAndUpdate(user_id, { $pull: { boughtTrips: bill_id } })
     },
-    async clearUsers() {
-        console.log(
-            await UserModel.deleteMany({})
-        );
-    },
     async registration(body) {
         const { email, password, fullname, userLocation } = body;
 
