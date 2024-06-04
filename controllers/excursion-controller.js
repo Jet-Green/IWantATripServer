@@ -232,5 +232,12 @@ module.exports = {
         } catch (error) {
             next(error)
         }
-    }
+    },
+    async order(req, res, next) {
+        try {
+            return res.json(await ExcursionService.order(req.body))
+        } catch (error) {
+            next(error)
+        }
+    },
 }

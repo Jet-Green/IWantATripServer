@@ -33,6 +33,8 @@ router.post('/book', authMiddleware, ExcursionController.book)
 router.post('/book-from-cabinet', authMiddleware, ExcursionController.bookFromCabinet)
 router.get('/get-on-moderation', ExcursionController.getExcursionsOnModeration)
 
+router.post('/order', authMiddleware, ExcursionController.order)
+
 router.post('/delete-excursion',ExcursionController.deleteExcursion ) 
 router.post('/approv-excursion',ExcursionController.approvExcursion ) 
 router.get('/delete-bill',ExcursionController.deleteBill)
