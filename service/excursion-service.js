@@ -164,7 +164,6 @@ module.exports = {
     },
 
     async addTime({ date, time, excursionId }) {
-        console.log(JSON.stringify({ date, time, excursionId }))
         let new_exursion_date = await ExcursionDateModel.findOneAndUpdate({ excursion: excursionId, date }, { $push: { times: time } }, { new: true })
         return new_exursion_date
     },
