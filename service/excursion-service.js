@@ -4,6 +4,7 @@ const ExcursionDateModel = require('../models/excursion-date-model.js')
 const ExcursionBillModel = require('../models/excursion-bill-model.js')
 const LocationModel = require('../models/location-model.js')
 const ExcursionBookingModel = require('../models/excursion-booking-model.js')
+const _ = require('lodash')
 
 const LocationService = require('../service/location-service.js')
 const excursionBillModel = require('../models/excursion-bill-model.js')
@@ -66,17 +67,48 @@ module.exports = {
         return result
     },
     async getWithBills(excursionId) {
-        return await ExcursionModel.findById(excursionId)
-            .select({ name: 1, dates: 1 })
-            .populate({
-                path: 'dates',
-                model: 'ExcursionDate',
-                populate: {
-                    path: 'times.bills',
-                    model: 'ExcursionBill',
-                    select: { cart: 1 }
-                }
-            })
+        const currentDate = new Date();
+        const currentYear = currentDate.getFullYear();
+        const currentMonth = currentDate.getMonth(); // месяцы в JS начинаются с 0
+        const currentDay = currentDate.getDate();
+        let excursion = await ExcursionModel.findById(excursionId)
+            .select({ name: 1, dates: 1, bookings: 1 })
+            .populate(
+                {
+                    path: 'dates',
+                    model: 'ExcursionDate',
+                    populate: {
+                        path: 'times.bills',
+                        model: 'ExcursionBill',
+                        select: { cart: 1 }
+                    },
+                },
+            )
+            .populate(
+                {
+                    path: 'bookings',
+                    model: 'ExcursionBooking',
+                    select: {
+                        time: 1,
+                        count: 1
+                    }
+                },
+            )
+            
+        const filteredDates = excursion.dates.filter(date => {
+
+            return date.date.year >= currentYear && date.date.month >= currentMonth && date.date.day >= currentDay
+
+        });
+        const sortedDates = _.sortBy(filteredDates, ['date.year', 'date.month', 'date.day']);
+        // Создаем новый объект для возврата
+        const excursionToReturn = {
+            ...excursion.toObject(),
+            dates: sortedDates
+        };
+        return excursionToReturn;
+
+
     },
     async getWithBookings(excursionId) {
         return await ExcursionModel.findById(excursionId).populate('bookings').populate('dates')
@@ -89,14 +121,34 @@ module.exports = {
         return exFromDb
     },
     async updateImagesUrls(_id, filenames) {
-        return ExcursionModel.findByIdAndUpdate(_id, { $set: { images: filenames } })
+        let excursionFromDb = await ExcursionModel.findById(_id)
+        excursionFromDb.images.push(...filenames)
+        return excursionFromDb.save()
     },
     async getByUserId(userId) {
         const userFromDb = await UserModel.findById(userId)
         return await ExcursionModel.find({ _id: { $in: userFromDb.excursions } })
     },
     async getById(_id) {
-        return await ExcursionModel.findById(_id)
+        const currentDate = new Date();
+        const currentYear = currentDate.getFullYear();
+        const currentMonth = currentDate.getMonth(); // месяцы в JS начинаются с 0
+        const currentDay = currentDate.getDate();
+
+        let excursion = await ExcursionModel.findById(_id).populate('dates')
+
+        const filteredDates = excursion.dates.filter(date => {
+
+            return date.date.year >= currentYear && date.date.month >= currentMonth && date.date.day >= currentDay
+
+        });
+
+        // Создаем новый объект для возврата
+        const excursionToReturn = {
+            ...excursion.toObject(),
+            dates: filteredDates
+        };
+        return excursionToReturn;
     },
     async createDates({ dates, excursionId, userId }) {
         let created = []
@@ -137,18 +189,39 @@ module.exports = {
 
     },
 
-    async getAll(locationId,strQuery,start,end,type) {
+    async getAll(locationId, strQuery, start, end, type) {
+        const currentDate = new Date();
+        const currentYear = currentDate.getFullYear();
+        const currentMonth = currentDate.getMonth(); // месяцы в JS начинаются с 0
+        const currentDay = currentDate.getDate();
+
+        // Находим все даты, которые больше или равны текущей дате
+        const upcomingDates = await ExcursionDateModel.find({
+            $and: [
+                { 'date.year': { $gte: currentYear } },
+                { 'date.month': { $gte: currentMonth }, },
+                { 'date.day': { $gte: currentDay } }
+            ]
+        }).select('_id');
+        // Получаем только идентификаторы
+        const upcomingDateIds = upcomingDates.map(date => date._id);
+
         let query = {}
+
         query = {
             $and: [
-                { isHidden: false, isModerated: true },
+                { isHidden: false, isModerated: true, },
+                {
+                    $or: [
+                        { dates: { $elemMatch: { $in: upcomingDateIds } } },
+                        { dates: { $size: 0 } }
+                    ]
+                }
             ]
         }
-        times= await this.getWithBills(locationId)
-        console.log(times)
+
         if (locationId) {
             let location = await LocationModel.findById(locationId)
-            // query.$and.push({ location: locationId })
             if (location) {
                 try {
                     query.$and.push({
@@ -170,50 +243,7 @@ module.exports = {
             }
 
         }
-        if (start && end) {
-            query.$and.push({
-                $or: [
-                    {
-                        // всё, что относится к родителю
-                        $and: [
-                            { 'start': { $gte: start } },
-                            { 'end': { $lte: end } },
-                        ]
-                    },
-                    // все, что относится к children
-                    {
-                        children: {
-                            $elemMatch:
-                            {
-                                $and: [
-                                    { 'start': { $gte: start } },
-                                    { 'end': { $lte: end } },
-                                ]
-                            }
-                        }
-                    }
-                ]
-            })
-        } else {
-            query.$and.push({
-                $or: [
-                    {
-                        // всё, что относится к родителю
-                        $and: [
-                            { 'start': { $gte: Date.now() } },
-                        ]
-                    },
-                    // все, что относится к children
-                    {
-                        children: {
-                            $elemMatch: {
-                                start: { $gte: Date.now() },
-                            }
-                        }
-                    }
-                ]
-            })
-        }
+
         if (strQuery) {
             query.$and.push(
                 {
@@ -234,13 +264,36 @@ module.exports = {
             )
         }
 
-        return await ExcursionModel.find(query
-            // filters here
-        )
+
+        return await ExcursionModel.find(
+            query
+
+        ).populate('dates')
+
     },
 
     async getExcursionById(_id) {
-        return await ExcursionModel.findById(_id).populate('dates')
+        const currentDate = new Date();
+        const currentYear = currentDate.getFullYear();
+        const currentMonth = currentDate.getMonth(); // месяцы в JS начинаются с 0
+        const currentDay = currentDate.getDate();
+
+        let excursion = await ExcursionModel.findById(_id).populate('dates')
+
+        const filteredDates = excursion.dates.filter(date => {
+
+            return date.date.year >= currentYear && date.date.month >= currentMonth && date.date.day >= currentDay
+
+        });
+
+        // Создаем новый объект для возврата
+        const excursionToReturn = {
+            ...excursion.toObject(),
+            dates: filteredDates
+        };
+
+        return excursionToReturn;
+
     },
     async deleteById(_id) {
 
@@ -261,7 +314,7 @@ module.exports = {
         exDateFromDb.markModified('times')
         return await exDateFromDb.save()
     },
-    async buyFromCabinet({timeId, bill, fullinfo}) {
+    async buyFromCabinet({ timeId, bill, fullinfo }) {
         let billFromDb = await ExcursionBillModel.create({ time: timeId, cart: bill, userInfo: fullinfo })
         let exDateFromDb = await ExcursionDateModel.findOne({ times: { $elemMatch: { _id: timeId } } })
         for (let i = 0; i < exDateFromDb.times.length; i++) {
@@ -282,15 +335,23 @@ module.exports = {
         return await ExcursionModel.findByIdAndDelete(_id)
     },
     async deleteBill(_id) {
-      
-       await ExcursionDateModel.updateMany(
-        { 'times.bills': _id },
-        { $pull: { 'times.$.bills': _id } },
-        { multi: true, new: true }  // Возвращает обновленный документ
+
+        await ExcursionDateModel.updateMany(
+            { 'times.bills': _id },
+            { $pull: { 'times.$.bills': _id } },
+            { multi: true, new: true }  // Возвращает обновленный документ
         );
         return await ExcursionBillModel.findByIdAndDelete(_id)
     },
+    async deleteBooking(_id) {
 
+        // await ExcursionDateModel.updateMany(
+        //  { 'times.bills': _id },
+        //  { $pull: { 'times.$.bills': _id } },
+        //  { multi: true, new: true }  // Возвращает обновленный документ
+        //  );
+        return await ExcursionBookingModel.findByIdAndDelete(_id)
+    },
 
     async approvExcursion(_id) {
         // поставить защиту на удаление проданных экскурсий
@@ -305,9 +366,9 @@ module.exports = {
         let bookingFromDb = await ExcursionBookingModel.create(booking)
         return await ExcursionModel.findByIdAndUpdate(bookingFromDb.excursion, { $push: { bookings: bookingFromDb._id } })
     },
-    async edit({excursion}) {
+    async edit({ excursion }) {
         let _id = excursion._id
         delete excursion._id
-        return await ExcursionModel.findByIdAndUpdate(_id, {})
+        return await ExcursionModel.findByIdAndUpdate(_id, excursion)
     }
 }

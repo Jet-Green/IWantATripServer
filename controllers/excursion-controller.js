@@ -195,8 +195,15 @@ module.exports = {
     },
     async deleteBill(req, res, next) {
         try {
-            console.log()
+         
             return res.json(await ExcursionService.deleteBill(req.query._id))
+        } catch (error) {
+            next(error)
+        }
+    },
+    async deleteBooking(req, res, next) {
+        try {
+            return res.json(await ExcursionService.deleteBooking(req.query._id))
         } catch (error) {
             next(error)
         }
