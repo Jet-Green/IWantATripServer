@@ -328,6 +328,7 @@ module.exports = {
     async edit({excursion}) {
         let _id = excursion._id
         delete excursion._id
+        excursion.isModerated = false
         return await ExcursionModel.findByIdAndUpdate(_id, excursion)
     }
 }
