@@ -238,7 +238,6 @@ module.exports = {
     async order(req, res, next) {
         try {
             let author = await UserModel.findById(req.body.author)
-            console.log(author.email)
             sendMail(req.body.emailHtml, [author.email], 'Отправлена заявка')
             return res.json(await ExcursionService.order(req.body))
         } catch (error) {
