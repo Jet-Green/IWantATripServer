@@ -1,6 +1,8 @@
 const ExcursionService = require('../service/excursion-service.js')
 const s3 = require('../yandex-cloud.js')
 const logger = require('../logger.js');
+const { sendMail } = require('../middleware/mailer')
+const UserModel = require('../models/user-model.js')
 
 module.exports = {
     async edit(req, res, next) {
@@ -235,6 +237,9 @@ module.exports = {
     },
     async order(req, res, next) {
         try {
+            let author = await UserModel.findById(req.body.author)
+            console.log(author.email)
+            sendMail(req.body.emailHtml, [author.email], 'Отправлена заявка')
             return res.json(await ExcursionService.order(req.body))
         } catch (error) {
             next(error)

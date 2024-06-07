@@ -5,6 +5,7 @@ const ExcursionBillModel = require('../models/excursion-bill-model.js')
 const LocationModel = require('../models/location-model.js')
 const ExcursionBookingModel = require('../models/excursion-booking-model.js')
 const _ = require('lodash')
+const { sendMail } = require('../middleware/mailer')
 
 const LocationService = require('../service/location-service.js')
 const excursionBillModel = require('../models/excursion-bill-model.js')
