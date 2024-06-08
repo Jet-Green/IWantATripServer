@@ -169,6 +169,8 @@ module.exports = {
     },
     async buy(req, res, next) {
         try {
+            let author = await UserModel.findById(req.body.author)
+            sendMail(req.body.emailHtml, [author.email], 'Отправлена заявка')
             return res.json(await ExcursionService.buy(req.body))
         } catch (error) {
             next(error)
@@ -223,6 +225,8 @@ module.exports = {
      */
     async book(req, res, next) {
         try {
+            let author = await UserModel.findById(req.body.author)
+            sendMail(req.body.emailHtml, [author.email], 'Отправлена заявка')
             return res.json(await ExcursionService.book(req.body))
         } catch (error) {
             next(error)
