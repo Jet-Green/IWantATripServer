@@ -64,5 +64,11 @@ module.exports = {
             next(err)
         }
     },
- 
+    async updateExcursionTypes(req, res, next) {
+        try {
+            return res.json(await AppStateService.updateExcursionTypes(req.body))
+        } catch (error) {
+            next(error)
+        }
+    }
 }
