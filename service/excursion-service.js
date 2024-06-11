@@ -95,7 +95,7 @@ module.exports = {
                     }
                 },
             )
-            
+
         const filteredDates = excursion.dates.filter(date => {
 
             return date.date.year >= currentYear && date.date.month >= currentMonth && date.date.day >= currentDay
@@ -194,18 +194,45 @@ module.exports = {
         const currentYear = currentDate.getFullYear();
         const currentMonth = currentDate.getMonth(); // месяцы в JS начинаются с 0
         const currentDay = currentDate.getDate();
-
+        let upcomingDates = ""
         // Находим все даты, которые больше или равны текущей дате
-        const upcomingDates = await ExcursionDateModel.find({
-            $and: [
-                { 'date.year': { $gte: currentYear } },
-                { 'date.month': { $gte: currentMonth }, },
-                { 'date.day': { $gte: currentDay } }
+        // upcomingDates = await ExcursionDateModel.find({
+        //     $and: [
+        //         { 'date.year': { $gte: currentYear } },
+        //         { 'date.month': { $gte: currentMonth }, },
+        //         { 'date.day': { $gte: currentDay } }
+        //     ]
+        // }).select('_id');
+
+        if (start && end) {
+            upcomingDates = await ExcursionDateModel.find({
+                $or: [
+
+                    { $and: [{ 'date.year': { $gte: start.getFullYear() } }] },
+                    { $and: [{ 'date.year': { $lte: start.getFullYear() } }, { 'date.month': { $gte: start.getMonth() } }] },
+                    { $and: [{ 'date.year': { $gte: start.getFullYear() } }, { 'date.month': { $lte: start.getMonth() } }, { 'date.day': { $gte: start.getDate() } }] }
+
+                ]
+            }).select('_id');
+        }
+        upcomingDates = await ExcursionDateModel.find({
+
+            $or: [
+
+                { $and: [{ 'date.year': { $gte: currentYear } }] },
+                { $and: [{ 'date.year': { $lte: currentYear } }, { 'date.month': { $gte: currentMonth } }] },
+                { $and: [{ 'date.year': { $gte: currentYear } }, { 'date.month': { $lte: currentMonth } }, { 'date.day': { $gte: currentDay } }] }
+
             ]
+
         }).select('_id');
+
+
+
+
+
         // Получаем только идентификаторы
         const upcomingDateIds = upcomingDates.map(date => date._id);
-
         let query = {}
 
         query = {
