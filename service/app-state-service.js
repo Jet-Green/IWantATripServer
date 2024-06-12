@@ -44,7 +44,7 @@ module.exports = {
     },
     async updateExcursionTypes({ type, directionType, directionPlace }) {
         let doc = await AppStateModel.findOne({})
-        // если найден тип, то его индекс тоже сохранится
+        // если найден тип, то его индекс тоже найден
         let typeFound = false;
         let typeIndex = -1;
         let directionTypeFound = false;
@@ -59,27 +59,34 @@ module.exports = {
                     if (doc.excursionTypes[i].direction[j].directionType == directionType) {
                         directionTypeFound = true;
                         directionTypeIndex = j;
-                        if (doc.excursionTypes[i].direction[j].directionPlace == directionPlace) {
-                            directionPlaceFound = true
+                        for (let k = 0; k < doc.excursionTypes[i].direction[j].directionPlace.length; k++) {
+                            if (doc.excursionTypes[i].direction[j].directionPlace[k] == directionPlace) {
+                                directionPlaceFound = true
+                                break
+                            }
                         }
                     }
                 }
             }
         }
-        console.log(typeFound, directionTypeFound, directionPlaceFound);
         if (typeFound) {
             if (directionTypeFound) {
                 if (directionPlaceFound) return
                 else {
-                    doc.excursionTypes[typeIndex].direction[directionTypeIndex].directionPlace = directionPlace
+                    doc.excursionTypes[typeIndex].direction[directionTypeIndex].directionPlace.push(directionPlace)
                 }
             } else {
-                doc.excursionTypes[typeIndex].direction.push({ directionType, directionPlace })
+                doc.excursionTypes[typeIndex].direction.push({ directionType: directionType, directionPlace: [directionPlace] })
             }
         } else {
-            doc.excursionTypes = { type: type, direction: [{ directionType, directionPlace }] }
+            doc.excursionTypes.push({
+                type: type,
+                direction: [{
+                    directionType: directionType,
+                    directionPlace: [directionPlace]
+                }]
+            })
         }
-        console.log(doc.excursionTypes);
         doc.markModified('excursionTypes')
         return await doc.save()
     }
