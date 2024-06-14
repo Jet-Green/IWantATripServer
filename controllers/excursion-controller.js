@@ -1,6 +1,8 @@
 const ExcursionService = require('../service/excursion-service.js')
 const s3 = require('../yandex-cloud.js')
 const logger = require('../logger.js');
+const { sendMail } = require('../middleware/mailer')
+const UserModel = require('../models/user-model.js')
 
 module.exports = {
     async edit(req, res, next) {
@@ -68,6 +70,13 @@ module.exports = {
             next(error)
         }
     },
+    async addTime(req, res, next) {
+        try {
+            return res.json(await ExcursionService.addTime(req.body))
+        } catch (error) {
+            next(error)
+        }
+    },
     async deleteTime(req, res, next) {
         try {
             return res.json(await ExcursionService.deleteTime(req.body))
@@ -83,12 +92,19 @@ module.exports = {
         }
     },
 
+    async timeHasBills(req, res, next) {
+        try {
+            return res.json(await ExcursionService.timeHasBills(req.query.timeId))
+        } catch (error) {
+            next(error)
+        }
+    },
 
 
     async getAll(req, res, next) {
 
         try {
-            return res.json(await ExcursionService.getAll(req.body.locationId))
+            return res.json(await ExcursionService.getAll(req.body.locationId,req.body.query,req.body.start,req.body.requestTime,req.body.type))
         } catch (error) {
             next(error)
         }
@@ -153,6 +169,8 @@ module.exports = {
     },
     async buy(req, res, next) {
         try {
+            let author = await UserModel.findById(req.body.author)
+            sendMail(req.body.emailHtml, [author.email], 'Отправлена заявка')
             return res.json(await ExcursionService.buy(req.body))
         } catch (error) {
             next(error)
@@ -181,8 +199,15 @@ module.exports = {
     },
     async deleteBill(req, res, next) {
         try {
-            console.log()
+         
             return res.json(await ExcursionService.deleteBill(req.query._id))
+        } catch (error) {
+            next(error)
+        }
+    },
+    async deleteBooking(req, res, next) {
+        try {
+            return res.json(await ExcursionService.deleteBooking(req.query._id))
         } catch (error) {
             next(error)
         }
@@ -200,6 +225,8 @@ module.exports = {
      */
     async book(req, res, next) {
         try {
+            let author = await UserModel.findById(req.body.author)
+            sendMail(req.body.emailHtml, [author.email], 'Отправлена заявка')
             return res.json(await ExcursionService.book(req.body))
         } catch (error) {
             next(error)
@@ -211,5 +238,14 @@ module.exports = {
         } catch (error) {
             next(error)
         }
-    }
+    },
+    async order(req, res, next) {
+        try {
+            let author = await UserModel.findById(req.body.author)
+            sendMail(req.body.emailHtml, [author.email], 'Отправлена заявка')
+            return res.json(await ExcursionService.order(req.body))
+        } catch (error) {
+            next(error)
+        }
+    },
 }

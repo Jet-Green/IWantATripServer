@@ -32,8 +32,6 @@ router.post('/delete-trip-calc', userController.deleteTripCalc)
 router.post('/forgot-password', limiter, userController.sendResetLink)
 router.post('/reset-password', limiter, userController.resetPassword)
 
-router.get('/clear-users', userController.clearUsers)
-
 router.get('/get-bought-trips', userController.getBoughtTrips)
 
 router.post('/cancel-trip', userController.cancelTrip)

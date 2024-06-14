@@ -11,12 +11,13 @@ router.post('/edit', authMiddleware, ExcursionController.edit)
 router.post('/images', MULTER().any(), authMiddleware, ExcursionController.uploadImages)
 
 router.get('/get-excursions', authMiddleware, ExcursionController.getUserExcursions)
+router.get('/time-has-bills', ExcursionController.timeHasBills)
 
 router.post('/dates', authMiddleware, ExcursionController.createDates)
+router.post('/add-time', authMiddleware, ExcursionController.addTime)
 router.post('/delete-time', authMiddleware, ExcursionController.deleteTime)
 router.post('/delete-date', authMiddleware, ExcursionController.deleteDate)
 router.post('/all', ExcursionController.getAll)
-
 router.get('/one', ExcursionController.getExcursionById)
 router.get('/with-bills', ExcursionController.getWithBills)
 router.get('/with-bookings', ExcursionController.getWithBookings)
@@ -32,9 +33,13 @@ router.post('/book', authMiddleware, ExcursionController.book)
 router.post('/book-from-cabinet', authMiddleware, ExcursionController.bookFromCabinet)
 router.get('/get-on-moderation', ExcursionController.getExcursionsOnModeration)
 
+router.post('/order', authMiddleware, ExcursionController.order)
+
 router.post('/delete-excursion',ExcursionController.deleteExcursion ) 
 router.post('/approv-excursion',ExcursionController.approvExcursion ) 
 router.get('/delete-bill',ExcursionController.deleteBill)
+router.get('/delete-booking',ExcursionController.deleteBooking)
+
 
 
 module.exports = router
