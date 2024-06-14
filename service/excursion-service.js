@@ -195,38 +195,79 @@ module.exports = {
         const currentMonth = currentDate.getMonth(); // месяцы в JS начинаются с 0
         const currentDay = currentDate.getDate();
         let upcomingDates = ""
-        // Находим все даты, которые больше или равны текущей дате
-        // upcomingDates = await ExcursionDateModel.find({
-        //     $and: [
-        //         { 'date.year': { $gte: currentYear } },
-        //         { 'date.month': { $gte: currentMonth }, },
-        //         { 'date.day': { $gte: currentDay } }
-        //     ]
-        // }).select('_id');
-
         if (start && end) {
+            start = new Date(start)
+            end = new Date(end)
             upcomingDates = await ExcursionDateModel.find({
-                $or: [
-
-                    { $and: [{ 'date.year': { $gte: start.getFullYear() } }] },
-                    { $and: [{ 'date.year': { $lte: start.getFullYear() } }, { 'date.month': { $gte: start.getMonth() } }] },
-                    { $and: [{ 'date.year': { $gte: start.getFullYear() } }, { 'date.month': { $lte: start.getMonth() } }, { 'date.day': { $gte: start.getDate() } }] }
-
+                $and: [
+                    {
+                        $or: [
+                            { 'date.year': { $gt: start.getFullYear(), $lt: end.getFullYear() } },
+                            {
+                                $and: [
+                                    { 'date.year': { $eq: start.getFullYear(), $ne: end.getFullYear() } },
+                                    { 'date.month': { $gte: start.getMonth() } }
+                                ]
+                            },
+                            {
+                                $and: [
+                                    { 'date.year': { $ne: start.getFullYear(), $eq: end.getFullYear() } },
+                                    { 'date.month': { $lte: end.getMonth() } }
+                                ]
+                            },
+                            { 'date.month': { $gte: start.getMonth(), $lte: end.getMonth() } },
+                        ]
+                    },
+                    {
+                        $or: [
+                            { 'date.month': { $gt: start.getMonth(), $lt: end.getMonth() } },
+                            {
+                                $and: [
+                                    { 'date.month': { $eq: start.getMonth(), $ne: end.getMonth() } },
+                                    { 'date.day': { $gte: start.getDate() } }
+                                ]
+                            },
+                            {
+                                $and: [
+                                    { 'date.month': { $ne: start.getMonth(), $eq: end.getMonth() } },
+                                    { 'date.day': { $lte: end.getDate() } }
+                                ]
+                            },
+                            { 'date.day': { $gte: start.getDate(), $lte: end.getDate() } }
+                        ]
+                    }
                 ]
             }).select('_id');
         }
-        upcomingDates = await ExcursionDateModel.find({
+        else {
+            upcomingDates = await ExcursionDateModel.find({
+                $and: [
+                    {
+                        $or: [
+                            { 'date.year': { $gt: currentYear } },
+                            {
+                                $and: [
+                                    { 'date.year': currentYear },
+                                    { 'date.month': { $gte: currentMonth } }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        $or: [
+                            { 'date.month': { $gt: currentMonth } },
+                            {
+                                $and: [
+                                    { 'date.month': currentMonth },
+                                    { 'date.day': { $gte: currentDay } }
+                                ]
+                            }
+                        ]
+                    },
+                ]
 
-            $or: [
-
-                { $and: [{ 'date.year': { $gte: currentYear } }] },
-                { $and: [{ 'date.year': { $lte: currentYear } }, { 'date.month': { $gte: currentMonth } }] },
-                { $and: [{ 'date.year': { $gte: currentYear } }, { 'date.month': { $lte: currentMonth } }, { 'date.day': { $gte: currentDay } }] }
-
-            ]
-
-        }).select('_id');
-
+            }).select('_id');
+        }
 
 
 
