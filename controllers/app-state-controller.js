@@ -70,5 +70,12 @@ module.exports = {
         } catch (error) {
             next(error)
         }
+    },
+    async deleteExcursionType(req, res, next) {
+        try {
+            return res.json(await AppStateService.deleteExcursionType(req.body))
+        } catch (error) {
+            next(error)
+        }
     }
 }

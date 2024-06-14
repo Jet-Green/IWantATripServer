@@ -79,15 +79,60 @@ module.exports = {
                 doc.excursionTypes[typeIndex].direction.push({ directionType: directionType, directionPlace: [directionPlace] })
             }
         } else {
-            doc.excursionTypes.push({
-                type: type,
-                direction: [{
-                    directionType: directionType,
-                    directionPlace: [directionPlace]
-                }]
-            })
+            if (directionPlace?.length > 0) {
+                doc.excursionTypes.push({
+                    type: type,
+                    direction: [{
+                        directionType: directionType,
+                        directionPlace: [directionPlace]
+                    }]
+                })
+            } else {
+                doc.excursionTypes.push({
+                    type: type,
+                    direction: [{
+                        directionType: directionType,
+                        directionPlace: []
+                    }]
+                })
+            }
         }
         doc.markModified('excursionTypes')
         return await doc.save()
+    },
+    async deleteExcursionType(body) {
+        let doc = await AppStateModel.findOne({})
+        if (body.type) {
+            for (let i = 0; i < doc.excursionTypes.length; i++) {
+                if (doc.excursionTypes[i].type == body.type) {
+                    doc.excursionTypes.splice(i, 1)
+                    doc.markModified('excursionTypes')
+                    return await doc.save()
+                }
+            }
+        } else if (body.directionType) {
+            for (let i = 0; i < doc.excursionTypes.length; i++) {
+                for (let j = 0; j < doc.excursionTypes[i].direction.length; j++) {
+                    if (doc.excursionTypes[i].direction[j].directionType == body.directionType) {
+                        doc.excursionTypes[i].direction.splice(j, 1)
+                        doc.markModified('excursionTypes')
+                        return await doc.save()
+                    }
+                }
+            }
+        } else if (body.directionPlace) {
+            for (let i = 0; i < doc.excursionTypes.length; i++) {
+                for (let j = 0; j < doc.excursionTypes[i].direction.length; j++) {
+                    for (let k = 0; k < doc.excursionTypes[i].direction[j].directionPlace.length; k++) {
+                        if (doc.excursionTypes[i].direction[j].directionPlace[k] == body.directionPlace) {
+                            doc.excursionTypes[i].direction[j].directionPlace.splice(k, 1)
+                            doc.markModified('excursionTypes')
+                            return await doc.save()
+                        }
+                    }
+                }
+            }
+        }
+        return 'ok'
     }
 }
