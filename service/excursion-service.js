@@ -45,7 +45,8 @@ module.exports = {
                     select: {
                         cart: 1,
                         user: 1,
-                        userInfo: 1
+                        userInfo: 1,
+                        tinkoff: 1
                     },
                     populate: {
                         path: 'user',
