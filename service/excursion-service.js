@@ -370,6 +370,26 @@ module.exports = {
     async hideById(_id, isHide) {
         return await ExcursionModel.findByIdAndUpdate(_id, { isHidden: isHide })
     },
+    /**
+     * email html
+     * @param {String} emailHtml 
+     * bill with tinkoff field
+     * @param {Object} bill 
+     */
+    async buyWithTinkoff({ emailHtml, bill }) {
+        let billFromDb = await ExcursionBillModel.create(bill)
+        const timeId = bill.time
+        let exDateFromDb = await ExcursionDateModel.findOne({ times: { $elemMatch: { _id: timeId } } })
+        for (let i = 0; i < exDateFromDb.times.length; i++) {
+            if (exDateFromDb.times[i]._id == timeId) {
+                exDateFromDb.times[i].bills.push(billFromDb._id)
+                break
+            }
+        }
+        exDateFromDb.markModified('times')
+        await exDateFromDb.save()
+        return billFromDb
+    },
     async buy({ timeId, userId, bill }) {
         let billFromDb = await ExcursionBillModel.create({ time: timeId, user: userId, cart: bill })
         let exDateFromDb = await ExcursionDateModel.findOne({ times: { $elemMatch: { _id: timeId } } })

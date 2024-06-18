@@ -9,7 +9,7 @@ const ExcursionSchema = new Schema({
         name: String,
         shortName: String,
         type: { type: String, default: 'Point' },
-        coordinates:  [Number],
+        coordinates: [Number],
     },
     duration: { type: String },
     minPeople: { type: Number },
@@ -28,10 +28,18 @@ const ExcursionSchema = new Schema({
     isHidden: { type: Boolean, default: false },
     // меняет модератор
     isModerated: { type: Boolean, default: false },
+    tinkoffContract: {
+        ShopCode: Number,
+        Name: String,
+        Inn: String,
+        Phones: Array,
+    },
+
+    billsList: { type: [Schema.Types.ObjectId], ref: 'ExcursionBill' },
 
     dates: { type: [Schema.Types.ObjectId], ref: 'ExcursionDate' },
-    bookings: {type: [Schema.Types.ObjectId], ref: 'ExcursionBooking'},
-    orders: {type: [Object]}
+    bookings: { type: [Schema.Types.ObjectId], ref: 'ExcursionBooking' },
+    orders: { type: [Object] }
 })
 
 module.exports = model('Excursion', ExcursionSchema);

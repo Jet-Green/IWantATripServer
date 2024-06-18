@@ -104,7 +104,7 @@ module.exports = {
     async getAll(req, res, next) {
 
         try {
-            return res.json(await ExcursionService.getAll(req.body.locationId,req.body.query,req.body.start,req.body.end,req.body.type))
+            return res.json(await ExcursionService.getAll(req.body.locationId, req.body.query, req.body.start, req.body.end, req.body.type))
         } catch (error) {
             next(error)
         }
@@ -199,7 +199,7 @@ module.exports = {
     },
     async deleteBill(req, res, next) {
         try {
-         
+
             return res.json(await ExcursionService.deleteBill(req.query._id))
         } catch (error) {
             next(error)
@@ -212,7 +212,7 @@ module.exports = {
             next(error)
         }
     },
-    
+
     async approvExcursion(req, res, next) {
         try {
             return res.json(await ExcursionService.approvExcursion(req.body._id))
@@ -248,4 +248,11 @@ module.exports = {
             next(error)
         }
     },
+    async buyWithTinkoff(req, res, next) {
+        try {
+            return res.json(await ExcursionService.buyWithTinkoff(req.body))
+        } catch (error) {
+            next(error)
+        }
+    }
 }
