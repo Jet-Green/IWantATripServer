@@ -27,6 +27,7 @@ router.post('/delete-by-id', ExcursionController.deleteById)
 router.post('/hide-by-id', ExcursionController.hideById)
 
 router.post('/buy', authMiddleware, ExcursionController.buy)
+router.post('/buy-with-tinkoff', authMiddleware, ExcursionController.buyWithTinkoff)
 router.post('/buy-from-cabinet', authMiddleware, ExcursionController.buyFromCabinet)
 
 router.post('/book', authMiddleware, ExcursionController.book)

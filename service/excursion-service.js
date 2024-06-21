@@ -45,7 +45,8 @@ module.exports = {
                     select: {
                         cart: 1,
                         user: 1,
-                        userInfo: 1
+                        userInfo: 1,
+                        tinkoff: 1
                     },
                     populate: {
                         path: 'user',
@@ -95,7 +96,7 @@ module.exports = {
                     }
                 },
             )
-            
+
         const filteredDates = excursion.dates.filter(date => {
 
             return date.date.year >= currentYear && date.date.month >= currentMonth && date.date.day >= currentDay
@@ -194,18 +195,86 @@ module.exports = {
         const currentYear = currentDate.getFullYear();
         const currentMonth = currentDate.getMonth(); // месяцы в JS начинаются с 0
         const currentDay = currentDate.getDate();
+        let upcomingDates = ""
+        if (start && end) {
+            start = new Date(start)
+            end = new Date(end)
+            upcomingDates = await ExcursionDateModel.find({
+                $and: [
+                    {
+                        $or: [
+                            { 'date.year': { $gt: start.getFullYear(), $lt: end.getFullYear() } },
+                            {
+                                $and: [
+                                    { 'date.year': { $eq: start.getFullYear(), $ne: end.getFullYear() } },
+                                    { 'date.month': { $gte: start.getMonth() } }
+                                ]
+                            },
+                            {
+                                $and: [
+                                    { 'date.year': { $ne: start.getFullYear(), $eq: end.getFullYear() } },
+                                    { 'date.month': { $lte: end.getMonth() } }
+                                ]
+                            },
+                            { 'date.month': { $gte: start.getMonth(), $lte: end.getMonth() } },
+                        ]
+                    },
+                    {
+                        $or: [
+                            { 'date.month': { $gt: start.getMonth(), $lt: end.getMonth() } },
+                            {
+                                $and: [
+                                    { 'date.month': { $eq: start.getMonth(), $ne: end.getMonth() } },
+                                    { 'date.day': { $gte: start.getDate() } }
+                                ]
+                            },
+                            {
+                                $and: [
+                                    { 'date.month': { $ne: start.getMonth(), $eq: end.getMonth() } },
+                                    { 'date.day': { $lte: end.getDate() } }
+                                ]
+                            },
+                            { 'date.day': { $gte: start.getDate(), $lte: end.getDate() } }
+                        ]
+                    }
+                ]
+            }).select('_id');
+        }
+        else {
+            upcomingDates = await ExcursionDateModel.find({
+                $and: [
+                    {
+                        $or: [
+                            { 'date.year': { $gt: currentYear } },
+                            {
+                                $and: [
+                                    { 'date.year': currentYear },
+                                    { 'date.month': { $gte: currentMonth } }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        $or: [
+                            { 'date.month': { $gt: currentMonth } },
+                            {
+                                $and: [
+                                    { 'date.month': currentMonth },
+                                    { 'date.day': { $gte: currentDay } }
+                                ]
+                            }
+                        ]
+                    },
+                ]
 
-        // Находим все даты, которые больше или равны текущей дате
-        const upcomingDates = await ExcursionDateModel.find({
-            $and: [
-                { 'date.year': { $gte: currentYear } },
-                { 'date.month': { $gte: currentMonth }, },
-                { 'date.day': { $gte: currentDay } }
-            ]
-        }).select('_id');
+            }).select('_id');
+        }
+
+
+
+
         // Получаем только идентификаторы
         const upcomingDateIds = upcomingDates.map(date => date._id);
-
         let query = {}
 
         query = {
@@ -301,6 +370,26 @@ module.exports = {
     },
     async hideById(_id, isHide) {
         return await ExcursionModel.findByIdAndUpdate(_id, { isHidden: isHide })
+    },
+    /**
+     * email html
+     * @param {String} emailHtml 
+     * bill with tinkoff field
+     * @param {Object} bill 
+     */
+    async buyWithTinkoff({ emailHtml, bill }) {
+        let billFromDb = await ExcursionBillModel.create(bill)
+        const timeId = bill.time
+        let exDateFromDb = await ExcursionDateModel.findOne({ times: { $elemMatch: { _id: timeId } } })
+        for (let i = 0; i < exDateFromDb.times.length; i++) {
+            if (exDateFromDb.times[i]._id == timeId) {
+                exDateFromDb.times[i].bills.push(billFromDb._id)
+                break
+            }
+        }
+        exDateFromDb.markModified('times')
+        await exDateFromDb.save()
+        return billFromDb
     },
     async buy({ timeId, userId, bill }) {
         let billFromDb = await ExcursionBillModel.create({ time: timeId, user: userId, cart: bill })

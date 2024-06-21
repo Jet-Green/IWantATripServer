@@ -14,6 +14,6 @@ router.post('/delete-trip-type', appStateController.deleteTripType)
 router.post('/set-transport-name', appStateController.setTransportName)
 router.post('/delete-transport-name', appStateController.deleteTransportName)
 router.put('/excursion-types', appStateController.updateExcursionTypes)
-
+router.patch('/excursion-types', appStateController.deleteExcursionType)
 
 module.exports = router
