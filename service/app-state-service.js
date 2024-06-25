@@ -69,34 +69,36 @@ module.exports = {
                 }
             }
         }
+
         if (typeFound) {
             if (directionTypeFound) {
                 if (directionPlaceFound) return
-                else {
-                    doc.excursionTypes[typeIndex].direction[directionTypeIndex].directionPlace.push(directionPlace)
-                }
+                doc.excursionTypes[typeIndex].direction[directionTypeIndex].directionPlace.push(directionPlace)
             } else {
-                doc.excursionTypes[typeIndex].direction.push({ directionType: directionType, directionPlace: [directionPlace] })
+                if (directionPlace?.length > 0) {
+                    doc.excursionTypes[typeIndex].direction.push({
+                        directionType,
+                        directionPlace: [directionPlace]
+                    })
+                } else {
+                    doc.excursionTypes[typeIndex].direction.push({
+                        directionType,
+                        directionPlace: []
+                    })
+                }
             }
         } else {
-            if (directionPlace?.length > 0) {
-                doc.excursionTypes.push({
-                    type: type,
-                    direction: [{
-                        directionType: directionType,
-                        directionPlace: [directionPlace]
-                    }]
-                })
-            } else {
-                doc.excursionTypes.push({
-                    type: type,
-                    direction: [{
-                        directionType: directionType,
-                        directionPlace: []
-                    }]
-                })
+            let toAdd = { type, direction: [] }
+            if (directionType?.length > 0) {
+                toAdd.direction.push({ directionType, directionPlace: [] })
             }
+            // чтобы не добавить в несуществующий directionPlace
+            if (directionPlace?.length > 0 && directionType?.length > 0) {
+                toAdd.direction[0].directionPlace.push(directionPlace)
+            }
+            doc.excursionTypes.push(toAdd)
         }
+
         doc.markModified('excursionTypes')
         return await doc.save()
     },
