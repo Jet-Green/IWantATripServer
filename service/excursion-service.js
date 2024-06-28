@@ -340,27 +340,10 @@ module.exports = {
                 }
             )
         }
-
-        if (havePrices == "order") {
+        if (havePrices) {
             query.$and.push(
                 {
-                    dates: { $size: 0 }
-                }
-            )
-        }
-        if (havePrices == "buy") {
-            query.$and.push(
-                {
-                    dates: { $not: { $size: 0 } },
                     prices: { $size: 0 },
-                }
-            )
-        }
-        if (havePrices == "book") {
-            query.$and.push(
-                {
-                    dates: { $not: { $size: 0 } },
-                    prices: { $not: { $size: 0 } },
                 }
             )
         }
