@@ -190,7 +190,7 @@ module.exports = {
 
     },
 
-    async getAll(locationId, strQuery, start, end, type) {
+    async getAll(locationId, strQuery, start, end, type, directionType, directionPlace, minAge, havePrices) {
         const currentDate = new Date();
         const currentYear = currentDate.getFullYear();
         const currentMonth = currentDate.getMonth(); // месяцы в JS начинаются с 0
@@ -328,7 +328,22 @@ module.exports = {
                 {
 
                     "excursionType.type": { $regex: type, $options: 'i' },
-
+                    "excursionType.directionType": { $regex: directionType, $options: 'i' },
+                    "excursionType.directionPlace": { $regex: directionPlace, $options: 'i' },
+                }
+            )
+        }
+        if (minAge) {
+            query.$and.push(
+                {
+                    minAge: { $lte: minAge },
+                }
+            )
+        }
+        if (havePrices) {
+            query.$and.push(
+                {
+                    prices: { $size: 0 },
                 }
             )
         }
