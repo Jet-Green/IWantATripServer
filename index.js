@@ -29,6 +29,7 @@ const catalogRouter = require('./routers/catalog-router')
 const ideaRouter = require('./routers/idea-router')
 const busRouter = require('./routers/bus-router')
 const excursionRouter = require('./routers/excursion-router')
+const photosRouter  = require('./routers/photos-router')
 
 app.use(history())
 // app.use(helmet());
@@ -69,6 +70,7 @@ app.use('/idea', ideaRouter)
 app.use('/excursion', excursionRouter)
 app.use('/bus', busRouter)
 app.use('/admin', adminRouter)
+app.use('/photos', photosRouter)
 
 app.use('/service-functions', serviceFunctionsRouter)
 app.use(errorFilter)
