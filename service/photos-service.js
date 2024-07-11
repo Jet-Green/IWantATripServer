@@ -4,7 +4,7 @@ let EasyYandexS3 = require('easy-yandex-s3').default;
 const ACCESS_KEY_ID = process.env.YC_KEY_ID;
 const SECRET_ACCESS_KEY = process.env.YC_SECRET;
 const BUCKET_NAME = 'goroda-photos';
-const REGION = 'ru-central1'; // Регион вашего бакета
+const REGION = 'ru-central1'; // Регион  бакета
 
 // Инициализация клиента S3
 const s3 = new EasyYandexS3({
@@ -37,12 +37,14 @@ async function listFiles() {
 }
 
 module.exports = {
-    async getPhotos () {
-       
+    async getPhotos (page) {
+      const limit = 25;
         try {
-            // console.log(await PostersModel.find({}))
             let photos = await listFiles()
-            return  photos
+            const startIndex = (page - 1) * limit;
+            const endIndex = page * limit;
+            const resultPhotos = photos.slice(startIndex, endIndex);
+            return  resultPhotos
         } catch (error) {
             next(error);
         }
