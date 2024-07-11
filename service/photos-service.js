@@ -38,7 +38,7 @@ async function listFiles() {
 
 module.exports = {
     async getPhotos (page) {
-      const limit = 25;
+      const limit = 24;
         try {
             let photos = await listFiles()
             const startIndex = (page - 1) * limit;
