@@ -50,6 +50,9 @@ const TripSchema = new Schema({
         ],
     parent: { type: Schema.Types.ObjectId, ref: 'Trip' },
     returnConditions: String,
+    includedInPrice: String,
+    paidExtra: String,
+    travelRequirement: String,
     transports: {
         type: [Object]
     },
