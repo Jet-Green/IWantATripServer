@@ -118,7 +118,6 @@ module.exports = {
         await TripModel.findOneAndUpdate({ _id: tripId }, { $push: { billsList: billFromDb._id } })
 
         let userId = bill.userInfo._id
-        console.log(bill.userInfo.phone, bill.userInfo.fullname, bill.userInfo._id)
         return { billId: billFromDb._id, userCallback: await UserModel.findOneAndUpdate({ _id: userId }, { $push: { boughtTrips: billFromDb._id }, $set:{"fullinfo.phone":bill.userInfo.phone, "fullinfo.fullname":bill.userInfo.fullname} }) }
     },
     async payTinkoffBill({ billId, tinkoffData }) {
