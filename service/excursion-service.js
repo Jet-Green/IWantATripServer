@@ -70,9 +70,7 @@ module.exports = {
     },
     async getWithBills(excursionId) {
         const currentDate = new Date();
-        const currentYear = currentDate.getFullYear();
-        const currentMonth = currentDate.getMonth(); // месяцы в JS начинаются с 0
-        const currentDay = currentDate.getDate();
+      
         let excursion = await ExcursionModel.findById(excursionId)
             .select({ name: 1, dates: 1, bookings: 1 })
             .populate(
@@ -97,11 +95,12 @@ module.exports = {
                 },
             )
 
-        const filteredDates = excursion.dates.filter(date => {
-
-            return date.date.year >= currentYear && date.date.month >= currentMonth && date.date.day >= currentDay
-
+         // Filter dates that are in the future
+         const filteredDates = excursion.dates.filter(date => {
+            const excursionDate = new Date(date.date.year, date.date.month, date.date.day);
+            return excursionDate >= currentDate;
         });
+       
         const sortedDates = _.sortBy(filteredDates, ['date.year', 'date.month', 'date.day']);
         // Создаем новый объект для возврата
         const excursionToReturn = {
@@ -357,17 +356,16 @@ module.exports = {
     },
 
     async getExcursionById(_id) {
+       
         const currentDate = new Date();
-        const currentYear = currentDate.getFullYear();
-        const currentMonth = currentDate.getMonth(); // месяцы в JS начинаются с 0
-        const currentDay = currentDate.getDate();
+    
 
         let excursion = await ExcursionModel.findById(_id).populate('dates')
 
+        // Correctly filter dates to include only upcoming dates
         const filteredDates = excursion.dates.filter(date => {
-
-            return date.date.year >= currentYear && date.date.month >= currentMonth && date.date.day >= currentDay
-
+            const excursionDate = new Date(date.date.year, date.date.month, date.date.day);
+            return excursionDate >= currentDate;
         });
 
         // Создаем новый объект для возврата
