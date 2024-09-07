@@ -5,6 +5,7 @@ const ExcursionSchema = new Schema({
     author: { type: Schema.Types.ObjectId, ref: 'User' },
     contacts: { type: Object },
     description: { type: String },
+  
     location: {
         name: String,
         shortName: String,
