@@ -2,6 +2,11 @@ const { Schema, model } = require('mongoose')
 
 const BillSchema = new Schema({
     cart: Array,
+    additionalServices: {
+        type: Array,
+        required: false,
+        default: [],
+    },
     selectedStartLocation: String,
     date: Number,
     isWaitingList: Boolean,

@@ -55,4 +55,7 @@ router.put('/bill-user-comment', tripController.editBillUserComment)
 
 router.get('/bought', tripController.getBoughtTrips)
 
+router.post('/add-additional-service', tripController.addAdditionalService)
+router.post('/delete-additional-service', tripController.deleteAdditionalService)
+
 module.exports = router

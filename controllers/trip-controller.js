@@ -416,4 +416,32 @@ module.exports = {
             console.log(error);
         }
     },
+    async addAdditionalService(req, res, next) {
+        try {
+            let { tripId, service } = req.body
+
+            return res.json(await TripModel.findByIdAndUpdate(tripId, { $push: { additionalServices: service } }, { new: true }))
+        } catch (error) {
+            next(error)
+        }
+    },
+    async deleteAdditionalService(req, res, next) {
+        try {
+            let { tripId, serviceId } = req.body
+            
+            let tripFromDb = await TripModel.findById(tripId)
+            
+            for (let i = 0; i < tripFromDb.additionalServices.length; i++) {
+                if (tripFromDb.additionalServices[i]._id.toString() == serviceId) {
+                    tripFromDb.additionalServices.splice(i, 1)
+                    break;
+                }
+            }
+
+            tripFromDb.markModified('additionalServices')
+            return res.json(await tripFromDb.save())
+        } catch (error) {
+            next(error)
+        }
+    },
 }
