@@ -66,6 +66,13 @@ const TripSchema = new Schema({
     },
     isCatalog: { type: Boolean, default: false },
     calculator: { type: Schema.Types.ObjectId, ref: 'TripCalc', required: false, default: null },
+    additionalServices: {
+        type: [
+            { name: String, price: Number }
+        ],
+        default: [],
+        required: false
+    },
 })
 
 module.exports = model('Trip', TripSchema);
