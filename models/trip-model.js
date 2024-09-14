@@ -8,6 +8,7 @@ const TripSchema = new Schema({
     name: { type: String },
     start: { type: Number },
     end: { type: Number },
+    timezoneOffset:{ type: Number },
     maxPeople: { type: Number },
     duration: { type: String },
     images: { type: Array },
