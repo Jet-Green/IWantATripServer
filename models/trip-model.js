@@ -39,7 +39,7 @@ const TripSchema = new Schema({
 
     moderationMessage: { type: String, },
     partner: { type: String, },
-
+    canSellPartnerTour: { type: Boolean, default: false },
     children:
         [
             {

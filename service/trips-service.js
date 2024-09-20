@@ -119,7 +119,7 @@ module.exports = {
         await TripModel.findOneAndUpdate({ _id: tripId }, { $push: { billsList: billFromDb._id } })
 
         let userId = bill.userInfo._id
-        return { billId: billFromDb._id, userCallback: await UserModel.findOneAndUpdate({ _id: userId }, { $push: { boughtTrips: billFromDb._id }, $set:{"fullinfo.phone":bill.userInfo.phone, "fullinfo.fullname":bill.userInfo.fullname} }) }
+        return { billId: billFromDb._id, userCallback: await UserModel.findOneAndUpdate({ _id: userId }, { $push: { boughtTrips: billFromDb._id }, $set: { "fullinfo.phone": bill.userInfo.phone, "fullinfo.fullname": bill.userInfo.fullname } }) }
     },
     async payTinkoffBill({ billId, tinkoffData }) {
         return BillModel.findByIdAndUpdate(billId, { tinkoff: tinkoffData })
@@ -429,8 +429,8 @@ module.exports = {
         bill.touristsList = touristsList
         return bill.save()
     },
-    async updatePartner({ partner, _id }) {
-        return TripModel.findByIdAndUpdate(_id, { partner: partner })
+    async updatePartner({ partner, _id, canSellPartnerTour }) {
+        return TripModel.findByIdAndUpdate(_id, { partner: partner, canSellPartnerTour: canSellPartnerTour })
     },
     async updateIncludedLocations({ newLocation, locationsToDelete, tripId }) {
         if (newLocation) {
