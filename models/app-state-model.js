@@ -21,6 +21,10 @@ const AppStateSchema = new Schema({
                 emails: []
             },
             {
+                type: 'CreateExcurtion',
+                emails: []
+            },
+            {
                 type: 'BuyTrip',
                 emails: []
             },

@@ -115,6 +115,7 @@ module.exports = {
         return await ExcursionModel.findById(excursionId).populate('bookings').populate('dates')
     },
     async create({ excursion, userId }) {
+      
         await LocationService.createLocation(excursion.location)
         let exFromDb = await ExcursionModel.create(excursion)
 

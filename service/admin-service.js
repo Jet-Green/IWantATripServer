@@ -22,8 +22,28 @@ module.exports = {
 
         return UserModel.findOneAndUpdate({ email }, { roles }, { new: true })
     },
-    addEmail({ event, email }) {
-        return AppStateModel.findOneAndUpdate({ "sendMailsTo.type": event }, { $push: { 'sendMailsTo.$.emails': email } })
+   async addEmail({ event, email }) {
+       
+        // Найти объект с типом event
+        const appState = await AppStateModel.findOne({
+            "sendMailsTo.type": event
+        });
+    
+        if (appState) {
+            // Если такой объект существует, обновляем его и добавляем email
+            return AppStateModel.findOneAndUpdate(
+                { "sendMailsTo.type": event },
+                { $addToSet: { 'sendMailsTo.$.emails': email } }, // $addToSet не добавит email, если он уже есть
+                { new: true }
+            );
+        } else {
+            // Если объект с типом event не найден, добавляем новый объект
+            return AppStateModel.findOneAndUpdate(
+                {},
+                { $push: { sendMailsTo: { type: event, emails: [email] } } }, // Добавляем новый объект с email
+                { new: true, upsert: true }
+            );
+        }
     },
     getEmails(event) {
         return AppStateModel.findOne({ "sendMailsTo.type": event }, { "sendMailsTo.$": 1, _id: 0 })

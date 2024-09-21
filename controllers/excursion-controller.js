@@ -3,6 +3,7 @@ const s3 = require('../yandex-cloud.js')
 const logger = require('../logger.js');
 const { sendMail } = require('../middleware/mailer')
 const UserModel = require('../models/user-model.js')
+const AppStateModel = require('../models/app-state-model.js')
 
 module.exports = {
     async edit(req, res, next) {
@@ -13,7 +14,12 @@ module.exports = {
         }
     },
     async create(req, res, next) {
+      
         try {
+            let eventEmailsBook = await AppStateModel.findOne({ 'sendMailsTo.type': 'CreateExcurtion' }, { 'sendMailsTo.$': 1 })
+            let emailsFromDbBook = eventEmailsBook.sendMailsTo[0].emails
+            // req.body.email - это емейл пользователя
+            sendMail(req.body.emailHtml, [req.body.email, ...emailsFromDbBook], 'Создана экскурсия')
             return res.json(await ExcursionService.create(req.body))
         } catch (error) {
             next(error)
