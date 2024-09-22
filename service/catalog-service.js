@@ -16,20 +16,11 @@ module.exports = {
         return trip
     },
     async updateCatalogTripImagesUrls(_id, filenames) {
-        const trip = await CatalogTripModel.findById(_id)
-        for (let f of filenames) {
-            let isUnique = true;
-            for (let i = 0; i < trip.images.length; i++) {
-                if (trip.images[i] == f) {
-                    isUnique = false
-                    break
-                }
-            }
-            if (isUnique) {
-                trip.images.push(f)
-            }
-        }
-        return trip.save()
+        const result = await CatalogTripModel.updateOne(
+            { _id: _id },
+            { $set: { images: filenames } }
+        );
+        return result;
     },
     async deleteOneCatalog(_id, s3) {
         let catalogTripToDelete = await CatalogTripModel.findById(_id)
@@ -54,6 +45,39 @@ module.exports = {
     },
     async hideCatalog(_id, v) {
         return CatalogTripModel.findByIdAndUpdate(_id, { isHidden: v })
+    },
+    async editCatalogTrip(data) {
+        const { _id, trip } = data;
+        const { startLocation } = trip 
+        if (startLocation && startLocation.coordinates) {
+            startLocation.coordinates = startLocation.coordinates.map(coord => parseFloat(coord));
+        }
+        let location = await LocationService.createLocation(startLocation)   
+        return CatalogTripModel.findByIdAndUpdate(
+            _id,
+            {
+                $set: {
+                    name: trip.name,
+                    duration: trip.duration,
+                    tripRoute: trip.tripRoute,
+                    offer: trip.tripOffer,
+                    description: trip.description,
+                    rejected: trip.rejected,         
+                    tripType: trip.type,
+                    fromAge: trip.fromAge,
+                    isHidden: trip.isHidden,
+                    isModerated: trip.isModerated,
+                    author: trip.author,
+                    moderationMessage: trip.moderationMessage,
+                    "startLocation._id": location._id,
+                    "startLocation.name": location.name,
+                    "startLocation.shortName": location.shortName,
+                    "startLocation.type": location.type,
+                    "startLocation.coordinates": location.coordinates
+                }
+            },
+            { new: true, runValidators: true } // Включаем валидацию и возвращаем новый документ
+        );
     },
     async findCatalogTripsOnModeration() {
         return CatalogTripModel.find({

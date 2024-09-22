@@ -91,19 +91,20 @@ module.exports = {
     async uploadCatalogImages(req, res, next) {
         try {
             let _id = req.files[0]?.originalname.split('_')[0]
-
+           
             let filenames = []
             let buffers = []
             for (let file of req.files) {
                 buffers.push({ buffer: file.buffer, name: file.originalname, });    // Буфер загруженного файла
             }
-
+       
             if (buffers.length) {
                 let uploadResult = await s3.Upload(buffers, '/iwat/');
 
                 for (let upl of uploadResult) {
                     filenames.push(upl.Location)
                 }
+               
             }
 
             if (filenames.length) {
@@ -111,7 +112,7 @@ module.exports = {
                 logger.info({ filenames, logType: 'trip' }, 'catalog images uploaded')
             }
 
-            res.status(200).send('Ok')
+            return res.status(200).send('Ok')
         } catch (error) {
             logger.fatal({ error, logType: 'trip error', brokenMethod: 'uploadCatalogImages' })
             next(error)
@@ -125,6 +126,18 @@ module.exports = {
             return res.json(trip.updateOne(req.body.trip, { new: true }))
         } catch (error) {
             logger.fatal({ error, logType: 'trip error', brokenMethod: 'updateCatalogTrip' })
+            next(error)
+        }
+    },
+
+    async editCatalogTrip(req, res, next) {
+        try {
+            const tripCb = await CatalogService.editCatalogTrip(req.body)
+            logger.info({ _id: tripCb._id, logType: 'trip' }, 'Catalogtrip edited and sent to moderation')
+            return res.json({ _id: tripCb._id })
+        }
+        catch (error) {
+            logger.fatal({ error, logType: 'catalogTrip error', brokenMethod: 'editCatalogTrip' })
             next(error)
         }
     },

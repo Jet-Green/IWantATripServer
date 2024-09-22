@@ -19,6 +19,7 @@ router.post('/get-my-catalog-trips', authMiddleware, catalogController.getMyCata
 router.post('/delete-catalog-by-id', catalogController.deleteCatalogById)
 router.post('/create-catalog-trip', authMiddleware, catalogController.createCatalogTrip)
 router.post('/update-catalog-trip', authMiddleware, catalogController.updateCatalogTrip)
+router.post('/edit-catalog-trip', authMiddleware, catalogController.editCatalogTrip)
 
 router.get('/hide-catalog', authMiddleware, catalogController.hideCatalogTrip)
 router.post('/upload-catalog-images', MULTER().any(), catalogController.uploadCatalogImages)
