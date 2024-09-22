@@ -136,5 +136,19 @@ module.exports = {
             }
         }
         return 'ok'
-    }
+    },
+    addTripRegion(tripRegion) {
+        return AppStateModel.updateOne({}, { $push: { tripRegions: tripRegion } })
+    },
+    async deleteTripRegion(tripRegion) {
+        let appStateFromDb = await AppStateModel.findOne({})
+        for (let i = 0; i < appStateFromDb.tripRegions.length; i++) {
+            if (appStateFromDb.tripRegions[i] == tripRegion) {
+                appStateFromDb.tripRegions.splice(i, 1)
+            }
+        }
+        
+        appStateFromDb.markModified('tripRegions')
+        return appStateFromDb.save()
+    },
 }

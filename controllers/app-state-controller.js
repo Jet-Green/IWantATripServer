@@ -77,5 +77,20 @@ module.exports = {
         } catch (error) {
             next(error)
         }
-    }
+    },
+    async addTripRegion(req, res, next) {
+        try {
+            return res.json(await AppStateService.addTripRegion(req.body.tripRegion))
+        } catch (error) {
+            next(error)
+        }
+    },
+    // deletes tripRegion from app state by tripRegion name
+    async deleteTripRegion(req, res, next) {
+        try {
+            return res.json(await AppStateService.deleteTripRegion(req.body.tripRegion))
+        } catch (error) {
+            next(error)
+        }
+    },
 }

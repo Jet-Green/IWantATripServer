@@ -51,8 +51,7 @@ const AppStateSchema = new Schema({
             },
         ]
     },
-  
-
+    tripRegions: [String]
 })
 
 module.exports = model('AppState', AppStateSchema);
