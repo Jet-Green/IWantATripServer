@@ -75,6 +75,7 @@ const TripSchema = new Schema({
         default: [],
         required: false
     },
+    tripRegion: String,
 })
 
 module.exports = model('Trip', TripSchema);
