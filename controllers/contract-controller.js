@@ -54,5 +54,13 @@ module.exports = {
         } catch (error) {
             next(error)
         }
-    }
+    },
+    async getByShopCode(req, res, next) {
+        try {
+            return res.json(await ContractService.getByShopCode(req.query.shopCode))
+        } catch (error) {
+            next(error)
+        }
+    },
+    
 }
