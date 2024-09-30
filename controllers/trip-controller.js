@@ -66,7 +66,8 @@ module.exports = {
     async getAll(req, res, next) {
         try {
             const q = req.query
-            return res.json(await TripService.findMany(q.cursor, q.lon, q.lat, q.query, q.start, q.end, q.type))
+
+            return res.json(await TripService.findMany(q.cursor, q.lon, q.lat, q.query, q.start, q.end, q.type, q.tripRegion, Number(q.locationRadius) * 1000))
         } catch (error) {
             next(error)
         }
@@ -428,9 +429,9 @@ module.exports = {
     async deleteAdditionalService(req, res, next) {
         try {
             let { tripId, serviceId } = req.body
-            
+
             let tripFromDb = await TripModel.findById(tripId)
-            
+
             for (let i = 0; i < tripFromDb.additionalServices.length; i++) {
                 if (tripFromDb.additionalServices[i]._id.toString() == serviceId) {
                     tripFromDb.additionalServices.splice(i, 1)

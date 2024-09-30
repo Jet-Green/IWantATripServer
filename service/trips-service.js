@@ -207,7 +207,7 @@ module.exports = {
         }
         return null
     },
-    async findMany(sitePage, lon, lat, strQuery, start, end, tripType) {
+    async findMany(sitePage, lon, lat, strQuery, start, end, tripType, tripRegion, locationRadius) {
         const limit = 20;
         const page = sitePage || 1;
         const skip = (page - 1) * limit;
@@ -229,8 +229,8 @@ module.exports = {
                             type: 'Point',
                             coordinates: [Number(lon), Number(lat)]
                         },
-                        // 50 km
-                        $maxDistance: 50000
+                        // in meters
+                        $maxDistance: locationRadius
                     }
                 }
             })
@@ -278,8 +278,15 @@ module.exports = {
                     }
                 ]
             })
+        }        
+        // если есть tripRegion - не искать по strQuery
+        if (tripRegion) {
+            query.$and.push({
+                tripRegion: { $eq: tripRegion }
+            })
         }
-        if (strQuery) {
+        // если есть tripRegion - не искать по strQuery
+        else if (strQuery) {
             query.$and.push(
                 {
                     $or: [
@@ -299,7 +306,7 @@ module.exports = {
 
                 }
             )
-        }
+        }        
 
         const cursor = TripModel.find(query, null, { sort: 'start' }).skip(skip).limit(limit).cursor();
 
