@@ -278,18 +278,37 @@ module.exports = {
                     }
                 ]
             })
-        }        
-        // если есть tripRegion - не искать по strQuery
-        if (tripRegion) {
-            query.$and.push({
-                tripRegion: { $eq: tripRegion }
-            })
         }
-        // если есть tripRegion - не искать по strQuery
-        else if (strQuery) {
+
+        // когда есть регион - используем (да, региона может не быть,
+        // так как мы не только в одном месте этот метод используем)
+        if (tripRegion && strQuery) {
             query.$and.push(
                 {
                     $or: [
+                        { tripRegion: { $eq: tripRegion } }, 
+                        { name: { $regex: strQuery, $options: 'i' } },
+                        { tripRoute: { $regex: strQuery, $options: 'i' } },
+                        { offer: { $regex: strQuery, $options: 'i' } },
+                        { description: { $regex: strQuery, $options: 'i' } },
+                    ]
+                }
+            )
+        } 
+        // вдруг мы каким-то образом посеяли strQuery
+        else if (tripRegion && !strQuery) {
+            query.$and.push(
+                {
+                    tripRegion: { $eq: tripRegion } // важно
+                }
+            )
+        }
+        // Региона может не быть, так как мы не только в одном месте этот метод используем)
+        else if (!tripRegion && strQuery) {
+            query.$and.push(
+                {
+                    $or: [
+                        // важно
                         { name: { $regex: strQuery, $options: 'i' } },
                         { tripRoute: { $regex: strQuery, $options: 'i' } },
                         { offer: { $regex: strQuery, $options: 'i' } },
@@ -298,6 +317,7 @@ module.exports = {
                 }
             )
         }
+
         if (tripType) {
             query.$and.push(
                 {
@@ -307,7 +327,6 @@ module.exports = {
                 }
             )
         }        
-
         const cursor = TripModel.find(query, null, { sort: 'start' }).skip(skip).limit(limit).cursor();
 
         const results = [];

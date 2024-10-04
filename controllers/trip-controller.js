@@ -65,8 +65,7 @@ module.exports = {
     },
     async getAll(req, res, next) {
         try {
-            const q = req.query
-
+            const q = req.query            
             return res.json(await TripService.findMany(q.cursor, q.lon, q.lat, q.query, q.start, q.end, q.type, q.tripRegion, Number(q.locationRadius) * 1000))
         } catch (error) {
             next(error)
