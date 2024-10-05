@@ -2,6 +2,7 @@ const BookingService = require('../service/booking-service')
 const { sendMail } = require('../middleware/mailer')
 const AppStateModel = require('../models/app-state-model')
 
+
 module.exports = {
     async create(req, res, next) {
         try {
@@ -80,4 +81,11 @@ module.exports = {
             next(error)
         }
     },
+    async deleteOrder (req, res, next) {
+        try {
+            return res.json(await BookingService.deleteOrder(req.query.orderId))
+        } catch (error) {
+            next(error)
+        }
+    }
 }

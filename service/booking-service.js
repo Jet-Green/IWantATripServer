@@ -58,4 +58,7 @@ module.exports = {
     async toNewOffer({ bookingId, offerId }) {
         return await BookingModel.findOneAndUpdate({ _id: bookingId, 'offers._id': offerId }, { $set: { "offers.$.client": {}, "offers.$.accepted": false, "offers.$.rejected": false } })
     },
+    async deleteOrder(_id) {
+        return await BookingModel.findOneAndDelete({ _id: _id})
+    }
 }
