@@ -44,23 +44,23 @@ module.exports = {
     async getFullTripById(_id) {
         let trip = await TripModel.findById(_id)
             .populate('author', { fullinfo: 1 }).populate('parent')
-            .populate({
-                path: 'children._id',
-                populate: {
-                    path: 'billsList',
-                    select: {
-                        cart: 1,
-                        payment: 1,
-                        userInfo: 1,
-                        touristsList: 1,
-                        tinkoff: 1,
-                        selectedStartLocation: 1,
-                        userComment: 1,
-                        additionalServices: 1,
-                    }
-                },
-                select: { start: 1, end: 1, billsList: 1, touristsList: 1, selectedStartLocation: 1 },
-            })
+                .populate({
+                    path: 'children._id',
+                    populate: {
+                        path: 'billsList',
+                        select: {
+                            cart: 1,
+                            payment: 1,
+                            userInfo: 1,
+                            touristsList: 1,
+                            tinkoff: 1,
+                            selectedStartLocation: 1,
+                            userComment: 1,
+                            additionalServices: 1,
+                        }
+                    },
+                    select: { start: 1, end: 1, billsList: 1, touristsList: 1, selectedStartLocation: 1 },
+                })
         if (trip.parent) {
             let originalId = trip._id
             let parentId = trip.parent._id
@@ -79,7 +79,7 @@ module.exports = {
             trip.billsList = billsList
         }
 
-        await trip.populate('billsList', { cart: 1, additionalServices: 1, payment: 1, userInfo: 1, touristsList: 1, selectedStartLocation: 1, tinkoff: 1, userComment: 1, seats: 1 })
+        await trip.populate('billsList', { cart: 1, additionalServices: 1, payment: 1, userInfo: 1, touristsList: 1, selectedStartLocation: 1, tinkoff: 1, userComment: 1, seats: 1, date: 1 })
         return trip
     },
     async getCustomers(customersIds) {
@@ -526,6 +526,7 @@ module.exports = {
                 path: 'tripId',
                 model: 'Trip'
             },
+
         })
         return userFromDb.boughtTrips
     },

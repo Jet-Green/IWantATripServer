@@ -59,5 +59,13 @@ module.exports = {
     },
     getContractById(_id) {
         return ContractModel.findById(_id)
+    },
+    getByShopCode(shopCode) {
+       
+        let result = ContractModel.findOne({'shopInfo.shopCode':Number(shopCode)});
+    
+        return result
     }
+
+
 }

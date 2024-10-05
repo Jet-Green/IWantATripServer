@@ -12,5 +12,6 @@ router.post('/create', authMiddleware, ContractController.createContract)
 router.post('/get-all', authMiddleware, ContractController.getAll)
 router.put('/contract-email', authMiddleware, ContractController.addContractEmail)
 router.delete('/contract-email', authMiddleware, ContractController.deleteContractEmail)
+router.get ('/byShopCode',authMiddleware, ContractController.getByShopCode)
 
 module.exports = router
