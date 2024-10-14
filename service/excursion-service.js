@@ -336,7 +336,7 @@ module.exports = {
         if (minAge) {
             query.$and.push(
                 {
-                    minAge: { $gte: minAge },
+                    minAge: { $lte: minAge },
                 }
             )
         }
