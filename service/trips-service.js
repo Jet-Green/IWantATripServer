@@ -288,9 +288,9 @@ module.exports = {
                     $or: [
                         { tripRegion: { $eq: tripRegion } }, 
                         { name: { $regex: strQuery, $options: 'i' } },
-                        { tripRoute: { $regex: strQuery, $options: 'i' } },
-                        { offer: { $regex: strQuery, $options: 'i' } },
-                        { description: { $regex: strQuery, $options: 'i' } },
+                        // { tripRoute: { $regex: strQuery, $options: 'i' } },
+                        // { offer: { $regex: strQuery, $options: 'i' } },
+                        // { description: { $regex: strQuery, $options: 'i' } },
                     ]
                 }
             )
