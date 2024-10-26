@@ -40,7 +40,9 @@ const placeSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-  }
+  },
+  isModerated: { type: Boolean, default: false },
+  isHidden: { type: Boolean, default: false },
 });
 
 const Place = mongoose.model('Place', placeSchema);
