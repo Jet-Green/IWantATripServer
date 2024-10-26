@@ -43,6 +43,7 @@ const placeSchema = new mongoose.Schema({
   },
   isModerated: { type: Boolean, default: false },
   isHidden: { type: Boolean, default: false },
+  author: { type: Schema.Types.ObjectId, ref: 'User' },
 });
 
 const Place = mongoose.model('Place', placeSchema);
