@@ -35,9 +35,7 @@ const placeSchema = new mongoose.Schema({
   website: {
     type: String,
   },
-  socialMedia: {
-    type: String,
-  },
+
   category: {
     type: String,
   },
