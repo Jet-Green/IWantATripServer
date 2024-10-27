@@ -10,6 +10,7 @@ router.post('/update', appStateController.update)
 router.get('/delete-mpm-by-id', appStateController.deleteMPMById)
 // router.get('/drop', appStateController.dropDatabase)
 router.post('/set-trip-type', appStateController.setTripType)
+router.post('/add-place-category',appStateController.addPlaceCategory )
 router.post('/delete-trip-type', appStateController.deleteTripType)
 router.post('/set-transport-name', appStateController.setTransportName)
 router.post('/delete-transport-name', appStateController.deleteTransportName)
@@ -17,5 +18,7 @@ router.put('/excursion-types', appStateController.updateExcursionTypes)
 router.patch('/excursion-types', appStateController.deleteExcursionType)
 router.post('/trip-region', appStateController.addTripRegion)
 router.post('/delete-trip-region', appStateController.deleteTripRegion)
+router.post('/delete-place-category', appStateController.deletePlaceCategory)
+
 
 module.exports = router

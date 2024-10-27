@@ -39,6 +39,9 @@ module.exports = {
     setTripType(type) {
         return AppStateModel.updateOne({}, { $push: { tripType: type } })
     },
+    addPlaceCategory(category) {
+        return AppStateModel.updateOne({}, { $push: { placeCategory: category } })
+    },
     setTransportName(type) {
         return AppStateModel.updateOne({}, { $push: { transport: type } })
     },
@@ -151,4 +154,10 @@ module.exports = {
         appStateFromDb.markModified('tripRegions')
         return appStateFromDb.save()
     },
+
+    deletePlaceCategory(category) {
+        return AppStateModel.findOneAndUpdate({}, { $pull: { 'placeCategory': category } })
+    },
+
+    
 }

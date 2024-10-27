@@ -57,6 +57,15 @@ module.exports = {
             next(err)
         }
     },
+    async addPlaceCategory(req, res, next) {
+        try {
+            res.json(await AppStateService.addPlaceCategory(req.body.category))
+        } catch (err) {
+            next(err)
+        }
+    },
+
+    
     async setTransportName(req, res, next) {
         try {
             res.json(await AppStateService.setTransportName(req.body))
@@ -93,4 +102,14 @@ module.exports = {
             next(error)
         }
     },
+    async deletePlaceCategory(req, res, next) {
+        try {
+            return res.json(await AppStateService.deletePlaceCategory(req.body.category))
+        } catch (error) {
+            next(error)
+        }
+    },
+
+
+    
 }
