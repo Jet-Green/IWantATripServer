@@ -5,9 +5,17 @@ const placeSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  // есть адрес - dadata. нет адреса, пишем координаты и название
-  dadataLocation: null,
-  customLocation: null,
+  // есть адрес - dadata. Нет адреса - пишем только координаты, название при отрисовке берем из name
+  dadataLocation: {
+    name: String,
+    shortName: String,
+    type: { type: String, default: 'Point' },
+    coordinates: [Number],
+  },
+  customLocation: {
+    type: { type: String, default: 'Point' },
+    coordinates: [Number],
+  },
   images: {
     type: Array,
   },
@@ -41,7 +49,7 @@ const placeSchema = new mongoose.Schema({
   },
   isModerated: { type: Boolean, default: false },
   isHidden: { type: Boolean, default: false },
-  author: { type: Schema.Types.ObjectId, ref: 'User' },
+  author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   createdDate: { type: Number },
 
 });
