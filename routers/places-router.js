@@ -15,4 +15,7 @@ router.post('/get-all', placesController.getAll)
 router.post('/create',  authMiddleware, placesController.create)
 router.post('/upload-images', MULTER().any(), placesController.uploadImages)
 
+router.get('/for-moderation', placesController.getForModeration)
+router.get('/get-by-id', placesController.getById)
+
 module.exports = router

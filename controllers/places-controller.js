@@ -5,12 +5,12 @@ const logger = require('../logger.js');
 
 module.exports = {
   async getAll(req, res, next) {
-    try {        
-        return res.json(await PlacesService.getAll(req.body.filter))
+    try {
+      return res.json(await PlacesService.getAll(req.body.filter))
     } catch (error) {
-        next(error)
+      next(error)
     }
-},
+  },
   async create(req, res, next) {
     try {
       return res.json(await PlacesService.create(req.body.place))
@@ -40,5 +40,29 @@ module.exports = {
     }
 
     res.status(200).send('Ok')
+  },
+  async getForModeration(req, res, next) {
+    try {
+      const { status } = req.query
+      switch (status) {
+        case 'on-moderation':
+          return res.json(await PlacesService.getOnModeration())
+
+        case 'rejected':
+          return res.json(await PlacesService.getRejected())
+      }
+      return res.json([])
+    } catch (error) {
+      next(error)
+    }
+  },
+  async getById(req, res, next) {
+    try {
+      const { _id } = req.query;
+      
+      return res.json(await PlacesService.getById(_id))
+    } catch (error) {
+      next(error)
+    }
   }
 }

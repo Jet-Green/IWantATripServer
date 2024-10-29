@@ -51,7 +51,9 @@ const placeSchema = new mongoose.Schema({
   isHidden: { type: Boolean, default: false },
   author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   createdDate: { type: Number },
-
+  isModerated: { type: Boolean, default: false },
+  isRejected: { type: Boolean, default: false },
+  moderationMessage: { type: String },
 });
 
 const Place = mongoose.model('Place', placeSchema);
