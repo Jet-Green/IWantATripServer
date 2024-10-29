@@ -4,6 +4,13 @@ const s3 = require('../yandex-cloud.js')
 const logger = require('../logger.js');
 
 module.exports = {
+  async getAll(req, res, next) {
+    try {        
+        return res.json(await PlacesService.getAll(req.body.filter))
+    } catch (error) {
+        next(error)
+    }
+},
   async create(req, res, next) {
     try {
       return res.json(await PlacesService.create(req.body.place))

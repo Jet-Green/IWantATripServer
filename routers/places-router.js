@@ -10,7 +10,7 @@ const multer = require('../middleware/multer-middleware')
 
 
 // get all places
-// router.get('/', placesController.getAll)
+router.post('/get-all', placesController.getAll)
 
 router.post('/create',  authMiddleware, placesController.create)
 router.post('/upload-images', MULTER().any(), placesController.uploadImages)
