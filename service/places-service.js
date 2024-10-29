@@ -32,6 +32,12 @@ module.exports = {
     return await PlaceModel.find({ rejected: true })
   },
   async getById(_id) {
-    return await PlaceModel.findById(_id)
+    return await PlaceModel.findById(_id).populate({
+      path: 'author',
+      select: {
+        fullname: 1,
+        fullinfo: 1,
+      }
+    })
   }
 }
