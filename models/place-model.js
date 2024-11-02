@@ -47,11 +47,10 @@ const placeSchema = new mongoose.Schema({
   category: {
     type: String,
   },
-  isModerated: { type: Boolean, default: false },
-  isHidden: { type: Boolean, default: false },
   author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   createdDate: { type: Number },
   isModerated: { type: Boolean, default: false },
+  isHidden: { type: Boolean, default: false },
   isRejected: { type: Boolean, default: false },
   moderationMessage: { type: String },
 });

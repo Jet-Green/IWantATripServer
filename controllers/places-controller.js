@@ -6,7 +6,8 @@ const logger = require('../logger.js');
 module.exports = {
   async getAll(req, res, next) {
     try {
-      return res.json(await PlacesService.getAll(req.body.filter))
+
+      return res.json(await PlacesService.getAll(req.body))
     } catch (error) {
       next(error)
     }
@@ -18,6 +19,15 @@ module.exports = {
       next(error)
     }
   },
+  async delete(req, res, next) {
+    try {
+      return res.json(await PlacesService.delete(req.body.id))
+    } catch (error) {
+      next(error)
+    }
+  },
+
+  
   async uploadImages(req, res, next) {
     let _id = req.files[0]?.originalname.split('_')[0]
     let filenames = []
@@ -44,6 +54,7 @@ module.exports = {
   async getForModeration(req, res, next) {
     try {
       const { status } = req.query
+
       switch (status) {
         case 'on-moderation':
           return res.json(await PlacesService.getOnModeration())
@@ -64,5 +75,25 @@ module.exports = {
     } catch (error) {
       next(error)
     }
-  }
+  },
+  async moderatePlace(req, res, next) {
+    try {
+      const { _id } = req.query;
+      
+      return res.json(await PlacesService.moderatePlace(_id))
+    } catch (error) {
+      next(error)
+    }
+  },
+  async rejectPlace(req, res, next) {
+    try {
+      const { _id } = req.query;
+      
+      return res.json(await PlacesService.rejectPlace(_id))
+    } catch (error) {
+      next(error)
+    }
+  },
+  
+  
 }

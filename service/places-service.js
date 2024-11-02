@@ -2,12 +2,11 @@ const PlaceModel = require('../models/place-model')
 
 module.exports = {
   async getAll(filter) {
-
-    const limit = 1;
-    const page = filter.sitePage || 1;
+    console.log(filter)
+    const limit = 20;
+    const page = filter.page || 1;
     const skip = (page - 1) * limit;
-    let query = {}
-
+    let query = filter.query
 
     const cursor = PlaceModel.find(query).skip(skip).limit(limit).cursor();
 
@@ -22,15 +21,15 @@ module.exports = {
   async create(place) {
     return await PlaceModel.create(place)
   },
+  async delete(_id) {
+
+    return await PlaceModel.findByIdAndDelete(_id)
+  },
   async setPlaceImagesUrls(_id, filenames) {
     return await PlaceModel.findByIdAndUpdate(_id, { $set: { images: filenames } })
   },
-  async getOnModeration() {
-    return await PlaceModel.find({ isModerated: false })
-  },
-  async getRejected() {
-    return await PlaceModel.find({ rejected: true })
-  },
+  
+
   async getById(_id) {
     return await PlaceModel.findById(_id).populate({
       path: 'author',
@@ -39,5 +38,12 @@ module.exports = {
         fullinfo: 1,
       }
     })
-  }
+  },
+  async moderatePlace(_id) {
+    return await PlaceModel.findByIdAndUpdate(_id, { isModerated: true, isRejected: false   })
+  },
+  async rejectPlace(_id) {
+    return await PlaceModel.findByIdAndUpdate(_id, { isRejected: true })
+  },
+  
 }
