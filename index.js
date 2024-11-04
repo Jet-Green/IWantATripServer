@@ -101,8 +101,8 @@ function mongoConnect() {
     db.collections.companions.createIndex({ 'startLocation': '2dsphere' })
     db.collections.trips.createIndex({ 'includedLocations': '2dsphere' })
     db.collections.excursions.createIndex({ 'location.coordinates': '2dsphere' })
-    db.collections.places.createIndex({ 'dadataLocation.coordinates': '2dsphere' })
-    db.collections.places.createIndex({ 'customLocation.coordinates': '2dsphere' })
+    db.collections.places.createIndex({ 'location.coordinates': '2dsphere' })
+
 
     db.once('open', function () {
         console.log('connection')

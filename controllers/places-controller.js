@@ -94,6 +94,15 @@ module.exports = {
       next(error)
     }
   },
+  async hidePlace(req, res, next) {
+    try {
+      const { _id } = req.query;
+      
+      return res.json(await PlacesService.hidePlace(_id))
+    } catch (error) {
+      next(error)
+    }
+  },
   
   
 }

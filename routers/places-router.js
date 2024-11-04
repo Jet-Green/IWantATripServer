@@ -20,5 +20,7 @@ router.get('/for-moderation', placesController.getForModeration)
 router.get('/get-by-id', placesController.getById)
 router.get('/moderate-place',authMiddleware, placesController.moderatePlace)
 router.get('/reject-place',authMiddleware, placesController.rejectPlace)
+router.get('/hide-place',authMiddleware, placesController.hidePlace)
+
 
 module.exports = router

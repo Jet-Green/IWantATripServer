@@ -5,14 +5,10 @@ const placeSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  // есть адрес - dadata. Нет адреса - пишем только координаты, название при отрисовке берем из name
-  dadataLocation: {
-    name: String,
-    shortName: String,
-    type: { type: String, default: 'Point' },
-    coordinates: [Number],
-  },
-  customLocation: {
+ 
+  location: {
+    name: {type:String, default:''},
+    shortName: {type:String, default:''},
     type: { type: String, default: 'Point' },
     coordinates: [Number],
   },
