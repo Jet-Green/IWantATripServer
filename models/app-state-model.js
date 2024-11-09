@@ -4,6 +4,7 @@ const AppStateSchema = new Schema({
     mainPageMessage: [{ type: String, default: '' }],
     tripType: [String],
     excursionTypes: [Object],
+    placeCategory:[String],
     transport: [Object],
     sendMailsTo: {
         type: [Object],

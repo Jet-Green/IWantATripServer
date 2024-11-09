@@ -30,6 +30,7 @@ const ideaRouter = require('./routers/idea-router')
 const busRouter = require('./routers/bus-router')
 const excursionRouter = require('./routers/excursion-router')
 const photosRouter  = require('./routers/photos-router')
+const placesRouter = require('./routers/places-router')
 
 app.use(history())
 // app.use(helmet());
@@ -71,6 +72,7 @@ app.use('/excursion', excursionRouter)
 app.use('/bus', busRouter)
 app.use('/admin', adminRouter)
 app.use('/photos', photosRouter)
+app.use('/places', placesRouter)
 
 app.use('/service-functions', serviceFunctionsRouter)
 app.use(errorFilter)
@@ -99,6 +101,8 @@ function mongoConnect() {
     db.collections.companions.createIndex({ 'startLocation': '2dsphere' })
     db.collections.trips.createIndex({ 'includedLocations': '2dsphere' })
     db.collections.excursions.createIndex({ 'location.coordinates': '2dsphere' })
+    db.collections.places.createIndex({ 'location.coordinates': '2dsphere' })
+
 
     db.once('open', function () {
         console.log('connection')
