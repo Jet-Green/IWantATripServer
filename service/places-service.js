@@ -55,8 +55,13 @@ module.exports = {
 
     return await PlaceModel.findByIdAndDelete(_id)
   },
+
+  async edit(place, placeId) {
+    return await PlaceModel.findByIdAndUpdate(placeId, place)
+  },
+
   async setPlaceImagesUrls(_id, filenames) {
-    return await PlaceModel.findByIdAndUpdate(_id, { $set: { images: filenames } })
+    return await PlaceModel.findByIdAndUpdate(_id, { $push: { images: filenames } })
   },
 
 

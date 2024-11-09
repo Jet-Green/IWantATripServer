@@ -27,6 +27,14 @@ module.exports = {
     }
   },
 
+  async edit(req, res, next) {
+    try {
+      let { placeId, place} = req.body;
+      return res.json(await PlacesService.edit(place, placeId))
+    } catch (error) {
+      next(error)
+    }
+  },
   
   async uploadImages(req, res, next) {
     let _id = req.files[0]?.originalname.split('_')[0]

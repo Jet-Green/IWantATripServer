@@ -13,6 +13,7 @@ const multer = require('../middleware/multer-middleware')
 router.post('/get-all', placesController.getAll)
 router.post('/create',  authMiddleware, placesController.create)
 router.post('/delete',  authMiddleware, placesController.delete)
+router.post('/edit',  authMiddleware, placesController.edit)
 
 router.post('/upload-images', MULTER().any(), placesController.uploadImages)
 
