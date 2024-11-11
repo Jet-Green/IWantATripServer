@@ -53,7 +53,7 @@ module.exports = {
     }
 
     if (filenames.length) {
-      await PlacesService.setPlaceImagesUrls(_id, filenames)
+      await PlacesService.pushPlaceImagesUrls(_id, filenames)
       logger.info({ filenames, logType: 'place' }, 'images uploaded')
     }
 

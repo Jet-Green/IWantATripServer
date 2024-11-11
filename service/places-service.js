@@ -7,7 +7,7 @@ module.exports = {
     const page = filter.page || 1;
     const skip = (page - 1) * limit;
     let query = filter.query
-  
+
 
     if (query.conditions) {
       query.$and = [];
@@ -19,7 +19,7 @@ module.exports = {
                 type: 'Point',
                 coordinates: query.conditions.location.coordinates,
               },
-              $maxDistance: Number(query.conditions.locationRadius)*1000
+              $maxDistance: Number(query.conditions.locationRadius) * 1000
             }
           }
         });
@@ -61,9 +61,11 @@ module.exports = {
   },
 
   async setPlaceImagesUrls(_id, filenames) {
-    return await PlaceModel.findByIdAndUpdate(_id, { $push: { images: filenames } })
+    return await PlaceModel.findByIdAndUpdate(_id, { $set: { images: filenames } })
   },
-
+  async pushPlaceImagesUrls(_id, filenames) {
+    return await PlaceModel.findByIdAndUpdate(_id, { $push: { images: { $each: filenames } } })
+  },
 
   async getById(_id) {
     return await PlaceModel.findById(_id).populate({
