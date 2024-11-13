@@ -44,23 +44,24 @@ module.exports = {
     async getFullTripById(_id) {
         let trip = await TripModel.findById(_id)
             .populate('author', { fullinfo: 1 }).populate('parent')
-                .populate({
-                    path: 'children._id',
-                    populate: {
-                        path: 'billsList',
-                        select: {
-                            cart: 1,
-                            payment: 1,
-                            userInfo: 1,
-                            touristsList: 1,
-                            tinkoff: 1,
-                            selectedStartLocation: 1,
-                            userComment: 1,
-                            additionalServices: 1,
-                        }
-                    },
-                    select: { start: 1, end: 1, billsList: 1, touristsList: 1, selectedStartLocation: 1 },
-                })
+            .populate({
+                path: 'children._id',
+                populate: {
+                    path: 'billsList',
+                    select: {
+                        cart: 1,
+                        payment: 1,
+                        userInfo: 1,
+                        touristsList: 1,
+                        tinkoff: 1,
+                        selectedStartLocation: 1,
+                        userComment: 1,
+                        additionalServices: 1,
+                    }
+                },
+                select: { start: 1, end: 1, billsList: 1, touristsList: 1, selectedStartLocation: 1 },
+            }).populate('places')
+            
         if (trip.parent) {
             let originalId = trip._id
             let parentId = trip.parent._id
@@ -286,7 +287,7 @@ module.exports = {
             query.$and.push(
                 {
                     $or: [
-                        { tripRegion: { $eq: tripRegion } }, 
+                        { tripRegion: { $eq: tripRegion } },
                         { name: { $regex: strQuery, $options: 'i' } },
                         // { tripRoute: { $regex: strQuery, $options: 'i' } },
                         // { offer: { $regex: strQuery, $options: 'i' } },
@@ -294,7 +295,7 @@ module.exports = {
                     ]
                 }
             )
-        } 
+        }
         // вдруг мы каким-то образом посеяли strQuery
         else if (tripRegion && !strQuery) {
             query.$and.push(
@@ -326,7 +327,7 @@ module.exports = {
 
                 }
             )
-        }        
+        }
         const cursor = TripModel.find(query, null, { sort: 'start' }).skip(skip).limit(limit).cursor();
 
         const results = [];
