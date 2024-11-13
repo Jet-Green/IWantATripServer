@@ -23,5 +23,7 @@ router.get('/moderate-place',authMiddleware, placesController.moderatePlace)
 router.get('/reject-place',authMiddleware, placesController.rejectPlace)
 router.get('/hide-place',authMiddleware, placesController.hidePlace)
 
+router.get('/for-create-trip', authMiddleware, placesController.getForCreateTrip)
+
 
 module.exports = router

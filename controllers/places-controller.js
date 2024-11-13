@@ -111,6 +111,12 @@ module.exports = {
       next(error)
     }
   },
-  
+  async getForCreateTrip(req, res, next) {
+    try {
+      return res.json(await PlacesService.getForCreateTrip())
+    } catch (error) {
+      next(error)
+    }
+  }
   
 }
