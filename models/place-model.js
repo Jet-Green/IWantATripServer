@@ -5,10 +5,10 @@ const placeSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
- 
+
   location: {
-    name: {type:String, default:''},
-    shortName: {type:String, default:''},
+    name: { type: String, default: '' },
+    shortName: { type: String, default: '' },
     type: { type: String, default: 'Point' },
     coordinates: [Number],
   },
@@ -49,6 +49,8 @@ const placeSchema = new mongoose.Schema({
   isHidden: { type: Boolean, default: false },
   isRejected: { type: Boolean, default: false },
   moderationMessage: { type: String },
+
+  trips: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Trip' }],
 });
 
 const Place = mongoose.model('Place', placeSchema);

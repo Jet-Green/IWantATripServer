@@ -61,7 +61,7 @@ const TripSchema = new Schema({
     createdDay: { type: Number },
     userComment: { type: String },
     places: [{ 
-        type: Schema.Types.ObjectId, ref: 'Place', required: false, default: []
+        type: Schema.Types.ObjectId, ref: 'Place', required: false,
     }],
     tinkoffContract: {
         ShopCode: Number,

@@ -1,5 +1,7 @@
 const TripService = require('../service/trips-service.js')
 const LocationService = require('../service/location-service.js')
+const PlaceService = require('../service/places-service.js')
+
 const TripModel = require('../models/trip-model.js');
 const AppStateModel = require('../models/app-state-model.js')
 const UserModel = require('../models/user-model.js')
@@ -182,6 +184,10 @@ module.exports = {
 
             let eventEmailsBook = await AppStateModel.findOne({ 'sendMailsTo.type': 'CreateTrip' }, { 'sendMailsTo.$': 1 })
             let emailsFromDbBook = eventEmailsBook.sendMailsTo[0].emails
+
+            if (tripFromDB.places?.length > 0) {
+                await PlaceService.updateWithTrips(tripFromDB.places, tripFromDB._id)
+            }
 
             // req.body.emails - это емейл пользователя
             sendMail(req.body.emailHtml, [...req.body.emails, ...emailsFromDbBook], 'Создан тур')

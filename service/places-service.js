@@ -38,7 +38,12 @@ module.exports = {
 
 
 
-    const cursor = PlaceModel.find(query).skip(skip).limit(limit).cursor();
+    const cursor = PlaceModel.find(query).populate({
+      path: 'trips',
+      select: {
+        name: 1,
+      }
+    }).skip(skip).limit(limit).cursor();
 
     const results = [];
     for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
@@ -98,5 +103,8 @@ module.exports = {
       location: 1,
       name: 1,
     })
+  },
+  async updateWithTrips(places, tripId) {
+    return await PlaceModel.updateMany({ _id: { $in: places } }, { $push: { trips: tripId } })
   }
 }
