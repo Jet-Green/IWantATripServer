@@ -1,5 +1,29 @@
 const PlaceModel = require('../models/place-model')
 
+const tripFilter = {
+  $and: [
+    { isHidden: false, isModerated: true, rejected: false },
+    { "parent": { $exists: false } },
+    {
+      $or: [
+        {
+          // всё, что относится к родителю
+          $and: [
+            { 'start': { $gte: Date.now() } },
+          ]
+        },
+        // все, что относится к children
+        {
+          children: {
+            $elemMatch: {
+              start: { $gte: Date.now() },
+            }
+          }
+        }
+      ]
+    }
+  ]
+};
 module.exports = {
   async getAll(filter) {
 
@@ -7,7 +31,6 @@ module.exports = {
     const page = filter.page || 1;
     const skip = (page - 1) * limit;
     let query = filter.query
-
 
     if (query.conditions) {
       query.$and = [];
@@ -35,11 +58,9 @@ module.exports = {
 
 
 
-
-
-
     const cursor = PlaceModel.find(query).populate({
       path: 'trips',
+      match: tripFilter,
       select: {
         name: 1,
       }
@@ -78,6 +99,13 @@ module.exports = {
       select: {
         fullname: 1,
         fullinfo: 1,
+      }
+    }
+    ).populate({
+      path: 'trips',
+      match: tripFilter,
+      select: {
+        name: 1,
       }
     })
   },
