@@ -404,7 +404,7 @@ module.exports = {
         return TripModel.findByIdAndUpdate(tripId, { isModerated: false, moderationMessage: msg, rejected: true })
     },
     async findById(_id) {
-        return TripModel.findById(_id).populate('author')
+        return TripModel.findById(_id).populate('author').populate('places', {name:1})
     },
     async createdTripsInfo(_id) {
         let tripsIdArray = []

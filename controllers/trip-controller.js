@@ -211,6 +211,11 @@ module.exports = {
         try {
             const tripCb = await TripService.updateOne(req.body)
 
+            if (req.body.places?.length > 0) {
+                console.log(req.body.places, tripCb._id)
+                await PlaceService.updateWithTrips(req.body.places, tripCb._id)
+            }
+
             logger.info({ _id: tripCb._id, logType: 'trip' }, 'trip edited and sent to moderation')
 
             return res.json({ _id: tripCb._id })
