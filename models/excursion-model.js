@@ -40,7 +40,10 @@ const ExcursionSchema = new Schema({
 
     dates: { type: [Schema.Types.ObjectId], ref: 'ExcursionDate' },
     bookings: { type: [Schema.Types.ObjectId], ref: 'ExcursionBooking' },
-    orders: { type: [Object] }
+    orders: { type: [Object] },
+    comment: {
+        type: 'String'
+    }
 })
 
 module.exports = model('Excursion', ExcursionSchema);

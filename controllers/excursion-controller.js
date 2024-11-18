@@ -173,6 +173,14 @@ module.exports = {
             next(error)
         }
     },
+    async comment(req, res, next) {
+        try {
+            await ExcursionService.comment(req.body._id, req.body.comment)
+            return res.json('OK')
+        } catch (error) {
+            next(error)
+        }
+    },
     async buy(req, res, next) {
         try {
             let author = await UserModel.findById(req.body.author)

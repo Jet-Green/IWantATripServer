@@ -25,6 +25,7 @@ router.post('/time-customers', ExcursionController.getTimeCustomers)
 router.post('/time-bookings', ExcursionController.getTimeBookings)
 router.post('/delete-by-id', ExcursionController.deleteById)
 router.post('/hide-by-id', ExcursionController.hideById)
+router.post('/comment', ExcursionController.comment)
 
 router.post('/buy', authMiddleware, ExcursionController.buy)
 router.post('/buy-with-tinkoff', authMiddleware, ExcursionController.buyWithTinkoff)

@@ -385,6 +385,12 @@ module.exports = {
     async hideById(_id, isHide) {
         return await ExcursionModel.findByIdAndUpdate(_id, { isHidden: isHide })
     },
+    async comment(_id, comment) {
+    
+        return await ExcursionModel.findByIdAndUpdate(_id, { comment: comment })
+    },
+
+    
     /**
      * email html
      * @param {String} emailHtml 
