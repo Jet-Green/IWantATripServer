@@ -67,7 +67,7 @@ module.exports = {
     },
     async getAll(req, res, next) {
         try {
-            const q = req.query            
+            const q = req.query
             return res.json(await TripService.findMany(q.cursor, q.lon, q.lat, q.query, q.start, q.end, q.type, q.tripRegion, Number(q.locationRadius) * 1000))
         } catch (error) {
             next(error)
@@ -211,10 +211,7 @@ module.exports = {
         try {
             const tripCb = await TripService.updateOne(req.body)
 
-            if (req.body.places?.length > 0) {
-             
-                await PlaceService.updateWithTrips(req.body.places, tripCb._id)
-            }
+            await PlaceService.updateWithTrips(req.body.places, tripCb._id)
 
             logger.info({ _id: tripCb._id, logType: 'trip' }, 'trip edited and sent to moderation')
 

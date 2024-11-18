@@ -133,6 +133,17 @@ module.exports = {
     })
   },
   async updateWithTrips(places, tripId) {
-    return await PlaceModel.updateMany({ _id: { $in: places } }, { $push: { trips: tripId } })
+   // Удаляем tripId из всех документов
+   await PlaceModel.updateMany(
+    { },
+    { $pull: { trips: tripId } }
+  );
+
+  // Добавляем tripId в указанные документы
+  return await PlaceModel.updateMany(
+    { _id: { $in: places } },
+    { $push: { trips: tripId } }
+  );
+
   }
 }
