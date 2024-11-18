@@ -408,7 +408,7 @@ module.exports = {
     },
     async createdTripsInfo(_id) {
         let tripsIdArray = []
-        let tripsInfoArray = []
+     
 
         await UserModel.findById(_id, { "trips": 1 }).then(data => {
             tripsIdArray = data.trips

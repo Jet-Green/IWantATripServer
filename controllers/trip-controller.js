@@ -212,7 +212,7 @@ module.exports = {
             const tripCb = await TripService.updateOne(req.body)
 
             if (req.body.places?.length > 0) {
-                console.log(req.body.places, tripCb._id)
+             
                 await PlaceService.updateWithTrips(req.body.places, tripCb._id)
             }
 
