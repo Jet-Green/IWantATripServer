@@ -1,0 +1,51 @@
+const TasksService = require('../service/tasks-service.js')
+
+
+const logger = require('../logger.js');
+
+module.exports = {
+  async getAll(req, res, next) {
+    try {
+
+      return res.json(await TasksService.getAll(req.body))
+    } catch (error) {
+      next(error)
+    }
+  },
+  async create(req, res, next) {
+    try {
+      return res.json(await TasksService.create(req.body.place))
+    } catch (error) {
+      next(error)
+    }
+  },
+  async delete(req, res, next) {
+    try {
+      return res.json(await TasksService.delete(req.body.id))
+    } catch (error) {
+      next(error)
+    }
+  },
+
+  async edit(req, res, next) {
+    try {
+      let { placeId, place} = req.body;
+      return res.json(await TasksService.edit(place, placeId))
+    } catch (error) {
+      next(error)
+    }
+  },
+  
+
+  async getById(req, res, next) {
+    try {
+      const { _id } = req.query;
+      
+      return res.json(await TasksService.getById(_id))
+    } catch (error) {
+      next(error)
+    }
+  },
+
+
+}

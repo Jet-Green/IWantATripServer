@@ -31,6 +31,8 @@ const busRouter = require('./routers/bus-router')
 const excursionRouter = require('./routers/excursion-router')
 const photosRouter  = require('./routers/photos-router')
 const placesRouter = require('./routers/places-router')
+const partnersRouter = require('./routers/partners-router')
+const tasksRouter = require('./routers/tasks-router')
 
 app.use(history())
 // app.use(helmet());
@@ -73,6 +75,8 @@ app.use('/bus', busRouter)
 app.use('/admin', adminRouter)
 app.use('/photos', photosRouter)
 app.use('/places', placesRouter)
+app.use('/partners',partnersRouter)
+// app.use('/tasks',tasksRouter)
 
 app.use('/service-functions', serviceFunctionsRouter)
 app.use(errorFilter)
