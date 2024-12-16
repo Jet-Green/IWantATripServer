@@ -452,4 +452,15 @@ module.exports = {
             next(error)
         }
     },
+    async findAuthorTrips(req, res, next) {
+        try {
+            return res.json(await TripService.findAuthorTrips(req.body))
+        } catch (error) {
+            next(error)
+        }
+    },
+
+
+
+
 }

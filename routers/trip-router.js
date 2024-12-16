@@ -57,5 +57,6 @@ router.get('/bought', tripController.getBoughtTrips)
 
 router.post('/add-additional-service', tripController.addAdditionalService)
 router.post('/delete-additional-service', tripController.deleteAdditionalService)
+router.post('/find-author-trips', tripController.findAuthorTrips)
 
 module.exports = router

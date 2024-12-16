@@ -102,5 +102,6 @@ module.exports = {
       { $push: { trips: tripId } }
     );
 
-  }
+  },
+
 }

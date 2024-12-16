@@ -15,8 +15,6 @@ router.post('/create',  authMiddleware, partnersController.create)
 router.post('/delete',  authMiddleware, partnersController.delete)
 router.post('/edit',  authMiddleware, partnersController.edit)
 router.get('/get-by-id', partnersController.getById)
-
-
 router.get('/for-create-trip', authMiddleware, partnersController.getForCreateTrip)
 
 

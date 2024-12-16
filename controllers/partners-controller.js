@@ -29,15 +29,12 @@ module.exports = {
 
   async edit(req, res, next) {
     try {
-      let { partnerId, form} = req.body;
+      let { partnerId, form } = req.body;
       return res.json(await PartnersService.edit(partnerId, form))
     } catch (error) {
       next(error)
     }
   },
-  
-
-
   async getById(req, res, next) {
     try {
       const { _id } = req.query;
@@ -55,6 +52,6 @@ module.exports = {
     } catch (error) {
       next(error)
     }
-  }
-  
+  },
+
 }

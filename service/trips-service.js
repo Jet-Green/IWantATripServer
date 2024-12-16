@@ -61,7 +61,7 @@ module.exports = {
                 },
                 select: { start: 1, end: 1, billsList: 1, touristsList: 1, selectedStartLocation: 1 },
             }).populate('places')
-            
+
         if (trip.parent) {
             let originalId = trip._id
             let parentId = trip.parent._id
@@ -404,11 +404,11 @@ module.exports = {
         return TripModel.findByIdAndUpdate(tripId, { isModerated: false, moderationMessage: msg, rejected: true })
     },
     async findById(_id) {
-        return TripModel.findById(_id).populate('author').populate('places', {name:1})
+        return TripModel.findById(_id).populate('author').populate('places', { name: 1 })
     },
     async createdTripsInfo(_id) {
         let tripsIdArray = []
-     
+
 
         await UserModel.findById(_id, { "trips": 1 }).then(data => {
             tripsIdArray = data.trips
@@ -530,5 +530,13 @@ module.exports = {
 
         })
         return userFromDb.boughtTrips
+    },
+    async findAuthorTrips({ query, _id }) {
+        let trips = await TripModel.find({
+            author: _id,
+            name: { $regex: query, $options: 'i' },
+            'start': { $gte: Date.now() }
+        }, { name: 1, timezoneOffset: 1, start: 1, })
+        return trips
     },
 }
