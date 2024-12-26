@@ -30,7 +30,6 @@ module.exports = {
     let baseQuery = filter.query;
     let locationQuery = null;
     let radiusQuery = null;
-    console.log(filter);
     
     if (baseQuery.conditions) {
       // baseQuery.$and = [];
@@ -41,16 +40,17 @@ module.exports = {
         baseQuery.name={ $regex: baseQuery.conditions.name, $options: "i" }
       }
     }
-    location=null
+    let location=null
+    let locationRadius=null
     if (baseQuery.conditions) {
       location=baseQuery.conditions?.location
+      locationRadius=baseQuery.conditions?.locationRadius
       baseQuery.conditions = null;
     }
-    
     if (location?.name != "") {
       locationQuery = {
         ...baseQuery,
-        "eventLocation.name": {
+        "location.name": {
           $regex: location?.name,
           $options: "i",
         },
@@ -70,7 +70,7 @@ module.exports = {
               type: "Point",
               coordinates: location?.coordinates,
             },
-            $maxDistance: Number(baseQuery.conditions?.locationRadius) * 1000,
+            $maxDistance: Number(locationRadius) * 1000,
           },
         },
       };
@@ -118,6 +118,7 @@ module.exports = {
 
     const results = [];
     const seenDocs = new Set(); // To prevent duplicates
+    
 
     if (!location) {
       for (
