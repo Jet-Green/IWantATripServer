@@ -225,6 +225,11 @@ module.exports = {
         }
         return result
     },
+    async checkUserEmail(userEmail) {
+    
+       const user = await UserModel.find({email:userEmail})
+       return user.length > 0;
+    },
 
     async determineTheWinner() {
         function getRandomInt(max) {

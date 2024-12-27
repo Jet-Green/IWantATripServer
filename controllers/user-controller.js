@@ -123,6 +123,15 @@ module.exports = {
             next(error)
         }
     },
+    async checkUserEmail(req, res, next) {
+        try {
+            return res.json(await UserService.checkUserEmail(req.query.user_email))
+        } catch (error) {
+            console.log(error);
+            next(error)
+        }
+    },
+    
     async determineTheWinner(req, res, next) {
         try {
             return res.json(await UserService.determineTheWinner())

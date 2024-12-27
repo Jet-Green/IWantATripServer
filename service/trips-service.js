@@ -41,60 +41,52 @@ module.exports = {
       { $pull: { billsList: { $eq: bill._id } } }
     );
 
-    return bill.delete();
-  },
-  async setPayment(bill) {
-    return await BillModel.findByIdAndUpdate(bill.bill._id, {
-      $inc: { "payment.amount": bill.bill.payment.amount },
-      $push: { "payment.documents": bill.doc },
-    });
-  },
-  async getFullTripById(_id) {
-    let trip = await TripModel.findById(_id)
-      .populate("author", { fullinfo: 1 })
-      .populate("parent")
-      .populate({
-        path: "children._id",
-        populate: {
-          path: "billsList",
-          select: {
-            cart: 1,
-            payment: 1,
-            userInfo: 1,
-            touristsList: 1,
-            tinkoff: 1,
-            selectedStartLocation: 1,
-            userComment: 1,
-            additionalServices: 1,
-          },
-        },
-        select: {
-          start: 1,
-          end: 1,
-          billsList: 1,
-          touristsList: 1,
-          selectedStartLocation: 1,
-        },
-      })
-      .populate("places");
+        return bill.delete()
+    },
+    async setPayment(bill) {
+        return await BillModel.findByIdAndUpdate(bill.bill._id, {
+            $inc: { 'payment.amount': bill.bill.payment.amount },
+            $push: { 'payment.documents': bill.doc }
+        })
+    },
+    async getFullTripById(_id) {
+        let trip = await TripModel.findById(_id)
+            .populate('author', { fullinfo: 1 }).populate('parent')
+            .populate({
+                path: 'children._id',
+                populate: {
+                    path: 'billsList',
+                    select: {
+                        cart: 1,
+                        payment: 1,
+                        userInfo: 1,
+                        touristsList: 1,
+                        tinkoff: 1,
+                        selectedStartLocation: 1,
+                        userComment: 1,
+                        additionalServices: 1,
+                    }
+                },
+                select: { start: 1, end: 1, billsList: 1, touristsList: 1, selectedStartLocation: 1 },
+            }).populate('places')
 
-    if (trip.parent) {
-      let originalId = trip._id;
-      let parentId = trip.parent._id;
-      let { start, end, billsList } = trip;
-      let isModerated = trip.parent.isModerated;
-      let rejected = trip.parent.rejected;
+        if (trip.parent) {
+            let originalId = trip._id
+            let parentId = trip.parent._id
+            let { start, end, billsList } = trip
+            let isModerated = trip.parent.isModerated
+            let rejected = trip.parent.rejected
 
-      Object.assign(trip, trip.parent);
-      trip.parent = parentId;
-      trip.children = [];
-      trip._id = originalId;
-      trip.start = start;
-      trip.end = end;
-      trip.isModerated = isModerated;
-      trip.rejected = rejected;
-      trip.billsList = billsList;
-    }
+            Object.assign(trip, trip.parent)
+            trip.parent = parentId
+            trip.children = []
+            trip._id = originalId
+            trip.start = start
+            trip.end = end
+            trip.isModerated = isModerated
+            trip.rejected = rejected
+            trip.billsList = billsList
+        }
 
     await trip.populate("billsList", {
       cart: 1,
@@ -508,65 +500,51 @@ module.exports = {
       });
     }
 
-    filter.$and.push({ start: { $gt: Date.now() } });
-    return await TripModel.find(filter, null, { sort: "start" })
-      .skip(cursor ? cursor : 0)
-      .limit(20);
-  },
-  async hide(_id, v) {
-    return TripModel.findByIdAndUpdate(_id, { isHidden: v });
-  },
-  async findForModeration() {
-    return TripModel.find({
-      $and: [
-        { isModerated: false },
-        { rejected: false },
-        { parent: { $exists: false } },
-      ],
-    })
-      .populate("author", { "fullinfo.fullname": 1 })
-      .sort({ createdDay: -1 });
-  },
-  async findRejectedTrips() {
-    return TripModel.find({
-      $and: [{ rejected: true }, { parent: { $exists: false } }],
-    }).populate("author", { "fullinfo.fullname": 1 });
-  },
-  async moderate(_id, t) {
-    return TripModel.findByIdAndUpdate(_id, {
-      isModerated: t,
-      rejected: false,
-    });
-  },
-  async sendModerationMessage(tripId, msg) {
-    return TripModel.findByIdAndUpdate(tripId, {
-      isModerated: false,
-      moderationMessage: msg,
-      rejected: true,
-    });
-  },
-  async findById(_id) {
-    return TripModel.findById(_id)
-      .populate("author")
-      .populate("places", { name: 1 });
-  },
-  async createdTripsInfo(_id) {
-    let tripsIdArray = [];
+        filter.$and.push({ start: { $gt: Date.now() } })
+        return await TripModel.find(filter, null, { sort: 'start' }).skip(cursor ? cursor : 0).limit(20)
+    },
+    async hide(_id, v) {
+        return TripModel.findByIdAndUpdate(_id, { isHidden: v })
+    },
+    async findForModeration() {
+        return TripModel.find({
+            $and: [{ isModerated: false },
+            { rejected: false },
+            { "parent": { $exists: false } }]
+        }).populate('author', { 'fullinfo.fullname': 1 }).sort({ 'createdDay': -1 })
+    },
+    async findRejectedTrips() {
+        return TripModel.find({
+            $and: [{ rejected: true },
+            { "parent": { $exists: false } }]
+        }).populate('author', { 'fullinfo.fullname': 1 })
+    },
+    async moderate(_id, t) {
+        return TripModel.findByIdAndUpdate(_id, { isModerated: t, rejected: false })
+    },
+    async sendModerationMessage(tripId, msg) {
+        return TripModel.findByIdAndUpdate(tripId, { isModerated: false, moderationMessage: msg, rejected: true })
+    },
+    async findById(_id) {
+        return TripModel.findById(_id).populate('author').populate('places', { name: 1 })
+    },
+    async createdTripsInfo(_id) {
+        let tripsIdArray = []
 
-    await UserModel.findById(_id, { trips: 1 }).then((data) => {
-      tripsIdArray = data.trips;
-    });
-    let result = [];
-    await TripModel.find({ _id: { $in: tripsIdArray } })
-      .populate("parent")
-      .populate("calculator")
-      .then((data) => {
-        for (let trip of data) {
-          if (trip.parent) {
-            // let originalId = trip._id
-            // let parentId = trip.parent._id
-            // let { start, end } = trip
-            // let isModerated = trip.parent.isModerated
+
+        await UserModel.findById(_id, { "trips": 1 }).then(data => {
+            tripsIdArray = data.trips
+        })
+        let result = []
+        await TripModel.find({ _id: { $in: tripsIdArray } }).populate('parent').populate('calculator')
+            .then((data) => {
+
+                for (let trip of data) {
+                    if (trip.parent) {
+                        // let originalId = trip._id
+                        // let parentId = trip.parent._id
+                        // let { start, end } = trip
+                        // let isModerated = trip.parent.isModerated
 
             // Object.assign(trip, trip.parent)
             // trip.parent = parentId
@@ -593,118 +571,95 @@ module.exports = {
         tripsInfoArray = result;
       });
 
-    return result;
-  },
-  async updateBillsTourists({ _id, touristsList }) {
-    // console.log(_id, touristsList)
-    let bill = await BillModel.findById(_id);
-    bill.touristsList = touristsList;
-    return bill.save();
-  },
-  async updatePartner({ partner, _id, canSellPartnerTour }) {
-    return TripModel.findByIdAndUpdate(_id, {
-      partner: partner,
-      canSellPartnerTour: canSellPartnerTour,
-    });
-  },
-  async updateIncludedLocations({ newLocation, locationsToDelete, tripId }) {
-    if (newLocation) {
-      let locFromDb = await LocationService.createLocation(newLocation);
-      let trip = await TripModel.findByIdAndUpdate(tripId, {
-        $push: {
-          "includedLocations.coordinates": locFromDb.coordinates,
-          locationNames: locFromDb,
-        },
-      });
-    }
-    if (locationsToDelete) {
-      let trip = await TripModel.findById(tripId);
-      for (let i = 0; i < trip.locationNames.length; i++) {
-        for (let _id of locationsToDelete) {
-          if (trip.locationNames[i]._id == _id) {
-            let indexToDelete;
-            for (
-              let j = 0;
-              j < trip.includedLocations.coordinates.length;
-              j++
-            ) {
-              if (
-                trip.includedLocations.coordinates[j][0] ==
-                  trip.locationNames[i].coordinates[0] &&
-                trip.includedLocations.coordinates[j][1] ==
-                  trip.locationNames[i].coordinates[1]
-              )
-                indexToDelete = j;
-            }
-            if (indexToDelete) {
-              trip.includedLocations.coordinates.splice(indexToDelete, 1);
-              trip.locationNames.splice(i, 1);
-            }
-          }
+        return result
+    },
+    async updateBillsTourists({ _id, touristsList }) {
+        // console.log(_id, touristsList)
+        let bill = await BillModel.findById(_id)
+        bill.touristsList = touristsList
+        return bill.save()
+    },
+    async updatePartner({ partner, _id, canSellPartnerTour }) {
+        return TripModel.findByIdAndUpdate(_id, { partner: partner, canSellPartnerTour: canSellPartnerTour })
+    },
+    async updateIncludedLocations({ newLocation, locationsToDelete, tripId }) {
+        if (newLocation) {
+            let locFromDb = await LocationService.createLocation(newLocation)
+            let trip = await TripModel.findByIdAndUpdate(tripId, { $push: { 'includedLocations.coordinates': locFromDb.coordinates, 'locationNames': locFromDb } })
         }
-      }
-      trip.markModified("includedLocations.coordinates");
-      trip.markModified("locationNames");
-      await trip.save();
+        if (locationsToDelete) {
+            let trip = await TripModel.findById(tripId)
+            for (let i = 0; i < trip.locationNames.length; i++) {
+                for (let _id of locationsToDelete) {
+                    if (trip.locationNames[i]._id == _id) {
+                        let indexToDelete;
+                        for (let j = 0; j < trip.includedLocations.coordinates.length; j++) {
+                            if (trip.includedLocations.coordinates[j][0] == trip.locationNames[i].coordinates[0] && trip.includedLocations.coordinates[j][1] == trip.locationNames[i].coordinates[1])
+                                indexToDelete = j
+                        }
+                        if (indexToDelete) {
+                            trip.includedLocations.coordinates.splice(indexToDelete, 1)
+                            trip.locationNames.splice(i, 1)
+                        }
+                    }
+                }
+            }
+            trip.markModified('includedLocations.coordinates')
+            trip.markModified('locationNames')
+            await trip.save()
 
-      let de = await LocationModel.deleteMany({
-        _id: { $in: locationsToDelete },
-      });
-    }
-    return "ok";
-  },
-  async updateTransports({ tripId, newTransport, transportToDelete }) {
-    let tripFromDb = await TripModel.findById(tripId);
-    for (let i = 0; i < tripFromDb.transports.length; i++) {
-      for (let nameToDelete of transportToDelete) {
-        if (tripFromDb.transports[i].transportType.name == nameToDelete) {
-          tripFromDb.transports.splice(i, 1);
+            let de = await LocationModel.deleteMany({ _id: { $in: locationsToDelete } })
         }
-      }
-    }
-    if (newTransport) {
-      for (let tr of tripFromDb.transports) {
-        tr.price = newTransport.price;
-      }
-      tripFromDb.transports.push(newTransport);
-      tripFromDb.markModified("transports.capacity");
-    }
-    return await tripFromDb.save();
-  },
-  async findTripsByName({ name: name, userId: userId }) {
-    let tempTrips = await BillModel.find(
-      { "touristsList.fullname": { $regex: name, $options: "i" } },
-      { tripId: 1 }
-    );
-    let clearTrips = tempTrips.map((trip) => {
-      return trip.tripId;
-    });
-    let trips = await TripModel.find(
-      { _id: clearTrips, author: userId },
-      { name: 1, start: 1, end: 1, author: 1 }
-    );
-    return trips;
-  },
-  async setUserComment({ tripId, comment }) {
-    return await TripModel.findByIdAndUpdate(tripId, {
-      $set: { userComment: comment },
-    });
-  },
-  async editBillUserComment({ billId, comment }) {
-    return await BillModel.findByIdAndUpdate(billId, {
-      $set: { userComment: comment },
-    });
-  },
-  async getBoughtTrips(userId) {
-    let userFromDb = await UserModel.findById(userId)
-      .populate("boughtTrips")
-      .populate({
-        path: "boughtTrips",
-        populate: {
-          path: "tripId",
-          model: "Trip",
-        },
-      });
-    return userFromDb.boughtTrips;
-  },
-};
+        return 'ok'
+    },
+    async updateTransports({ tripId, newTransport, transportToDelete }) {
+        let tripFromDb = await TripModel.findById(tripId)
+        for (let i = 0; i < tripFromDb.transports.length; i++) {
+            for (let nameToDelete of transportToDelete) {
+                if (tripFromDb.transports[i].transportType.name == nameToDelete) {
+                    tripFromDb.transports.splice(i, 1)
+                }
+            }
+        }
+        if (newTransport) {
+            for (let tr of tripFromDb.transports) {
+                tr.price = newTransport.price
+            }
+            tripFromDb.transports.push(newTransport)
+            tripFromDb.markModified('transports.capacity')
+        }
+        return await tripFromDb.save()
+    },
+    async findTripsByName({ name: name, userId: userId }) {
+
+        let tempTrips = await BillModel.find({ 'touristsList.fullname': { $regex: name, $options: 'i' } }, { tripId: 1 })
+        let clearTrips = tempTrips.map((trip) => { return trip.tripId })
+        let trips = await TripModel.find({ _id: clearTrips, author: userId }, { name: 1, start: 1, end: 1, author: 1 })
+        return trips
+    },
+    async setUserComment({ tripId, comment }) {
+        return await TripModel.findByIdAndUpdate(tripId, { $set: { userComment: comment } })
+    },
+    async editBillUserComment({ billId, comment }) {
+        return await BillModel.findByIdAndUpdate(billId, { $set: { userComment: comment } })
+    },
+    async getBoughtTrips(userId) {
+        let userFromDb = await UserModel.findById(userId).populate('boughtTrips').populate({
+            path: 'boughtTrips',
+            populate: {
+                path: 'tripId',
+                model: 'Trip'
+            },
+
+        })
+        return userFromDb.boughtTrips
+    },
+    async findAuthorTrips({ query, _id }) {
+        let trips = await TripModel.find({
+            author: _id,
+            name: { $regex: query, $options: 'i' },
+            'start': { $gte: Date.now() }
+        }, { name: 1, timezoneOffset: 1, start: 1, })
+        return trips
+    },
+}
