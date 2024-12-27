@@ -14,7 +14,7 @@ const tasksSchema = new mongoose.Schema({
   payAmount:{ type: Number },
   payments:{type: [{date:Number, payment:Number}]},
   status:{ type: String, default:'open' },
-  managers:{type: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}]},
+  managers:{type: [String]},
   comment:{ type: String },
   interactions:{type:[{
     date:Number, result:String

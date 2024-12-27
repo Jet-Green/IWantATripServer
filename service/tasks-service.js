@@ -32,7 +32,7 @@ module.exports = {
     const skip = (page - 1) * limit;
     let query = filter.query
 
-    const cursor = TasksModel.find(query).skip(skip).limit(limit).cursor();
+    const cursor = TasksModel.find(query).populate('trip', { name: 1 }).populate('partner', { name: 1 }).skip(skip).limit(limit).cursor();
 
     const results = [];
     for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
@@ -42,8 +42,9 @@ module.exports = {
     return results
   },
 
-  async create(partner) {
-    return await TasksModel.create(partner)
+  async create(task) {
+    console.log(task)
+    return await TasksModel.create(task)
   },
   async delete(_id) {
 

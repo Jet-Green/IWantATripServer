@@ -14,7 +14,7 @@ module.exports = {
   },
   async create(req, res, next) {
     try {
-      return res.json(await TasksService.create(req.body.place))
+      return res.json(await TasksService.create(req.body.task))
     } catch (error) {
       next(error)
     }

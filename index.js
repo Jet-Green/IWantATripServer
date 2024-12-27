@@ -76,7 +76,7 @@ app.use('/admin', adminRouter)
 app.use('/photos', photosRouter)
 app.use('/places', placesRouter)
 app.use('/partners',partnersRouter)
-// app.use('/tasks',tasksRouter)
+app.use('/tasks',tasksRouter)
 
 app.use('/service-functions', serviceFunctionsRouter)
 app.use(errorFilter)
