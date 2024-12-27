@@ -40,14 +40,10 @@ module.exports = {
         baseQuery.name={ $regex: baseQuery.conditions.name, $options: "i" }
       }
     }
-    let location=null
-    let locationRadius=null
-    if (baseQuery.conditions) {
-      location=baseQuery.conditions?.location
-      locationRadius=baseQuery.conditions?.locationRadius
-      baseQuery.conditions = null;
-    }
-    if (location?.name != "") {
+    let location=baseQuery.conditions ?baseQuery.conditions.location : null
+    let locationRadius=baseQuery.conditions ? baseQuery.conditions.locationRadius : null
+    delete baseQuery.conditions;
+    if (location?.name) {
       locationQuery = {
         ...baseQuery,
         "location.name": {
@@ -56,11 +52,11 @@ module.exports = {
         },
       };
     }
-
+    
     if (
       location?.coordinates &&
-      baseQuery.conditions?.locationRadius != 0 &&
-      baseQuery.conditions?.locationRadius != ""
+      locationRadius != 0 &&
+      locationRadius
     ) {
       radiusQuery = {
         ...baseQuery,
@@ -75,20 +71,20 @@ module.exports = {
         },
       };
     }
-    
+
     const cursorBase = PlaceModel.find(baseQuery, null)
-      .populate({
-        path: "trips",
-        match: tripFilter,
-        select: {
-          name: 1,
+    .populate({
+      path: "trips",
+      match: tripFilter,
+      select: {
+        name: 1,
         },
       })
       .skip(skip)
       .limit(limit)
       .cursor();
-
-    const cursorLocation = locationQuery
+      
+      const cursorLocation = locationQuery
       ? PlaceModel.find(locationQuery, null)
           .populate({
             path: "trips",
@@ -100,10 +96,10 @@ module.exports = {
           .skip(skip)
           .limit(limit)
           .cursor()
-      : null;
-
-    const cursorRadius = radiusQuery
-      ? PlaceModel.find(radiusQuery, null)
+          : null;
+          
+          const cursorRadius = radiusQuery
+          ? PlaceModel.find(radiusQuery, null)
           .populate({
             path: "trips",
             match: tripFilter,
@@ -114,12 +110,12 @@ module.exports = {
           .skip(skip)
           .limit(limit)
           .cursor()
-      : null;
-
+          : null;
+          
     const results = [];
     const seenDocs = new Set(); // To prevent duplicates
-    
-
+          
+          
     if (!location) {
       for (
         let doc = await cursorBase.next();
@@ -134,7 +130,7 @@ module.exports = {
     }
 
     // Collect results from locationQuery (if defined)
-    if (location?.name != "") {
+    if (location?.name) {
       for (
         let doc = await cursorLocation.next();
         doc != null;
@@ -151,7 +147,7 @@ module.exports = {
     if (
       location?.coordinates &&
       locationRadius != 0 &&
-      locationRadius != ""
+      locationRadius
     ) {
       for (
         let doc = await cursorRadius.next();
