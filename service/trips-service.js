@@ -270,7 +270,6 @@ module.exports = {
     const skip = (page - 1) * limit;
     //baseQuery = baseQuery =)
     let baseQuery = {};
-
     // geo $near must be top-level expr
     baseQuery = {
       $and: [
@@ -354,7 +353,7 @@ module.exports = {
 
     locationQuery = null;
     radiusQuery = null;
-    if (location) {
+    if (location && lat && lon) {
       locationQuery = {
         $and: [
           ...baseQuery.$and,
@@ -414,8 +413,8 @@ module.exports = {
     // for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
     //     results.push(doc);
     // }
-
-    if (!location) {
+    // console.log(location,location=="null")
+    if (location=="null") {
       for (
         let doc = await cursorBase.next();
         doc != null;
@@ -429,7 +428,7 @@ module.exports = {
     }
 
     // Collect results from locationQuery (if defined)
-    if (location != "") {
+    if (location != "" && lat && lon) {
       for (
         let doc = await cursorLocation.next();
         doc != null;
