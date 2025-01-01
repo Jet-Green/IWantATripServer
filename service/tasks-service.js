@@ -27,11 +27,10 @@ const tripFilter = {
 module.exports = {
   async getAll(filter) {
 
-    const limit = 20;
+    const limit = 50;
     const page = filter.page || 1;
     const skip = (page - 1) * limit;
     let query = filter.query
-
     const cursor = TasksModel.find(query).populate('trip', { name: 1 }).populate('partner').skip(skip).limit(limit).cursor();
 
     const results = [];
@@ -43,7 +42,7 @@ module.exports = {
   },
 
   async create(task) {
-    console.log(task)
+ 
     return await TasksModel.create(task)
   },
   async delete(_id) {
