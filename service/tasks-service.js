@@ -1,5 +1,5 @@
 const TasksModel = require('../models/tasks-model.js')
-
+const { ObjectId } = require('mongodb')
 const tripFilter = {
   $and: [
     { isHidden: false, isModerated: true, rejected: false },
@@ -31,7 +31,21 @@ module.exports = {
     const page = filter.page || 1;
     const skip = (page - 1) * limit;
     let query = filter.query
-    const cursor = TasksModel.find(query).populate('trip', { name: 1 }).populate('partner').skip(skip).limit(limit).cursor();
+
+    query = {
+      ...query,
+      // trip: {
+      //   $elemMatch: {
+      //     start: { $gte: Date.now() },
+      //   },
+      // },
+    };
+    console.log(query);
+    const cursor = TasksModel.find(query).populate({
+      path: 'trip',
+      match: { start: { $gte: new Date() } }, // Фильтрация внутри связанной коллекции
+      select: 'name',
+    }).populate('partner').skip(skip).limit(limit).cursor();
 
     const results = [];
     for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
@@ -41,8 +55,9 @@ module.exports = {
     return results
   },
 
+
   async create(task) {
- 
+
     return await TasksModel.create(task)
   },
   async delete(_id) {
@@ -51,7 +66,7 @@ module.exports = {
   },
 
   async edit(partnerId, partner) {
-  
+
     return await TasksModel.findByIdAndUpdate(partnerId, partner)
   },
 
