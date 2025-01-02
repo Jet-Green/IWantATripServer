@@ -40,7 +40,7 @@ module.exports = {
       //   },
       // },
     };
-    console.log(query);
+  
     const cursor = TasksModel.find(query).populate({
       path: 'trip',
       match: { start: { $gte: new Date() } }, // Фильтрация внутри связанной коллекции
