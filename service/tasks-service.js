@@ -32,7 +32,7 @@ module.exports = {
     const skip = (page - 1) * limit;
     let query = filter.query
 
-    const cursor = TasksModel.find(query).populate('trip', { name: 1 }).populate('partner', { name: 1 }).skip(skip).limit(limit).cursor();
+    const cursor = TasksModel.find(query).populate('trip', { name: 1 }).populate('partner').skip(skip).limit(limit).cursor();
 
     const results = [];
     for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
@@ -43,7 +43,6 @@ module.exports = {
   },
 
   async create(task) {
-    console.log(task)
     return await TasksModel.create(task)
   },
   async delete(_id) {
@@ -52,7 +51,7 @@ module.exports = {
   },
 
   async edit(partnerId, partner) {
-  
+
     return await TasksModel.findByIdAndUpdate(partnerId, partner)
   },
 
@@ -62,6 +61,9 @@ module.exports = {
     return await TasksModel.findById(_id)
 
   },
-
-
+  async createInteraction(interaction, taskId) {
+    console.log(interaction, taskId);
+    
+    return await TasksModel.findByIdAndUpdate(taskId, { $push: { interactions: interaction } }, { new: true })
+  }
 }

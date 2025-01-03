@@ -659,7 +659,7 @@ module.exports = {
             author: _id,
             name: { $regex: query, $options: 'i' },
             'start': { $gte: Date.now() }
-        }, { name: 1, timezoneOffset: 1, start: 1, })
+        }, { name: 1, timezoneOffset: 1, end: 1, })
         return trips
     },
 }
