@@ -61,9 +61,7 @@ module.exports = {
     return await TasksModel.findById(_id)
 
   },
-  async createInteraction(interaction, taskId) {
-    console.log(interaction, taskId);
-    
+  async createInteraction(interaction, taskId) {    
     return await TasksModel.findByIdAndUpdate(taskId, { $push: { interactions: interaction } }, { new: true })
   }
 }
