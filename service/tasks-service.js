@@ -32,6 +32,13 @@ module.exports = {
     const skip = (page - 1) * limit;
     let query = filter.query
 
+    let currentOffset = new Date().getTimezoneOffset() * 60 * 1000;
+    let currentUtcDate = Date.now() + currentOffset;
+
+    query['tripInfo.end'] = {
+      $gte: currentUtcDate
+    }
+    
     const cursor = TasksModel.find(query).populate('trip', { name: 1 }).populate('partner').skip(skip).limit(limit).cursor();
 
     const results = [];
