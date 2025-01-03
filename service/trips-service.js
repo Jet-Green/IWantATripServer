@@ -174,12 +174,18 @@ module.exports = {
     delete trip._id;
 
     let oldTrip = await TripModel.findById(_id);
-    trip.startLocation = await LocationService.createLocation(
-      trip.startLocation
-    );
-    trip.locationNames[0] = trip.startLocation;
-    trip.includedLocations.coordinates[0] = trip.startLocation.coordinates;
-
+    if (trip.startLocation && trip.startLocation!=""){
+      trip.startLocation = await LocationService.createLocation(
+        trip.startLocation
+      );
+      trip.locationNames[0] = trip.startLocation;
+      trip.includedLocations.coordinates[0] = trip.startLocation.coordinates;
+    }
+    else{
+      trip.startLocation = null
+      trip.includedLocations = null
+      trip.locationNames = null
+    }
     let imagesToDelete = [];
     for (let oldImg of oldTrip.images) {
       let isOldImg = true;
