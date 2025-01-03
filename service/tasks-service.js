@@ -52,7 +52,7 @@ module.exports = {
   },
 
   async edit(partnerId, partner) {
-  
+
     return await TasksModel.findByIdAndUpdate(partnerId, partner)
   },
 
@@ -62,6 +62,9 @@ module.exports = {
     return await TasksModel.findById(_id)
 
   },
-
-
+  async createInteraction(interaction, taskId) {
+    console.log(interaction, taskId);
+    
+    return await TasksModel.findByIdAndUpdate(taskId, { $push: { interactions: interaction } }, { new: true })
+  }
 }

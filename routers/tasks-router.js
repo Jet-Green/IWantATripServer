@@ -12,6 +12,7 @@ router.post('/delete',  authMiddleware, tasksController.delete)
 router.post('/edit',  authMiddleware, tasksController.edit)
 router.get('/get-by-id',authMiddleware, tasksController.getById)
 
+router.post('/create-interaction', authMiddleware, tasksController.createInteraction)
 
 
 module.exports = router
