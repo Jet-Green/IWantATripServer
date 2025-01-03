@@ -2,7 +2,16 @@ const mongoose = require('mongoose');
 
 const tasksSchema = new mongoose.Schema({
   trip: { type: mongoose.Schema.Types.ObjectId, ref: 'Trip' },
+  tripInfo: {
+    type: {
+      end: Number,
+      timezoneOffset: Number,
+      name: String,
+      _id: String,
+    },
+  },
   author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+
   partner: { type: mongoose.Schema.Types.ObjectId, ref: 'Partner' },
   name: {
     type: String,
@@ -14,7 +23,7 @@ const tasksSchema = new mongoose.Schema({
   payAmount: { type: Number },
   payments: { type: [{ date: Number, payment: Number }] },
   status: { type: String, default: 'open' },
-  managers: { type: [String] },
+  managers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   comment: { type: String },
   interactions: {
     type: [{

@@ -43,7 +43,6 @@ module.exports = {
   },
 
   async create(task) {
-    console.log(task)
     return await TasksModel.create(task)
   },
   async delete(_id) {
