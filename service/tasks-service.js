@@ -32,20 +32,14 @@ module.exports = {
     const skip = (page - 1) * limit;
     let query = filter.query
 
-    query = {
-      ...query,
-      // trip: {
-      //   $elemMatch: {
-      //     start: { $gte: Date.now() },
-      //   },
-      // },
-    };
-  
-    const cursor = TasksModel.find(query).populate({
-      path: 'trip',
-      match: { start: { $gte: new Date() } }, // Фильтрация внутри связанной коллекции
-      select: 'name',
-    }).populate('partner').skip(skip).limit(limit).cursor();
+    let currentOffset = new Date().getTimezoneOffset() * 60 * 1000;
+    let currentUtcDate = Date.now() + currentOffset;
+
+    query['tripInfo.end'] = {
+      $gte: currentUtcDate
+    }
+    
+    const cursor = TasksModel.find(query).populate('trip', { name: 1 }).populate('partner').skip(skip).limit(limit).cursor();
 
     const results = [];
     for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
@@ -57,7 +51,6 @@ module.exports = {
 
 
   async create(task) {
-
     return await TasksModel.create(task)
   },
   async delete(_id) {
@@ -76,6 +69,7 @@ module.exports = {
     return await TasksModel.findById(_id)
 
   },
-
-
+  async createInteraction(interaction, taskId) {    
+    return await TasksModel.findByIdAndUpdate(taskId, { $push: { interactions: interaction } }, { new: true })
+  }
 }

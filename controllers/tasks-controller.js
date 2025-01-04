@@ -47,5 +47,11 @@ module.exports = {
     }
   },
 
-
+  async createInteraction(req, res, next) {
+    try {
+      return res.json(await TasksService.createInteraction(req.body.interaction, req.body.taskId))
+    } catch (error) {
+      next(error)
+    }
+  }
 }
