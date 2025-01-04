@@ -174,12 +174,18 @@ module.exports = {
     delete trip._id;
 
     let oldTrip = await TripModel.findById(_id);
-    trip.startLocation = await LocationService.createLocation(
-      trip.startLocation
-    );
-    trip.locationNames[0] = trip.startLocation;
-    trip.includedLocations.coordinates[0] = trip.startLocation.coordinates;
-
+    if (trip.startLocation && trip.startLocation!=""){
+      trip.startLocation = await LocationService.createLocation(
+        trip.startLocation
+      );
+      trip.locationNames[0] = trip.startLocation;
+      trip.includedLocations.coordinates[0] = trip.startLocation.coordinates;
+    }
+    else{
+      trip.startLocation = null
+      trip.includedLocations = null
+      trip.locationNames = null
+    }
     let imagesToDelete = [];
     for (let oldImg of oldTrip.images) {
       let isOldImg = true;
@@ -270,7 +276,6 @@ module.exports = {
     const skip = (page - 1) * limit;
     //baseQuery = baseQuery =)
     let baseQuery = {};
-
     // geo $near must be top-level expr
     baseQuery = {
       $and: [
@@ -354,7 +359,7 @@ module.exports = {
 
     locationQuery = null;
     radiusQuery = null;
-    if (location) {
+    if (location && lat && lon) {
       locationQuery = {
         $and: [
           ...baseQuery.$and,
@@ -414,8 +419,8 @@ module.exports = {
     // for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
     //     results.push(doc);
     // }
-
-    if (!location) {
+    // console.log(location,location=="null")
+    if (location=="null") {
       for (
         let doc = await cursorBase.next();
         doc != null;
@@ -429,7 +434,7 @@ module.exports = {
     }
 
     // Collect results from locationQuery (if defined)
-    if (location != "") {
+    if (location != "" && lat && lon) {
       for (
         let doc = await cursorLocation.next();
         doc != null;
