@@ -1,4 +1,5 @@
 const TasksModel = require('../models/tasks-model.js')
+const UserModel = require("../models/user-model.js");
 const { ObjectId } = require('mongodb')
 const tripFilter = {
   $and: [
@@ -32,14 +33,6 @@ module.exports = {
     const skip = (page - 1) * limit;
     let query = filter.query
 
-    // перенести на клиент Текущее время на сервере и на клиенте может быть разным
-    // let currentOffset = new Date().getTimezoneOffset() * 60 * 1000;
-    // let currentUtcDate = Date.now() + currentOffset;
-
-    // query['tripInfo.end'] = {
-    //   $gte: currentUtcDate
-    // }
-    // перенести на клиент Текущее время на сервере и на клиенте может быть разным
 
     const cursor = TasksModel.find(query).populate('trip', { name: 1 }).populate('partner').skip(skip).limit(limit).cursor();
 
@@ -59,6 +52,23 @@ module.exports = {
 
 
   async create(task) {
+    // Проверяем, есть ли менеджеры в задаче
+    if (task.managers.length) {
+      for (const managerId of task.managers) {
+        // Ищем менеджера в базе данных
+        const manager = await UserModel.findById(managerId);
+        if (manager) {
+          // Проверяем, есть ли у него роль "tasksManager"
+          if (!manager.roles.includes("tasksManager")) {
+            // Добавляем роль, если её нет
+            manager.roles.push("tasksManager");
+            await manager.save();
+          }
+        } else {
+          console.warn(`Менеджер с ID ${managerId} не найден.`);
+        }
+      }
+    }
     return await TasksModel.create(task)
   },
   async delete(_id) {
