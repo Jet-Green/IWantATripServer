@@ -7,6 +7,8 @@ const router = Router()
 
 
 router.post('/get-all', authMiddleware, tasksController.getAll)
+router.post('/get-tasks-amount', authMiddleware, tasksController.getTasksAmount)
+
 router.post('/create',  authMiddleware, tasksController.create)
 router.post('/delete',  authMiddleware, tasksController.delete)
 router.post('/edit',  authMiddleware, tasksController.edit)

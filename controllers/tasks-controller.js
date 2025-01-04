@@ -12,6 +12,13 @@ module.exports = {
       next(error)
     }
   },
+  async getTasksAmount(req, res, next) {
+    try {
+      return res.json(await TasksService.getTasksAmount(req.body.query))
+    } catch (error) {
+      next(error)
+    }
+  },
   async create(req, res, next) {
     try {
       return res.json(await TasksService.create(req.body.task))
