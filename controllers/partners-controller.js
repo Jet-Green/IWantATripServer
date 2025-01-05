@@ -38,8 +38,6 @@ module.exports = {
   async getById(req, res, next) {
     try {
       const { _id } = req.query;
-      console.log(_id)
-      console.log(res.json(await PartnersService.getById(_id)))
       return res.json(await PartnersService.getById(_id))
     } catch (error) {
       next(error)

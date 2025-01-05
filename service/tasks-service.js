@@ -84,7 +84,7 @@ module.exports = {
 
 
   async getById(_id) {
-    return await TasksModel.findById(_id)
+    return await TasksModel.findById(_id).populate('partner',{name:1}).populate('managers')
 
   },
   async createInteraction(interaction, taskId) {
