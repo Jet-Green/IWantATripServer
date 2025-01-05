@@ -60,5 +60,12 @@ module.exports = {
     } catch (error) {
       next(error)
     }
+  },
+  async deleteManager(req, res, next) {
+    try {
+      return res.json(await TasksService.deleteManager(req.body))
+    } catch (error) {
+      next(error)
+    }
   }
 }
