@@ -36,18 +36,18 @@ module.exports = {
 
   async edit(req, res, next) {
     try {
-      let { placeId, place} = req.body;
+      let { placeId, place } = req.body;
       return res.json(await TasksService.edit(place, placeId))
     } catch (error) {
       next(error)
     }
   },
-  
+
 
   async getById(req, res, next) {
     try {
       const { _id } = req.query;
-      
+
       return res.json(await TasksService.getById(_id))
     } catch (error) {
       next(error)
@@ -79,6 +79,15 @@ module.exports = {
     try {
       return res.json(await TasksService.changeStatus(req.body))
     } catch (error) {
+      next(error)
+    }
+  },
+  async edit(req, res, next) {
+    try {
+      return res.json(await TasksService.edit(req.body))
+    } catch (error) {
+      console.log(error);
+      
       next(error)
     }
   }

@@ -98,5 +98,19 @@ module.exports = {
   },
   async changeStatus({ taskId, status }) {
     return await TasksModel.findByIdAndUpdate(taskId, { status: status })
+  },
+  async edit(fullTask) {
+    const _id = fullTask._id;
+    
+    let taskFromDb = await TasksModel.findById(_id);
+    if (!taskFromDb) return;
+
+    taskFromDb.name = fullTask.name
+    taskFromDb.deadLine = fullTask.deadLine
+    taskFromDb.payAmount = fullTask.payAmount
+    taskFromDb.managers = fullTask.managers
+    taskFromDb.comment = fullTask.comment
+
+    return await taskFromDb.save()
   }
 }
