@@ -92,5 +92,8 @@ module.exports = {
   },
   async deleteManager({ managerId, taskId }) {
     return await TasksModel.findByIdAndUpdate(taskId, { $pull: { managers: managerId } })
+  },
+  async addPayment({ payment, taskId }) {
+    return await TasksModel.findByIdAndUpdate(taskId, { $push: { payments: payment } })
   }
 }

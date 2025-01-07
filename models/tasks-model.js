@@ -21,7 +21,7 @@ const tasksSchema = new mongoose.Schema({
   deadLine: { type: Number },
   timezoneOffset: { type: Number },
   payAmount: { type: Number },
-  payments: { type: [{ date: Number, payment: Number }] },
+  payments: { type: [{ date: Number, amount: Number }] },
   status: { type: String, default: 'open' },
   managers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   comment: { type: String },

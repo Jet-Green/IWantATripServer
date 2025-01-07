@@ -17,5 +17,7 @@ router.get('/get-by-id', authMiddleware, tasksController.getById)
 router.post('/create-interaction', authMiddleware, tasksController.createInteraction)
 
 router.post('/delete-manager', authMiddleware, tasksController.deleteManager)
+router.post('/add-payment', authMiddleware, tasksController.addPayment)
+
 
 module.exports = router

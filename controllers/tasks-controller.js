@@ -67,5 +67,12 @@ module.exports = {
     } catch (error) {
       next(error)
     }
+  },
+  async addPayment(req, res, next) {
+    try {
+      return res.json(await TasksService.addPayment(req.body))
+    } catch (error) {
+      next(error)
+    }
   }
 }
