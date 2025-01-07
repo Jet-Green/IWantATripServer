@@ -12,27 +12,29 @@ const partnerSchema = new mongoose.Schema({
     type: { type: String, default: 'Point' },
     coordinates: [Number],
   },
- 
+
   phone: {
     type: String,
-    default:'' 
+    default: ''
   },
   // quill
   email: {
     type: String,
-    default:'' 
+    default: ''
   },
   contactPerson: {
     type: String,
-    default:'' 
+    default: ''
   },
   // quill
   category: {
     type: String,
-    default:'' 
+    default: ''
   },
   author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   createdDate: { type: Number },
+
+  comment: { type: String }
 });
 
 const Partner = mongoose.model('Partner', partnerSchema);
