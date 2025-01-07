@@ -95,5 +95,8 @@ module.exports = {
   },
   async addPayment({ payment, taskId }) {
     return await TasksModel.findByIdAndUpdate(taskId, { $push: { payments: payment } })
+  },
+  async changeStatus({ taskId, status }) {
+    return await TasksModel.findByIdAndUpdate(taskId, { status: status })
   }
 }

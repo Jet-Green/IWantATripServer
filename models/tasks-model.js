@@ -28,6 +28,7 @@ const tasksSchema = new mongoose.Schema({
       document: String
     }]
   },
+  // open, closed
   status: { type: String, default: 'open' },
   managers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   comment: { type: String },

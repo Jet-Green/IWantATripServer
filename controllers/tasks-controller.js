@@ -74,5 +74,12 @@ module.exports = {
     } catch (error) {
       next(error)
     }
+  },
+  async changeStatus(req, res, next) {
+    try {
+      return res.json(await TasksService.changeStatus(req.body))
+    } catch (error) {
+      next(error)
+    }
   }
 }
