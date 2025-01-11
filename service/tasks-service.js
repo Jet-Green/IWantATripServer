@@ -34,7 +34,7 @@ module.exports = {
     let query = filter.query
 
 
-    const cursor = TasksModel.find(query).populate('trip', { name: 1 }).populate('partner').populate({ path: 'managers', select: { email: 1, fullname: 1 } }).skip(skip).limit(limit).cursor();
+    const cursor = TasksModel.find(query).populate('trip', { name: 1, start: 1, timezoneOffset: 1 }).populate('partner').populate({ path: 'managers', select: { email: 1, fullname: 1 } }).skip(skip).limit(limit).cursor();
 
     const results = [];
     for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
@@ -101,7 +101,7 @@ module.exports = {
   },
   async edit(fullTask) {
     const _id = fullTask._id;
-    
+
     let taskFromDb = await TasksModel.findById(_id);
     if (!taskFromDb) return;
 
