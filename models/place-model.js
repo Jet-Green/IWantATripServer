@@ -43,6 +43,9 @@ const placeSchema = new mongoose.Schema({
   category: {
     type: String,
   },
+  phone:{
+    type: String,
+  },
   author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   createdDate: { type: Number },
   isModerated: { type: Boolean, default: false },
