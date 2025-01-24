@@ -13,6 +13,22 @@ const LocationService = require("./location-service.js");
 
 const _ = require("lodash");
 
+const sanitizeHtml = require('sanitize-html');
+function sanitize(input) {    return sanitizeHtml(input, {
+    allowedTags: ['b', 'i', 'em', 'strong', 'a', 'p', 'ul', 'ol', 'li', 'br'],
+    allowedAttributes: {
+        'a': ['href', 'target', 'rel'], // Разрешаем только ссылки и их атрибуты
+        'img': ['src', 'alt', 'title', 'width', 'height'] // Разрешаем изображения и их атрибуты
+    },
+    allowedSchemes: ['http', 'https', 'data'], // Запрещаем потенциально опасные схемы (например, javascript:)
+    allowedSchemesByTag: {
+        img: ['http', 'https', 'data'] // Специально для тегов <img>
+    },
+    // Предотвращаем JavaScript-инъекции
+    enforceHtmlBoundary: true
+})
+}
+
 module.exports = {
   async createManyByDates({ dates, parentId }) {
     let parent = await TripModel.findById(parentId);
@@ -186,6 +202,9 @@ module.exports = {
       trip.includedLocations = null
       trip.locationNames = null
     }
+
+    trip.description=sanitize(trip.description)
+
     let imagesToDelete = [];
     for (let oldImg of oldTrip.images) {
       let isOldImg = true;

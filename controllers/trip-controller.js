@@ -14,6 +14,22 @@ const { default: mongoose } = require('mongoose');
 const s3 = require('../yandex-cloud.js')
 const billModel = require('../models/bill-model.js');
 
+const sanitizeHtml = require('sanitize-html');
+function sanitize(input) {    return sanitizeHtml(input, {
+    allowedTags: ['b', 'i', 'em', 'strong', 'a', 'p', 'ul', 'ol', 'li', 'br'],
+    allowedAttributes: {
+        'a': ['href', 'target', 'rel'], // Разрешаем только ссылки и их атрибуты
+        'img': ['src', 'alt', 'title', 'width', 'height'] // Разрешаем изображения и их атрибуты
+    },
+    allowedSchemes: ['http', 'https', 'data'], // Запрещаем потенциально опасные схемы (например, javascript:)
+    allowedSchemesByTag: {
+        img: ['http', 'https', 'data'] // Специально для тегов <img>
+    },
+    // Предотвращаем JavaScript-инъекции
+    enforceHtmlBoundary: true
+})
+}
+
 // Указываем аутентификацию в Yandex Object Storage
 
 module.exports = {
@@ -178,6 +194,8 @@ module.exports = {
                 req.body.trip.includedLocations = null
                 req.body.trip.locationNames = null
             }
+
+            req.body.trip.description=sanitize(req.body.trip.description)
 
             const tripFromDB = await TripService.insertOne(req.body.trip)
 

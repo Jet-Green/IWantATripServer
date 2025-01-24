@@ -9,6 +9,21 @@ const { sendMail } = require('../middleware/mailer');
 const LocationService = require('./location-service.js')
 
 const _ = require('lodash');
+const sanitizeHtml = require('sanitize-html');
+function sanitize(input) {    return sanitizeHtml(input, {
+    allowedTags: ['b', 'i', 'em', 'strong', 'a', 'p', 'ul', 'ol', 'li', 'br'],
+    allowedAttributes: {
+        'a': ['href', 'target', 'rel'], // Разрешаем только ссылки и их атрибуты
+        'img': ['src', 'alt', 'title', 'width', 'height'] // Разрешаем изображения и их атрибуты
+    },
+    allowedSchemes: ['http', 'https', 'data'], // Запрещаем потенциально опасные схемы (например, javascript:)
+    allowedSchemesByTag: {
+        img: ['http', 'https', 'data'] // Специально для тегов <img>
+    },
+    // Предотвращаем JavaScript-инъекции
+    enforceHtmlBoundary: true
+})
+}
 
 module.exports = {
     async getFullCatalogById(_id) {
@@ -52,6 +67,7 @@ module.exports = {
         if (startLocation && startLocation.coordinates) {
             startLocation.coordinates = startLocation.coordinates.map(coord => parseFloat(coord));
         }
+        trip.description=sanitize(trip.description)
         let location = await LocationService.createLocation(startLocation)   
         return CatalogTripModel.findByIdAndUpdate(
             _id,
@@ -150,6 +166,7 @@ module.exports = {
         return results
     },
     async moderateCatalog(_id, t) {
+        
         return CatalogTripModel.findByIdAndUpdate(_id, { isModerated: t, rejected: false })
     },
     async sendCatalogModerationMessage(tripId, msg) {

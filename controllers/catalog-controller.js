@@ -18,6 +18,22 @@ let s3 = new EasyYandexS3({
     debug: false, // Дебаг в консоли
 });
 
+const sanitizeHtml = require('sanitize-html');
+function sanitize(input) {    return sanitizeHtml(input, {
+    allowedTags: ['b', 'i', 'em', 'strong', 'a', 'p', 'ul', 'ol', 'li', 'br'],
+    allowedAttributes: {
+        'a': ['href', 'target', 'rel'], // Разрешаем только ссылки и их атрибуты
+        'img': ['src', 'alt', 'title', 'width', 'height'] // Разрешаем изображения и их атрибуты
+    },
+    allowedSchemes: ['http', 'https', 'data'], // Запрещаем потенциально опасные схемы (например, javascript:)
+    allowedSchemesByTag: {
+        img: ['http', 'https', 'data'] // Специально для тегов <img>
+    },
+    // Предотвращаем JavaScript-инъекции
+    enforceHtmlBoundary: true
+})
+}
+
 module.exports = {
     async getFullCatalogById(req, res, next) {
         try {
@@ -58,6 +74,8 @@ module.exports = {
             }
             req.body.trip.locationNames = [location]
             // }
+
+            req.body.trip.description=sanitize(req.body.trip.description)
 
             const tripFromDB = await catalogTripModel.create(req.body.trip)
 

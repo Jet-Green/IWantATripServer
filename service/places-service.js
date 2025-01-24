@@ -1,5 +1,19 @@
 const PlaceModel = require("../models/place-model");
-
+const sanitizeHtml = require('sanitize-html');
+function sanitize(input) {    return sanitizeHtml(input, {
+    allowedTags: ['b', 'i', 'em', 'strong', 'a', 'p', 'ul', 'ol', 'li', 'br'],
+    allowedAttributes: {
+        'a': ['href', 'target', 'rel'], // Разрешаем только ссылки и их атрибуты
+        'img': ['src', 'alt', 'title', 'width', 'height'] // Разрешаем изображения и их атрибуты
+    },
+    allowedSchemes: ['http', 'https', 'data'], // Запрещаем потенциально опасные схемы (например, javascript:)
+    allowedSchemesByTag: {
+        img: ['http', 'https', 'data'] // Специально для тегов <img>
+    },
+    // Предотвращаем JavaScript-инъекции
+    enforceHtmlBoundary: true
+})
+}
 const tripFilter = {
   $and: [
     { isHidden: false, isModerated: true, rejected: false },
@@ -165,6 +179,7 @@ module.exports = {
   },
 
   async create(place) {
+    place.description=sanitize(place.description)
     return await PlaceModel.create(place);
   },
   async delete(_id) {
@@ -172,6 +187,7 @@ module.exports = {
   },
 
   async edit(place, placeId) {
+    place.description=sanitize(place.description)
     return await PlaceModel.findByIdAndUpdate(placeId, place);
   },
 
