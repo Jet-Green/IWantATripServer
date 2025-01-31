@@ -552,15 +552,15 @@ module.exports = {
     async findById(_id) {
         return TripModel.findById(_id).populate('author').populate('places', { name: 1 })
     },
-    async createdTripsInfo(_id) {
+    async createdTripsInfo(_id,query,page) {
         let tripsIdArray = []
-
+        console.log(_id,query,page)
 
         await UserModel.findById(_id, { "trips": 1 }).then(data => {
             tripsIdArray = data.trips
         })
         let result = []
-        await TripModel.find({ _id: { $in: tripsIdArray } }).populate('parent').populate('calculator')
+        await TripModel.find({ _id: { $in: tripsIdArray }, ...query}).populate('parent').populate('calculator')
             .then((data) => {
 
                 for (let trip of data) {
