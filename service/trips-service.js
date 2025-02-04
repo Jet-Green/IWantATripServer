@@ -553,7 +553,7 @@ module.exports = {
         return TripModel.findById(_id).populate('author').populate('places', { name: 1 })
     },
     async createdTripsInfo(_id,query,page,isArchive) {
-        const limit = 3;
+        const limit = 10;
         page = page|| 1;
         const skip = (page - 1) * limit;
         // console.log(_id,query,page)
