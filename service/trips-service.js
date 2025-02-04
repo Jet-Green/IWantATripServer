@@ -553,54 +553,50 @@ module.exports = {
         return TripModel.findById(_id).populate('author').populate('places', { name: 1 })
     },
     async createdTripsInfo(_id,query,page,isArchive) {
+        const limit = 3;
+        page = page|| 1;
+        const skip = (page - 1) * limit;
+        // console.log(_id,query,page)
+
         let tripsIdArray = []
-        if(isArchive==false){
-          query.start={ $gte: Date.now() }
-        }
-        else{
+        if(isArchive==2){
           query.start={ $lte: Date.now() }
         }
-        // console.log(_id,query,page)
+        else{
+          query.start={ $gte: Date.now() }
+        }
         await UserModel.findById(_id, { "trips": 1 }).then(data => {
             tripsIdArray = data.trips
         })
         let result = []
-        await TripModel.find({ _id: { $in: tripsIdArray }, ...query}).populate('parent').populate('calculator')
-            .then((data) => {
+        const cursorBase = TripModel.find({ _id: { $in: tripsIdArray }, ...query}, null, { sort: "start" }).populate('parent').populate('calculator')
+        .skip(skip)
+        .limit(limit)
+        .cursor();
 
-                for (let trip of data) {
-                    if (trip.parent) {
-                        // let originalId = trip._id
-                        // let parentId = trip.parent._id
-                        // let { start, end } = trip
-                        // let isModerated = trip.parent.isModerated
-
-            // Object.assign(trip, trip.parent)
-            // trip.parent = parentId
-            // trip.children = []
-            // trip._id = originalId
-            // trip.start = start
-            // trip.end = end
-            // trip.isModerated = isModerated
-            trip.name = trip.parent.name;
-            trip.description = trip.parent.description;
-            trip.tripRoute = trip.parent.tripRoute;
-            trip.tripType = trip.parent.tripType;
-            trip.startLocation = trip.parent.startLocation;
-            trip.partner = trip.parent.partner;
-            trip.offer = trip.parent.offer;
-            trip.parent.isModerated
-              ? (trip.isModerated = true)
-              : (trip.isModerated = false);
-            result.push(trip);
-          } else {
-            result.push(trip);
-          }
+        for (
+          let trip = await cursorBase.next();
+          trip != null;
+          trip = await cursorBase.next()
+        ) {
+        if (trip.parent) {
+          trip.name = trip.parent.name;
+          trip.description = trip.parent.description;
+          trip.tripRoute = trip.parent.tripRoute;
+          trip.tripType = trip.parent.tripType;
+          trip.startLocation = trip.parent.startLocation;
+          trip.partner = trip.parent.partner;
+          trip.offer = trip.parent.offer;
+          trip.parent.isModerated
+            ? (trip.isModerated = true)
+            : (trip.isModerated = false);
+          result.push(trip);
         }
-        tripsInfoArray = result;
-      });
-
-        return result
+        else{
+          result.push(trip);
+        }
+      }
+      return result
     },
     async updateBillsTourists({ _id, touristsList }) {
         // console.log(_id, touristsList)
