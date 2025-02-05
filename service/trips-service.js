@@ -552,19 +552,14 @@ module.exports = {
     async findById(_id) {
         return TripModel.findById(_id).populate('author').populate('places', { name: 1 })
     },
-    async createdTripsInfo(_id,query,page,isArchive) {
+    async createdTripsInfo(_id,query,page) {
         const limit = 10;
         page = page|| 1;
         const skip = (page - 1) * limit;
         // console.log(_id,query,page)
 
         let tripsIdArray = []
-        if(isArchive==2){
-          query.start={ $lte: Date.now() }
-        }
-        else{
-          query.start={ $gte: Date.now() }
-        }
+
         await UserModel.findById(_id, { "trips": 1 }).then(data => {
             tripsIdArray = data.trips
         })

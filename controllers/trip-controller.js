@@ -310,7 +310,7 @@ module.exports = {
     },
     async createdTripsInfo(req, res, next) {
         try {
-            return res.json(await TripService.createdTripsInfo(req.body._id, req.body.query, req.body.page, req.body.cursorType))
+            return res.json(await TripService.createdTripsInfo(req.body._id, req.body.query, req.body.page))
         } catch (error) {
             next(error)
         }
