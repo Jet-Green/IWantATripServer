@@ -12,6 +12,15 @@ module.exports = {
       next(error)
     }
   },
+  async getTripTasks(req, res, next) {
+    try {
+
+      return res.json(await TasksService.getTripTasks(req.body.query))
+    } catch (error) {
+      next(error)
+    }
+  },
+  
   async getTasksAmount(req, res, next) {
     try {
       return res.json(await TasksService.getTasksAmount(req.body.query))

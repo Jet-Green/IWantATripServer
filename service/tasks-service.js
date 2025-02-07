@@ -43,6 +43,14 @@ module.exports = {
 
     return results
   },
+  async getTripTasks(query) {
+
+    return TasksModel.find(query).populate('trip', { name: 1, start: 1, timezoneOffset: 1 }).populate('partner').populate({ path: 'managers', select: { email: 1, fullname: 1 } });
+
+  },
+
+
+
 
   async getTasksAmount(query) {
 
