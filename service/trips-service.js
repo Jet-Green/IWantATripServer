@@ -555,7 +555,7 @@ module.exports = {
     return TripModel.findById(_id).populate('author').populate('places', { name: 1 })
   },
   async createdTripsInfo(_id, query, page) {
-    const limit = 10;
+    const limit = 15;
     page = page || 1;
     const skip = (page - 1) * limit;
     // console.log(_id,query,page)
@@ -566,7 +566,6 @@ module.exports = {
       tripsIdArray = data.trips
     })
 
-    console.log(query['$or'][0].name['$regex'])
     let result = []
     const cursorBase = TripModel.find({ _id: { $in: tripsIdArray }, ...query }, null, { sort: "start" }).populate('parent').populate('calculator')
       .skip(skip)
