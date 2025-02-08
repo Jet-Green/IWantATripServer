@@ -107,9 +107,9 @@ module.exports = {
   async changeStatus({ taskId, status }) {
     return await TasksModel.findByIdAndUpdate(taskId, { status: status })
   },
-  async edit(fullTask) {
+  async editTask(fullTask) {
+    console.log(fullTask)
     const _id = fullTask._id;
-
     let taskFromDb = await TasksModel.findById(_id);
     if (!taskFromDb) return;
 
@@ -118,6 +118,9 @@ module.exports = {
     taskFromDb.payAmount = fullTask.payAmount
     taskFromDb.managers = fullTask.managers
     taskFromDb.comment = fullTask.comment
+    taskFromDb.trip = fullTask.trip
+    taskFromDb.tripInfo = fullTask.tripInfo
+    taskFromDb.partner = fullTask.partner
 
     return await taskFromDb.save()
   }

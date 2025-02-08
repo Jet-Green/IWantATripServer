@@ -91,9 +91,9 @@ module.exports = {
       next(error)
     }
   },
-  async edit(req, res, next) {
+  async editTask(req, res, next) {
     try {
-      return res.json(await TasksService.edit(req.body))
+      return res.json(await TasksService.editTask(req.body))
     } catch (error) {
       console.log(error);
       

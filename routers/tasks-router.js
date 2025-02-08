@@ -22,6 +22,6 @@ router.post('/delete-manager', authMiddleware, tasksController.deleteManager)
 router.post('/add-payment', authMiddleware, tasksController.addPayment)
 
 router.post('/change-status', authMiddleware, tasksController.changeStatus)
-router.post('/edit', authMiddleware, tasksController.edit)
+router.post('/edit-task', authMiddleware, tasksController.editTask)
 
 module.exports = router
