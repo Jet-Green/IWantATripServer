@@ -108,7 +108,7 @@ module.exports = {
     return await TasksModel.findByIdAndUpdate(taskId, { status: status })
   },
   async editTask(fullTask) {
-  
+
     const _id = fullTask._id;
     let taskFromDb = await TasksModel.findById(_id);
     if (!taskFromDb) return;
