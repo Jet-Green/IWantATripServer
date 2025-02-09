@@ -4,6 +4,7 @@ const tasksSchema = new mongoose.Schema({
   trip: { type: mongoose.Schema.Types.ObjectId, ref: 'Trip' },
   tripInfo: {
     type: {
+      start:Number,
       end: Number,
       timezoneOffset: Number,
       name: String,
