@@ -3,13 +3,13 @@ const mongoose = require('mongoose');
 const tasksSchema = new mongoose.Schema({
   trip: { type: mongoose.Schema.Types.ObjectId, ref: 'Trip' },
   tripInfo: {
-    type: {
-      start:Number,
-      end: Number,
-      timezoneOffset: Number,
-      name: String,
-      _id: String,
-    },
+    // type: {
+    //   start:Number,
+    //   end: Number,
+    //   timezoneOffset: Number,
+    //   name: String,
+    //   _id: String,
+    // },
   },
   author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 
