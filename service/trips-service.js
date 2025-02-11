@@ -555,7 +555,7 @@ module.exports = {
     return TripModel.findById(_id).populate('author').populate('places', { name: 1 })
   },
   async createdTripsInfo(_id, query, page) {
-    const limit = 15;
+    const limit = 1;
     page = page || 1;
     const skip = (page - 1) * limit;
     // console.log(_id,query,page)
@@ -566,21 +566,27 @@ module.exports = {
       tripsIdArray = data.trips
     })
 
-    let result = []
-    const cursorBase = TripModel.find({ _id: { $in: tripsIdArray }, ...query }, null, { sort: "start" }).populate('parent').populate('calculator')
+    let result = new Set()
+    const regexPattern = query["$or"]?.[0]?.name?.["$regex"];
+    const cursorBase = TripModel.find({ _id: { $in: tripsIdArray }, ...query }, null, { sort: "start" })
+      .populate({
+        path:'parent',
+        match: { "name": { $regex: regexPattern, $options: 'i' } }
+      })
+      .populate('calculator')
       .skip(skip)
       .limit(limit)
       .cursor();
 
-    const regexPattern = query["$or"]?.[0]?.name?.["$regex"];
-    const regex = regexPattern ? new RegExp(regexPattern, "i") : null;
+
+    // const regex = regexPattern ? new RegExp(regexPattern, "i") : null;
     for (
       let trip = await cursorBase.next();
       trip != null;
       trip = await cursorBase.next()
     ) {
       if (trip.parent) {
-        if (!regex || regex.test(trip.parent.name)) { // Проверяем, подходит ли parent.name под regex
+        // if (!regex || regex.test(trip.parent.name)) { // Проверяем, подходит ли parent.name под regex
           trip.name = trip.parent.name;
           trip.description = trip.parent.description;
           trip.tripRoute = trip.parent.tripRoute;
@@ -588,14 +594,17 @@ module.exports = {
           trip.startLocation = trip.parent.startLocation;
           trip.partner = trip.parent.partner;
           trip.offer = trip.parent.offer;
+          trip.timezoneOffset = trip.parent.timezoneOffset;
           // trip.isModerated = trip.parent.isModerated || false;
-          result.push(trip);
-        }
+          result.add(trip);
+          result.add(trip.parent);
+        // }
       } else {
-        result.push(trip);
+        result.add(trip);
       }
     }
-    return result
+    console.log(result,limit,page,skip,query)
+    return Array.from(result)
   },
   async updateBillsTourists({ _id, touristsList }) {
     // console.log(_id, touristsList)
