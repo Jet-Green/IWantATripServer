@@ -555,10 +555,9 @@ module.exports = {
     return TripModel.findById(_id).populate('author').populate('places', { name: 1 })
   },
   async createdTripsInfo(_id, query, page) {
-    const limit = 2;
+    const limit = 20;
     page = page || 1;
     let skip = (page - 1) * limit;
-    // console.log(_id,query,page)
 
     let tripsIdArray = []
 
@@ -567,40 +566,38 @@ module.exports = {
     })
 
     let result = new Set()
-    // , ...query 
     let regexStr = query["$or"]?.[0]?.name['$regex'];
-    const regex = new RegExp(`[${regexStr.slice(0,1).toUpperCase()}${regexStr.slice(0,1)}]${regexStr.slice(1)}`)
-    // console.log(isModerated,regex)
-    // const regex = regexStr ? new RegExp(regexStr, "i") : null;
-    // console.log(regex)
-    // console.log(regexPattern)
+    let regex;
+    if (regexStr.length!=0){
+      regex = new RegExp(`[${regexStr.slice(0,1).toUpperCase()}${regexStr.slice(0,1)}]${regexStr.slice(1)}`)
+    }
+    else{
+      regex = new RegExp(`\\w`)
+    }
     let cursorBase = TripModel.find({ _id: { $in: tripsIdArray }}, null, { sort: "start" })
     .populate({
     path:'parent',
-    // match: { "name": { $regex: regexPattern, $options: 'i' } }
       })
       .populate('calculator')
       .skip(skip)
       .limit(limit)
       .cursor()
     let trip = await cursorBase.next()
-    while ((result.size!=limit) && (trip!=null) )
-      // console.log(trip)
-      {  
+
+    while ((result.size<limit) )
+    {  
       cursorBase = TripModel.find({ _id: { $in: tripsIdArray }}, null, { sort: "start" })
-      .populate({
-      path:'parent',
-      // match: { "name": { $regex: regexPattern, $options: 'i' } }
-        })
+      .populate({path:'parent'})
         .populate('calculator')
         .skip(skip)
         .limit(limit)
         .cursor()
       trip = await cursorBase.next()
-      // console.log((result.size!=limit),(trip!=null))
+      if (trip==null){
+        break;
+      }
       for (trip = trip; trip != null; trip = await cursorBase.next()) {
         if (trip?.parent) {
-          // if (!regex || regex.test(trip.parent.name)) { // Проверяем, подходит ли parent.name под regex
           trip.name = trip.parent.name;
           trip.description = trip.parent.description;
           trip.tripRoute = trip.parent.tripRoute;
@@ -609,29 +606,42 @@ module.exports = {
           trip.partner = trip.parent.partner;
           trip.offer = trip.parent.offer;
           trip.timezoneOffset = trip.parent.timezoneOffset;
-          // trip.isModerated = trip.parent.isModerated || false;
           result.add(trip);
           result.add(trip.parent);
-          // }
         } else {
           result.add(trip);
         }
       }
-      // console.log(result.size)
+      // console.log("beforefilter",result.size)
       for (const trip of result) {
-        if (regex.test(trip.name) == false) {
+
+        if (regex.test(trip.name) == true) {
+
           if (query?.isModerated) {
-            if (query["isModerated"]["eq"] == trip.isModerated)
+            if (query["isModerated"]["$eq"] != trip.isModerated)
             {
               result.delete(trip);
             }
           }
-          else{
-            result.delete(trip);
+          if (query["start"]?.$lte){
+            if (trip.start>query["start"]["$lte"]){
+              result.delete(trip);
+            }
           }
+          else if (query["start"]?.$gte){
+            if (trip.start<query["start"]["$gte"]){
+              result.delete(trip);
+            }
+          }
+
         }
+        else{
+          result.delete(trip);
+        }
+
+
       }
-      console.log('end',result.size)
+      // console.log('after',result.size)
       page+=1
       skip=(page - 1) * limit
     }
