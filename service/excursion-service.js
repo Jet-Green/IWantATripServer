@@ -190,170 +190,180 @@ module.exports = {
 
     },
 
-    async getAll(locationId, strQuery, start, end, type, directionType, directionPlace, minAge, havePrices) {
+    async getAll(
+        locationId,
+        strQuery,
+        start,
+        end,
+        type,
+        directionType,
+        directionPlace,
+        minAge,
+        havePrices
+      ) {
+        // Date filtering setup
         const currentDate = new Date();
         const currentYear = currentDate.getFullYear();
-        const currentMonth = currentDate.getMonth(); // месяцы в JS начинаются с 0
+        const currentMonth = currentDate.getMonth();
         const currentDay = currentDate.getDate();
-        let upcomingDates = ""
-        if (start && end) {
-            start = new Date(start)
-            end = new Date(end)
-            upcomingDates = await ExcursionDateModel.find({
-                $and: [
-                    {
-                        $or: [
-                            { 'date.year': { $gt: start.getFullYear(), $lt: end.getFullYear() } },
-                            {
-                                $and: [
-                                    { 'date.year': { $eq: start.getFullYear(), $ne: end.getFullYear() } },
-                                    { 'date.month': { $gte: start.getMonth() } }
-                                ]
-                            },
-                            {
-                                $and: [
-                                    { 'date.year': { $ne: start.getFullYear(), $eq: end.getFullYear() } },
-                                    { 'date.month': { $lte: end.getMonth() } }
-                                ]
-                            },
-                            { 'date.month': { $gte: start.getMonth(), $lte: end.getMonth() } },
-                        ]
+      
+        let dateFilter = {};
+        let upcomingDateIds = [];
+      
+        try {
+          // Build date filter query
+          if (start && end) {
+            const startDate = new Date(start);
+            const endDate = new Date(end);
+            
+            dateFilter = {
+              $and: [
+                // Dates >= start date
+                {
+                  $or: [
+                    { 'date.year': { $gt: startDate.getFullYear() } },
+                    { 
+                      $and: [
+                        { 'date.year': startDate.getFullYear() },
+                        { 'date.month': { $gt: startDate.getMonth() } }
+                      ] 
                     },
-                    {
-                        $or: [
-                            { 'date.month': { $gt: start.getMonth(), $lt: end.getMonth() } },
-                            {
-                                $and: [
-                                    { 'date.month': { $eq: start.getMonth(), $ne: end.getMonth() } },
-                                    { 'date.day': { $gte: start.getDate() } }
-                                ]
-                            },
-                            {
-                                $and: [
-                                    { 'date.month': { $ne: start.getMonth(), $eq: end.getMonth() } },
-                                    { 'date.day': { $lte: end.getDate() } }
-                                ]
-                            },
-                            { 'date.day': { $gte: start.getDate(), $lte: end.getDate() } }
-                        ]
+                    { 
+                      $and: [
+                        { 'date.year': startDate.getFullYear() },
+                        { 'date.month': startDate.getMonth() },
+                        { 'date.day': { $gte: startDate.getDate() } }
+                      ] 
                     }
-                ]
-            }).select('_id');
-        }
-        else {
-            upcomingDates = await ExcursionDateModel.find({
-                $and: [
-                    {
-                        $or: [
-                            { 'date.year': { $gt: currentYear } },
-                            {
-                                $and: [
-                                    { 'date.year': currentYear },
-                                    { 'date.month': { $gte: currentMonth } }
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        $or: [
-                            { 'date.month': { $gt: currentMonth } },
-                            {
-                                $and: [
-                                    { 'date.month': currentMonth },
-                                    { 'date.day': { $gte: currentDay } }
-                                ]
-                            }
-                        ]
-                    },
-                ]
-
-            }).select('_id');
-        }
-
-
-
-
-        // Получаем только идентификаторы
-        const upcomingDateIds = upcomingDates.map(date => date._id);
-        let query = {}
-
-        query = {
-            $and: [
-                { isHidden: false, isModerated: true, },
+                  ]
+                },
+                // Dates <= end date
                 {
-                    $or: [
-                        { dates: { $elemMatch: { $in: upcomingDateIds } } },
-                        { dates: { $size: 0 } }
-                    ]
+                  $or: [
+                    { 'date.year': { $lt: endDate.getFullYear() } },
+                    { 
+                      $and: [
+                        { 'date.year': endDate.getFullYear() },
+                        { 'date.month': { $lt: endDate.getMonth() } }
+                      ] 
+                    },
+                    { 
+                      $and: [
+                        { 'date.year': endDate.getFullYear() },
+                        { 'date.month': endDate.getMonth() },
+                        { 'date.day': { $lte: endDate.getDate() } }
+                      ] 
+                    }
+                  ]
                 }
-            ]
+              ]
+            };
+          } else {
+            // Current date filter
+            dateFilter = {
+              $or: [
+                { 'date.year': { $gt: currentYear } },
+                { 
+                  $and: [
+                    { 'date.year': currentYear },
+                    { 'date.month': { $gt: currentMonth } }
+                  ] 
+                },
+                { 
+                  $and: [
+                    { 'date.year': currentYear },
+                    { 'date.month': currentMonth },
+                    { 'date.day': { $gte: currentDay } }
+                  ] 
+                }
+              ]
+            };
+          }
+      
+          // Get upcoming date IDs
+          const upcomingDates = await ExcursionDateModel.find(dateFilter).select('_id');
+          upcomingDateIds = upcomingDates.map(date => date._id);
+            //   console.log(upcomingDateIds)
+        } catch (error) {
+          console.error('Error fetching dates:', error);
+          throw new Error('Failed to retrieve date information');
         }
-
-        if (locationId) {
-            let location = await LocationModel.findById(locationId)
-            if (location) {
-                try {
-                    query.$and.push({
-                        'location.coordinates': {
-                            $near: {
-                                $geometry: {
-                                    type: 'Point',
-                                    coordinates: location.coordinates,
-                                },
-                                $maxDistance: 50000 // 50 km
-                            }
-                        }
-                    });
-                } catch (error) {
-                    console.log(error);
-                }
-            } else {
-                console.log('Координаты не найдены для данной локации');
+      
+        // Base query construction
+        const query = {
+          $and: [
+            { isHidden: false, isModerated: true },
+            {
+                // { dates: { $elemMatch: { $in: upcomingDateIds } } },
+                dates: { $in: upcomingDateIds }
             }
-
+          ]
+        };
+      
+        // Location filtering
+        if (locationId) {
+          try {
+            const location = await LocationModel.findById(locationId);
+            if (location?.coordinates) {
+              query.$and.push({
+                'location.coordinates': {
+                  $near: {
+                    $geometry: {
+                      type: 'Point',
+                      coordinates: location.coordinates,
+                    },
+                    $maxDistance: 50000 // 50 km
+                  }
+                }
+              });
+            }
+          } catch (error) {
+            console.error('Location search error:', error);
+            throw new Error('Failed to process location filter');
+          }
         }
-
+      
+        // Text search
         if (strQuery) {
-            query.$and.push(
-                {
-                    $or: [
-                        { name: { $regex: strQuery, $options: 'i' } },
-                        { description: { $regex: strQuery, $options: 'i' } },
-                    ]
-                }
-            )
+          query.$and.push({
+            $or: [
+              { name: { $regex: strQuery, $options: 'i' } },
+              { description: { $regex: strQuery, $options: 'i' } },
+            ]
+          });
         }
+      
         if (type) {
-            query.$and.push(
-                {
-
-                    "excursionType.type": { $regex: type, $options: 'i' },
-                    "excursionType.directionType": { $regex: directionType, $options: 'i' },
-                    "excursionType.directionPlace": { $regex: directionPlace, $options: 'i' },
-                }
-            )
+          query.$and.push(
+              {
+      
+                  "excursionType.type": { $regex: type, $options: 'i' },
+                  "excursionType.directionType": { $regex: directionType, $options: 'i' },
+                  "excursionType.directionPlace": { $regex: directionPlace, $options: 'i' },
+              }
+          )
         }
+      
+        // Age filter
         if (minAge) {
-            query.$and.push(
-                {
-                    minAge: { $lte: minAge },
-                }
-            )
+          query.$and.push({ minAge: { $lte: minAge } });
         }
+      
+        // Price availability filter
         if (havePrices) {
-            query.$and.push(
-                {
-                    prices: { $size: 0 },
-                }
-            )
+          query.$and.push({ 
+            prices: { $exists: true, $not: { $size: 0 } }
+          });
         }
-
-
-        return await ExcursionModel.find(
-            query
-
-        ).populate('dates')
-
+      
+        try {
+          return await ExcursionModel.find(query)
+            .populate('dates')
+            // .exec();
+        } catch (error) {
+          console.error('Database query error:', error);
+          throw new Error('Failed to retrieve excursions');
+        }
     },
 
     async getExcursionById(_id) {
