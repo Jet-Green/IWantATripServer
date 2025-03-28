@@ -106,11 +106,27 @@ module.exports = {
             next(err)
         }
     },
-
+    
     async getLocalTaxi(req, res, next) {
         try {
-          
+            
             res.json(await GuideService.getLocalTaxi(req.body.location))
+        } catch (err) {
+            next(err)
+        }
+    },
+    async addGuide(req, res, next) {
+        try {
+          
+            res.json(await GuideService.addGuide(req.body.guide))
+        } catch (err) {
+            next(err)
+        }
+    },
+    async getLocalGuides(req, res, next) {
+        try {
+          
+            res.json(await GuideService.getLocalGuides(req.body.guide))
         } catch (err) {
             next(err)
         }

@@ -1,4 +1,5 @@
 const GuideElementModel = require('../models/guide-element-model')
+const GuideModel = require('../models/guide-model')
 const TaxiModel = require('../models/taxi-model')
 
 module.exports = {
@@ -18,6 +19,16 @@ module.exports = {
     },
     async getAllElements(type) {
         return GuideElementModel.find({ 'type': type }).exec()
+    },
+    async addGuide(guide) {
+        return await GuideModel.create(guide)
+    },
+    getLocalGuides(location) {
+        if (location == null) {
+            return GuideModel.find({})
+        } else {
+            return GuideModel.find({ location: { $regex: location, $options: "i" }})
+        }
     },
     setTaxi(taxi) {
         return TaxiModel.create(taxi)

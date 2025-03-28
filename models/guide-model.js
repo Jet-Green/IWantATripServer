@@ -9,7 +9,7 @@ const GuideSchema = new Schema({
     offer: String,
     socialMedia: String,
     description: String,
-
+    location: String,
 })
 
 module.exports = model('Guide', GuideSchema);
