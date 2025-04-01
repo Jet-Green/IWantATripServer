@@ -123,10 +123,10 @@ module.exports = {
             next(err)
         }
     },
-    async getLocalGuides(req, res, next) {
+    async getGuides(req, res, next) {
         try {
           
-            res.json(await GuideService.getLocalGuides(req.body.guide))
+            res.json(await GuideService.getGuides(req.body.query))
         } catch (err) {
             next(err)
         }
