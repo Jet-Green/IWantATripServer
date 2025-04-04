@@ -126,7 +126,7 @@ module.exports = {
     async getGuides(req, res, next) {
         try {
           
-            res.json(await GuideService.getGuides(req.body.query))
+            res.json(await GuideService.getGuides(req.body.query,req.body.dbSkip))
         } catch (err) {
             next(err)
         }
