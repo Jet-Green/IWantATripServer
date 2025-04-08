@@ -37,7 +37,7 @@ module.exports = {
             time: {}
         }
         for (let dateId of excursion.dates) {
-            let candidate = await ExcursionDateModel.findOne({ $and: [{ id: dateId.toString() }, { times: { $elemMatch: { _id: timeId } } }] })
+            let candidate = await ExcursionDateModel.findOne( { times: { $elemMatch: { _id: timeId } }  })
             if (candidate?._id) {
                 let populatedDate = await candidate.populate({
                     path: 'times.bills',
