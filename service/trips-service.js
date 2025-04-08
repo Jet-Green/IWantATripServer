@@ -554,50 +554,48 @@ module.exports = {
   async findById(_id) {
     return TripModel.findById(_id).populate('author').populate('places', { name: 1 })
   },
-  async createdTripsInfo(_id, query, page) {
-    const limit = 20;
-    page = page || 1;
-    let skip = (page - 1) * limit;
-
-    let tripsIdArray = []
-
-    await UserModel.findById(_id, { "trips": 1 }).then(data => {
-      tripsIdArray = data.trips
-    })
-
-    let result = new Set()
-    let regexStr = query["$or"]?.[0]?.name['$regex'];
-    let regex;
-    if (regexStr.length!=0){
-      regex = new RegExp(`[${regexStr.slice(0,1).toUpperCase()}${regexStr.slice(0,1)}]${regexStr.slice(1)}`)
-    }
-    else{
-      regex = new RegExp(`\\w`)
-    }
-    let cursorBase = TripModel.find({ _id: { $in: tripsIdArray }}, null, { sort: "start" })
-    .populate({
-    path:'parent',
-      })
-      .populate('calculator')
-      .skip(skip)
-      .limit(limit)
-      .cursor()
-    let trip = await cursorBase.next()
-
-    while ((result.size<limit) )
-    {  
-      cursorBase = TripModel.find({ _id: { $in: tripsIdArray }}, null, { sort: "start" })
-      .populate({path:'parent'})
-        .populate('calculator')
+  async createdTripsInfo(_id, query, page = 1) {
+    const limit = 15;
+    let result = [];
+    let tripsIdArray = [];
+  
+    await UserModel.findById(_id, { trips: 1 }).then(data => {
+      tripsIdArray = data?.trips || [];
+    });
+  
+    if (!tripsIdArray.length) return { result, currentPage: page };
+  
+    const regexPattern = query["$or"]?.[0]?.name?.["$regex"];
+    const regex = regexPattern ? new RegExp(regexPattern, "i") : null;
+  
+  
+  
+    while (result.length < limit) {
+      const skip = (page - 1) * limit;
+  
+      const cursorBase = TripModel.find(
+        { _id: { $in: tripsIdArray }, ...query }, // Основной запрос
+        null,
+        { sort: "start" }
+      )
+        .populate("parent")
+        .populate("calculator")
         .skip(skip)
         .limit(limit)
-        .cursor()
-      trip = await cursorBase.next()
-      if (trip==null){
-        break;
-      }
-      for (trip = trip; trip != null; trip = await cursorBase.next()) {
-        if (trip?.parent) {
+        .cursor();
+  
+      let hasMoreData = false;
+  
+      for (
+        let trip = await cursorBase.next();
+        trip != null;
+        trip = await cursorBase.next()
+      ) {
+        hasMoreData = true;
+  
+        if (trip.parent) {
+          if (regex && !regex.test(trip.parent.name)) continue; // Фильтруем сразу
+  
           trip.name = trip.parent.name;
           trip.description = trip.parent.description;
           trip.tripRoute = trip.parent.tripRoute;
@@ -605,47 +603,18 @@ module.exports = {
           trip.startLocation = trip.parent.startLocation;
           trip.partner = trip.parent.partner;
           trip.offer = trip.parent.offer;
-          trip.timezoneOffset = trip.parent.timezoneOffset;
-          result.add(trip);
-          result.add(trip.parent);
-        } else {
-          result.add(trip);
         }
+  
+        result.push(trip);
+  
+        if (result.length >= limit) break;
       }
-      // console.log("beforefilter",result.size)
-      for (const trip of result) {
-
-        if (regex.test(trip.name) == true) {
-
-          if (query?.isModerated) {
-            if (query["isModerated"]["$eq"] != trip.isModerated)
-            {
-              result.delete(trip);
-            }
-          }
-          if (query["start"]?.$lte){
-            if (trip.start>query["start"]["$lte"]){
-              result.delete(trip);
-            }
-          }
-          else if (query["start"]?.$gte){
-            if (trip.start<query["start"]["$gte"]){
-              result.delete(trip);
-            }
-          }
-
-        }
-        else{
-          result.delete(trip);
-        }
-
-
-      }
-      // console.log('after',result.size)
-      page+=1
-      skip=(page - 1) * limit
+  
+      if (!hasMoreData) break;
+      page++;
     }
-    return {data:Array.from(result),page:page-1}
+  
+    return { result, currentPage:page };
   },
   async updateBillsTourists({ _id, touristsList }) {
     // console.log(_id, touristsList)
