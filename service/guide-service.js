@@ -1,6 +1,7 @@
 const GuideElementModel = require('../models/guide-element-model')
 const GuideModel = require('../models/guide-model')
 const TaxiModel = require('../models/taxi-model')
+const UserModel = require('../models/user-model')
 
 module.exports = {
     async clear() {
@@ -21,37 +22,91 @@ module.exports = {
         return GuideElementModel.find({ 'type': type }).exec()
     },
     async addGuide(guide) {
-        return await GuideModel.create(guide)
+        const user = await UserModel.findOne({ email: guide.email }).select('_id').lean();
+        const guideToCreate = {
+            ...guide,       
+            user: user._id,   
+        };
+        return GuideModel.create(guideToCreate)
     },
-    async getGuides(searchQuery,dbSkip) {
-        // --- Database Query Construction ---
-        limit=2
+    async getGuides(searchQuery, initialDbSkip) {
+        const TARGET_DOC_COUNT = 20; // How many documents we want to fetch in total for this call
+        const INTERNAL_BATCH_SIZE = 10; // How many docs to fetch in each *internal* DB query. Adjust for performance vs. DB load.
+    
+        let accumulatedGuides = [];
+        let currentDbSkip = initialDbSkip; // Start skipping from the value provided by the client
+        let isExhausted = false;
+    
+        // --- Database Query Construction --- (Same as before)
         let dbQuery = {};
-        if (searchQuery!="") { // Check if searchQuery is truthy (not null, undefined, or empty string)
+        // Use a more robust check for non-empty string
+        if (searchQuery && searchQuery.trim() !== "") {
+            const regexQuery = { $regex: searchQuery, $options: "i" };
             dbQuery = {
                 $or: [
-                    { offer: { $regex: searchQuery, $options: "i" } },
-                    { location: { $regex: searchQuery, $options: "i" } },
-                    { name: { $regex: searchQuery, $options: "i" } },
-                    { surname: { $regex: searchQuery, $options: "i" } }
+                    { offer: regexQuery },
+                    { location: regexQuery },
+                    { name: regexQuery },
+                    { surname: regexQuery }
                 ],
             };
         }
-
-        const fetchedGuides = await GuideModel.find(dbQuery)
-            .skip(dbSkip)       // Skip documents based on previous fetches
-            .limit(limit)       // Limit the number of results for this batch
-            .lean();            // Use lean() for better performance if Mongoose features aren't needed
-
-        // --- Calculate skip for the next potential fetch ---
-        // The skip value for the *next* request should be the current skip + the number of items we actually got.
-        const nextdbSkip = dbSkip + fetchedGuides.length;
-
-        // --- Return the fetched data and pagination info ---
+    
+        // --- Looping Fetch ---
+        // Keep fetching until we have enough documents or the database runs out
+        while (accumulatedGuides.length < TARGET_DOC_COUNT) {
+            // Calculate how many more docs we need to reach the target
+            const remainingNeeded = TARGET_DOC_COUNT - accumulatedGuides.length;
+            // Determine the limit for the *next* internal DB query
+            const limitForThisQuery = Math.min(INTERNAL_BATCH_SIZE, remainingNeeded);
+    
+            if (limitForThisQuery <= 0) { // Should not happen with current logic, but safe check
+                 break;
+            }
+    
+            // console.log(`Fetching batch: skip=${currentDbSkip}, limit=${limitForThisQuery}`); // Optional: for debugging
+    
+            const fetchedBatch = await GuideModel.find(dbQuery)
+                .skip(currentDbSkip)       // Skip documents based on previous internal fetches
+                .limit(limitForThisQuery)  // Limit the number of results for *this specific batch*
+                .lean();                   // Use lean() for performance
+    
+            // console.log(`Fetched ${fetchedBatch.length} documents in this batch.`); // Optional: for debugging
+    
+            if (fetchedBatch.length === 0) {
+                // If a query returns zero results, the cursor is exhausted for this query.
+                isExhausted = true;
+                break; // Exit the loop, no more documents matching the query
+            }
+    
+            // Add the newly fetched documents to our accumulated list
+            accumulatedGuides = accumulatedGuides.concat(fetchedBatch);
+    
+            // Update the skip value for the next potential internal query or the final return value
+            currentDbSkip += fetchedBatch.length;
+    
+            // If we received fewer documents than we asked for in this batch,
+            // it means we've reached the end of the available documents matching the query.
+            if (fetchedBatch.length < limitForThisQuery) {
+                isExhausted = true;
+                break; // Exit the loop, no more documents available
+            }
+    
+            // If we have reached or exceeded the target count after this batch, we can stop.
+            // (The check at the start of the while loop already handles this, but double-checking doesn't hurt)
+            if (accumulatedGuides.length >= TARGET_DOC_COUNT) {
+                 break;
+            }
+        } // End of while loop
+    
+        // --- Return the accumulated data and pagination info ---
         return {
-            data: fetchedGuides,      // The guides retrieved in this call
-            dbSkip: dbSkip,   // The starting point (skip value) for the next DB query
-            ended:true,
+            data: accumulatedGuides,    // The guides retrieved in this call (up to 20)
+            // The 'dbSkip' returned to the client should be the starting point for the *next* client request.
+            // This is the total number of documents skipped *up to the end of this call*.
+            dbSkip: currentDbSkip,
+            // 'ended' is true if we stopped fetching *because* the database ran out of matching documents.
+            ended: isExhausted,
         };
     },
     setTaxi(taxi) {

@@ -10,6 +10,7 @@ const GuideSchema = new Schema({
     socialMedia: String,
     description: String,
     location: String,
+    user : { type: Schema.Types.ObjectId, ref: 'User' }
 })
 
 module.exports = model('Guide', GuideSchema);
