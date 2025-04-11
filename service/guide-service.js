@@ -29,6 +29,16 @@ module.exports = {
         };
         return GuideModel.create(guideToCreate)
     },
+    async getGuideByEmail(email) {
+        return await GuideModel.findOne({ email: email })
+    },
+    async updateGuide(guide) {
+        let id = guide._id;
+        return await GuideModel.findByIdAndUpdate(id, guide)
+    },
+    async pushPlaceImagesUrls(_id, filename) {
+        return await GuideModel.findByIdAndUpdate(_id, {image: filename });
+      },
     async getGuides(searchQuery, initialDbSkip) {
         const TARGET_DOC_COUNT = 20; // How many documents we want to fetch in total for this call
         const INTERNAL_BATCH_SIZE = 10; // How many docs to fetch in each *internal* DB query. Adjust for performance vs. DB load.

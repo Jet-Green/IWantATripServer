@@ -131,5 +131,37 @@ module.exports = {
             next(err)
         }
     },
+    async updateGuide(req, res, next) {
+        try {
+          
+            res.json(await GuideService.updateGuide(req.body.guide))
+        } catch (err) {
+            next(err)
+        }
+    },
+      async uploadImages(req, res, next) {
+        console.log(req.body,req.files,req.file,req.value)
+        let _id = req.files?.originalname.split('_')[0]
+        let filenames 
+        let buffer={ buffer: req.body.buffer, name: req.body.originalname, };    // Буфер загруженного файла
+        
     
+        
+        let uploadResult = await s3.Upload(buffer, '/iwat/');
+        filenames = uploadResult.Location
+        console.log(buffer,filenames)
+        if (filenames) {
+          await GuideService.pushPlaceImagesUrls(_id, filenames)
+          logger.info({ filenames, logType: 'guide' }, 'images uploaded')
+        }
+    
+        res.status(200).send('Ok')
+    },
+    async getGuideByEmail(req, res, next) {
+        try {
+            res.json(await GuideService.getGuideByEmail(req.body.email))
+        } catch (err) {
+            next(err)
+        }
+    },
 }

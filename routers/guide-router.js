@@ -1,8 +1,8 @@
 // here all imports
 const Router = require('express').Router
 const multer = require('../middleware/multer-middleware')
+const MULTER = require('multer')
 const upload = multer.upload
-
 // here all controllers
 const guideController = require('../controllers/guide-controller')
 
@@ -18,7 +18,10 @@ router.post('/create-element', guideController.createGuideElement)
 router.post('/upload-image', upload.any(), guideController.uploadImages)
 router.post('/set-taxi', guideController.setTaxi)
 router.post('/add-guide', guideController.addGuide)
+router.post('/update-guide', guideController.updateGuide)
 router.post('/get-guides', guideController.getGuides)
+router.post('/upload-images', MULTER().any(), guideController.uploadImages)
+router.post('/get-guide-by-email', guideController.getGuideByEmail)
 router.post('/delete-taxi', guideController.deleteTaxi)
 router.post('/get-local-taxi', guideController.getLocalTaxi)
 // router.get('/clear', guideController.clear)
