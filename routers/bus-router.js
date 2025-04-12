@@ -1,11 +1,11 @@
 const busController = require('../controllers/bus-controller')
-const authMiddleware = require('../middleware/auth-middleware')
+const adminMiddleware = require('../middleware/admin-middleware')
 const Router = require('express').Router
 const router = Router()
 
 router.get('/get', busController.get)
 router.get('/get-by-id', busController.getById)
-router.post('/create', authMiddleware, busController.create)
-router.delete('/delete', busController.deleteBus)
+router.post('/create', adminMiddleware, busController.create)
+router.delete('/delete',adminMiddleware, busController.deleteBus)
 
 module.exports = router

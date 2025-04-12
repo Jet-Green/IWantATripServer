@@ -169,6 +169,7 @@ module.exports = {
         }
     },
     async clear(req, res, next) {
+        return
         try {
             TripService.deleteMany()
         } catch (error) {

@@ -181,6 +181,11 @@ module.exports = {
     async update(user) {
         let email = user.email;
         delete user.email
+        delete user.tinkoffContract
+        delete user.roles
+        delete user.password
+        delete user.fullinfo
+        delete user.fullname
         return await UserModel.findOneAndUpdate({ email }, user, {
             new: true
         }).populate('tripCalc').exec()

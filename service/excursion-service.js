@@ -412,6 +412,7 @@ module.exports = {
         return billFromDb
     },
     async buy({ timeId, userId, bill }) {
+      
         let billFromDb = await ExcursionBillModel.create({ time: timeId, user: userId, cart: bill })
         let exDateFromDb = await ExcursionDateModel.findOne({ times: { $elemMatch: { _id: timeId } } })
         for (let i = 0; i < exDateFromDb.times.length; i++) {

@@ -11,6 +11,12 @@ module.exports = class ApiError extends Error {
     static UnauthorizedError() {
         return new ApiError(401, 'Пользователь не авторизован')
     }
+    static NotAdminError() {
+        return new ApiError(401, 'Нет прав администратора')
+    }
+    static NotManagerError() {
+        return new ApiError(401, 'Нет прав менеджера')
+    }
 
     static BadRequest(message, errors=[]) {
     
