@@ -183,7 +183,8 @@ module.exports = {
     },
     async buy(req, res, next) {
         try {
-            let author = await UserModel.findById(req.body.author)
+          
+            let author = await UserModel.findById(req.body.fullinfo.author)
             sendMail(req.body.emailHtml, [author.email], 'Отправлена заявка')
             return res.json(await ExcursionService.buy(req.body))
         } catch (error) {
@@ -264,6 +265,8 @@ module.exports = {
     },
     async buyWithTinkoff(req, res, next) {
         try {
+            let author = await UserModel.findById(req.body.bill.userInfo.author)
+            sendMail(req.body.emailHtml, [author.email], 'Оплачена экскурсия через Т-банк')
             return res.json(await ExcursionService.buyWithTinkoff(req.body))
         } catch (error) {
             next(error)
