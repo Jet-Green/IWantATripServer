@@ -6,6 +6,7 @@ const tripController = require('../controllers/trip-controller')
 
 const authMiddleware = require('../middleware/auth-middleware')
 
+
 const MULTER = require('multer')
 const multer = require('../middleware/multer-middleware')
 const upload = multer.upload
@@ -31,7 +32,7 @@ router.get('/hide', authMiddleware, tripController.hideTrip)
 router.post('/upload-images', MULTER().any(), tripController.uploadImages)
 router.post('/upload-pdf', MULTER().any(), tripController.uploadPdf)
 
-router.get('/clear', tripController.clear)
+// router.get('/clear', tripController.clear)
 router.post('/created-trips-info', tripController.createdTripsInfo)
 
 router.get('/get-full-trip', tripController.getFullTripById)

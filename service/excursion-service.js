@@ -407,7 +407,8 @@ module.exports = {
      * bill with tinkoff field
      * @param {Object} bill 
      */
-    async buyWithTinkoff({ emailHtml, bill }) {
+    async buyWithTinkoff({ bill}) {
+        delete bill.userInfo.author
         let billFromDb = await ExcursionBillModel.create(bill)
         const timeId = bill.time
         let exDateFromDb = await ExcursionDateModel.findOne({ times: { $elemMatch: { _id: timeId } } })
@@ -421,8 +422,12 @@ module.exports = {
         await exDateFromDb.save()
         return billFromDb
     },
-    async buy({ timeId, userId, bill }) {
-        let billFromDb = await ExcursionBillModel.create({ time: timeId, user: userId, cart: bill })
+    async buy({ timeId, toSend, fullinfo, userId}) {
+        delete fullinfo.time 
+        delete fullinfo.date 
+        delete fullinfo.author 
+        delete fullinfo.name
+        let billFromDb = await ExcursionBillModel.create({ time: timeId, user: userId, cart: toSend, userInfo: fullinfo })
         let exDateFromDb = await ExcursionDateModel.findOne({ times: { $elemMatch: { _id: timeId } } })
         for (let i = 0; i < exDateFromDb.times.length; i++) {
             if (exDateFromDb.times[i]._id == timeId) {
