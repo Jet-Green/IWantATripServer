@@ -36,7 +36,7 @@ module.exports = {
         let id = guide._id;
         return await GuideModel.findByIdAndUpdate(id, guide)
     },
-    async pushPlaceImagesUrls(_id, filename) {
+    async pushGuideImagesUrls(_id, filename) {
         return await GuideModel.findByIdAndUpdate(_id, {image: filename });
       },
     async getGuides(searchQuery, initialDbSkip) {

@@ -40,6 +40,7 @@ const data = {
 }
 
 const GuideService = require('../service/guide-service')
+const logger = require('../logger.js');
 
 module.exports = {
     async getAllElements(req, res, next) {
@@ -75,7 +76,7 @@ module.exports = {
             // next(err)
         }
     },
-    async uploadImages(req, res, next) {
+    async uploadImage(req, res, next) {
         try {
             let _id = req.files[0].originalname.split('_')[0]
             let filename = process.env.API_URL + '/guide-elements/' + _id + '_0.png';
@@ -139,22 +140,27 @@ module.exports = {
             next(err)
         }
     },
-      async uploadImages(req, res, next) {
-        console.log(req.body,req.files,req.file,req.value)
-        let _id = req.files?.originalname.split('_')[0]
-        let filenames 
-        let buffer={ buffer: req.body.buffer, name: req.body.originalname, };    // Буфер загруженного файла
-        
-    
-        
-        let uploadResult = await s3.Upload(buffer, '/iwat/');
-        filenames = uploadResult.Location
-        console.log(buffer,filenames)
-        if (filenames) {
-          await GuideService.pushPlaceImagesUrls(_id, filenames)
-          logger.info({ filenames, logType: 'guide' }, 'images uploaded')
+    async uploadImages(req, res, next) {
+        let _id = req.files[0]?.originalname.split('_')[0]
+        let filenames = []
+        let buffers = []
+        for (let file of req.files) {
+        buffers.push({ buffer: file.buffer, name: file.originalname, });    // Буфер загруженного файла
         }
-    
+
+        if (buffers.length) {
+        let uploadResult = await s3.Upload(buffers, '/iwat/guides/');
+
+        for (let upl of uploadResult) {
+            filenames.push(upl.Location)
+        }
+        }
+
+        if (filenames.length) {
+        await GuideService.pushGuideImagesUrls(_id, filenames[0])
+        logger.info({ filenames, logType: 'place' }, 'images uploaded')
+        }
+
         res.status(200).send('Ok')
     },
     async getGuideByEmail(req, res, next) {
