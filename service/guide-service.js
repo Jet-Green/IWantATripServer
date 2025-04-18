@@ -29,6 +29,9 @@ module.exports = {
         };
         return GuideModel.create(guideToCreate)
     },
+    async deleteGuide(_id) {
+        return await GuideModel.deleteOne({ _id: _id })
+    },
     async getGuideByEmail(email) {
         return await GuideModel.findOne({ email: email })
     },
