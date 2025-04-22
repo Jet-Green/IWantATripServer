@@ -10,7 +10,10 @@ const GuideSchema = new Schema({
     socialMedia: String,
     description: String,
     location: String,
-    user : { type: Schema.Types.ObjectId, ref: 'User' }
+    user : { type: Schema.Types.ObjectId, ref: 'User' },
+    isHidden: { type: Boolean, default: false },
+    isModerated: { type: Boolean, default: false },
+    isRejected: { type: Boolean, default: false },
 })
 
 module.exports = model('Guide', GuideSchema);

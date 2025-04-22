@@ -68,9 +68,7 @@ module.exports = {
     },
     async deleteGuide(req, res, next) {
         try {
-            const _id = req.body._id
-            // console.log(_id,req.body)
-            return await GuideService.deleteGuide(_id);
+            return res.json(await GuideService.deleteGuide(req.body._id))
         } catch (error) {
         }
     },
