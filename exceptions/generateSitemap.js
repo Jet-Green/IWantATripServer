@@ -37,9 +37,9 @@ Allow: /$
 Allow: /places$
 Allow: /trips$
 Allow: /excursions$
-Allow: /trip\\?_id=
-Allow: /place\\?_id=
-Allow: /excursion\\?_id=
+Allow: /trip?_id=
+Allow: /place?_id=
+Allow: /excursion?_id=
 
 Sitemap: ${BASE_URL}/sitemap.xml
 `;
