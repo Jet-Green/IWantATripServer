@@ -558,21 +558,21 @@ module.exports = {
     const limit = 15;
     let result = [];
     let tripsIdArray = [];
-  
+
     await UserModel.findById(_id, { trips: 1 }).then(data => {
       tripsIdArray = data?.trips || [];
     });
-  
+
     if (!tripsIdArray.length) return { result, currentPage: page };
-  
+
     const regexPattern = query["$or"]?.[0]?.name?.["$regex"];
     const regex = regexPattern ? new RegExp(regexPattern, "i") : null;
-  
-  
-  
+
+
+
     while (result.length < limit) {
       const skip = (page - 1) * limit;
-  
+
       const cursorBase = TripModel.find(
         { _id: { $in: tripsIdArray }, ...query }, // Основной запрос
         null,
@@ -583,19 +583,19 @@ module.exports = {
         .skip(skip)
         .limit(limit)
         .cursor();
-  
+
       let hasMoreData = false;
-  
+
       for (
         let trip = await cursorBase.next();
         trip != null;
         trip = await cursorBase.next()
       ) {
         hasMoreData = true;
-  
+
         if (trip.parent) {
           if (regex && !regex.test(trip.parent.name)) continue; // Фильтруем сразу
-  
+
           trip.name = trip.parent.name;
           trip.description = trip.parent.description;
           trip.tripRoute = trip.parent.tripRoute;
@@ -604,17 +604,17 @@ module.exports = {
           trip.partner = trip.parent.partner;
           trip.offer = trip.parent.offer;
         }
-  
+
         result.push(trip);
-  
+
         if (result.length >= limit) break;
       }
-  
+
       if (!hasMoreData) break;
       page++;
     }
-  
-    return { result, currentPage:page };
+
+    return { result, currentPage: page };
   },
   async updateBillsTourists({ _id, touristsList }) {
     // console.log(_id, touristsList)
@@ -700,20 +700,20 @@ module.exports = {
   async findAuthorTrips({ query, _id }) {
     // 1. Находим все туры автора без фильтрации по start
     let allTrips = await TripModel.find(
-      { author: _id,name: { $regex: query, $options: 'i' }  },
+      { author: _id, name: { $regex: query, $options: 'i' } },
       { name: 1, timezoneOffset: 1, end: 1, start: 1, children: 1 }
     );
-  
+
     let validTrips = [];
     let childTripIds = [];
     let parentTripMap = new Map();
-  
+
     // 2. Обрабатываем родительские туры
     allTrips.forEach(trip => {
       if (trip.start >= Date.now()) {
         validTrips.push(trip); // Сохраняем тур, если он удовлетворяет условию start
       }
-  
+
       if (Array.isArray(trip.children)) {
         trip.children.forEach(child => {
           if (child._id) {
@@ -723,14 +723,14 @@ module.exports = {
         });
       }
     });
-  
+
     let childTrips = [];
     if (childTripIds.length) {
       let rawChildTrips = await TripModel.find(
         { _id: { $in: childTripIds }, start: { $gte: Date.now() } }, // Фильтруем по start
         { end: 1, start: 1 }
       );
-  
+
       // 3. Дополняем дочерние туры свойствами родителя
       childTrips = rawChildTrips.map(childTrip => {
         let parentTrip = parentTripMap.get(String(childTrip._id)) || {};
@@ -743,7 +743,34 @@ module.exports = {
         };
       });
     }
-  
+
     return [...validTrips, ...childTrips];
+  },
+  async getVisibleTripIds() {
+    const now = Date.now();
+    const baseQuery = {
+      $and: [
+        { isHidden: false, isModerated: true, rejected: false },
+        { parent: { $exists: false } },
+      ],
+    };
+    baseQuery.$and.push({
+      $or: [
+        {
+          $and: [{ start: { $gte: now } }],
+        },
+        {
+          children: {
+            $elemMatch: {
+              start: { $gte: now },
+            },
+          },
+        },
+      ],
+    })
+
+    const trips = await TripModel.find(baseQuery, { _id: 1 }).lean();
+    return trips.map(trip => trip._id.toString());
   }
+
 }
