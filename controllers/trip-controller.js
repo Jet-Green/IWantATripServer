@@ -15,19 +15,20 @@ const s3 = require('../yandex-cloud.js')
 const billModel = require('../models/bill-model.js');
 
 const sanitizeHtml = require('sanitize-html');
-function sanitize(input) {    return sanitizeHtml(input, {
-    allowedTags: ['b', 'i', 'em', 'strong', 'a', 'p', 'ul', 'ol', 'li', 'br'],
-    allowedAttributes: {
-        'a': ['href', 'target', 'rel'], // Разрешаем только ссылки и их атрибуты
-        'img': ['src', 'alt', 'title', 'width', 'height'] // Разрешаем изображения и их атрибуты
-    },
-    allowedSchemes: ['http', 'https', 'data'], // Запрещаем потенциально опасные схемы (например, javascript:)
-    allowedSchemesByTag: {
-        img: ['http', 'https', 'data'] // Специально для тегов <img>
-    },
-    // Предотвращаем JavaScript-инъекции
-    enforceHtmlBoundary: true
-})
+function sanitize(input) {
+    return sanitizeHtml(input, {
+        allowedTags: ['b', 'i', 'em', 'strong', 'a', 'p', 'ul', 'ol', 'li', 'br'],
+        allowedAttributes: {
+            'a': ['href', 'target', 'rel'], // Разрешаем только ссылки и их атрибуты
+            'img': ['src', 'alt', 'title', 'width', 'height'] // Разрешаем изображения и их атрибуты
+        },
+        allowedSchemes: ['http', 'https', 'data'], // Запрещаем потенциально опасные схемы (например, javascript:)
+        allowedSchemesByTag: {
+            img: ['http', 'https', 'data'] // Специально для тегов <img>
+        },
+        // Предотвращаем JavaScript-инъекции
+        enforceHtmlBoundary: true
+    })
 }
 
 // Указываем аутентификацию в Yandex Object Storage
@@ -59,7 +60,7 @@ module.exports = {
     async deletePayment(req, res, next) {
         try {
             logger.info({ billId: req.query._id, logType: 'trip' }, 'delete payment')
-
+            console.log(req.query._id)
             return res.json(await TripService.deletePayment(req.query._id))
         } catch (error) {
             logger.fatal({ error, logType: 'trip error', brokenMethod: 'setPayment' })
@@ -178,8 +179,7 @@ module.exports = {
     },
     async create(req, res, next) {
         try {
-            if (req.body.trip.startLocation && req.body.trip.startLocation!="")
-            {
+            if (req.body.trip.startLocation && req.body.trip.startLocation != "") {
                 let location = await LocationService.createLocation(req.body.trip.startLocation)
                 // if (!req.body.trip.includedLocations?.coordinates > 1) {
                 req.body.trip.startLocation = location
@@ -190,13 +190,13 @@ module.exports = {
                 req.body.trip.locationNames = [location]
                 // }
             }
-            else{
+            else {
                 req.body.trip.startLocation = null
                 req.body.trip.includedLocations = null
                 req.body.trip.locationNames = null
             }
 
-            req.body.trip.description=sanitize(req.body.trip.description)
+            req.body.trip.description = sanitize(req.body.trip.description)
 
             const tripFromDB = await TripService.insertOne(req.body.trip)
 
@@ -429,7 +429,7 @@ module.exports = {
     },
     async getBoughtSeats(req, res, next) {
         try {
-            return res.json((await billModel.find({ tripId: mongoose.Types.ObjectId(req.query._id), seats: { $exists: true } }, { seats: 1, _id: 0 })).map(bill => bill.seats).flat())
+            return res.json((await billModel.find({ tripId: req.query._id, seats: { $exists: true } }, { seats: 1, _id: 0 })).map(bill => bill.seats).flat())
         } catch (error) {
             next(error)
         }
