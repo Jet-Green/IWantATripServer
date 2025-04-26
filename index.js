@@ -56,8 +56,8 @@ app.get('/robots.txt', (req, res) => {
 // Статичные файлы и sitemap
 app.use('/assets', express.static(path.join(__dirname, 'dist/assets')));
 app.use('/favicon.ico', express.static(path.join(__dirname, 'dist/favicon.ico')));
-app.use('/robots.txt', express.static(path.join(__dirname, 'dist/robots.txt')));
-app.use('/sitemap.xml', express.static(path.join(__dirname, 'dist/sitemap.xml')));
+// app.use('/robots.txt', express.static(path.join(__dirname, 'dist/robots.txt')));
+// app.use('/sitemap.xml', express.static(path.join(__dirname, 'dist/sitemap.xml')));
 
 // Playwright и SPA fallback
 app.use(playwrightMiddleware);

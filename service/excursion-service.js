@@ -69,7 +69,7 @@ module.exports = {
         return result
     },
     async getWithBills(excursionId) {
-        const currentDate = new Date();
+      
       
         let excursion = await ExcursionModel.findById(excursionId)
             .select({ name: 1, dates: 1, bookings: 1 })
@@ -96,10 +96,14 @@ module.exports = {
             )
 
          // Filter dates that are in the future
+         const currentDate = new Date();
+         currentDate.setHours(0, 0, 0, 0); // Обнуляем время для корректного сравнения
+         currentDate.setDate(currentDate.getDate() - 3); // Минус 3 дня
+         
          const filteredDates = excursion.dates.filter(date => {
-            const excursionDate = new Date(date.date.year, date.date.month, date.date.day);
-            return excursionDate >= currentDate;
-        });
+           const excursionDate = new Date(date.date.year, date.date.month, date.date.day);
+           return excursionDate >= currentDate;
+         });
        
         const sortedDates = _.sortBy(filteredDates, ['date.year', 'date.month', 'date.day']);
         // Создаем новый объект для возврата

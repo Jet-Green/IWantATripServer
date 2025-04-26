@@ -60,7 +60,6 @@ module.exports = {
     async deletePayment(req, res, next) {
         try {
             logger.info({ billId: req.query._id, logType: 'trip' }, 'delete payment')
-            console.log(req.query._id)
             return res.json(await TripService.deletePayment(req.query._id))
         } catch (error) {
             logger.fatal({ error, logType: 'trip error', brokenMethod: 'setPayment' })
