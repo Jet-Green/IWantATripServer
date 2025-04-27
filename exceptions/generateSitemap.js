@@ -54,6 +54,8 @@ Disallow: /companions
 Disallow: /forgot-password
 
 Allow: /$
+Allow: /sitemap.xml
+Allow: /robots.txt
 Allow: /places$
 Allow: /trips$
 Allow: /excursions$
