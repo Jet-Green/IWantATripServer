@@ -24,7 +24,7 @@ const BROWSER_ARGS = [
 
 const BOT_PATTERNS = [
   /googlebot/i, /bingbot/i, /yandexbot/i, /duckduckbot/i,
-  /baiduspider/i,  /facebot/i, /twitterbot/i,
+  /baiduspider/i,  /facebot/i, /twitterbot/i, /google-inspectiontool/i,
 ];
 
 const ALLOWED_VUE_PATHS = [

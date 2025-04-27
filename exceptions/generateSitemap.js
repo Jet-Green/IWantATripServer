@@ -4,7 +4,7 @@ const TripService = require('../service/trips-service.js')
 const ExcursionService = require('../service/excursion-service.js')
 const PlaceService = require('../service/places-service.js')
 
-const BASE_URL = process.env.CLIENT_URL;
+const BASE_URL = process.env.CLIENT_URL; 
 
 async function generateSitemapAndRobots() {
   const staticRoutes = ['/', '/places', '/trips', '/excursions'];
@@ -31,31 +31,10 @@ ${allRoutes.map(route => `  <url><loc>${BASE_URL}${route}</loc></url>`).join('\n
   console.log(`[Sitemap] Generated at ${sitemapPath}`);
 
   const robots = `User-agent: *
-Disallow: /cabinet/
-Disallow: /admin/
-Disallow: /auth
-Disallow: /reg
-Disallow: /create-*
-Disallow: /edit-*
-Disallow: /moderate-*
-Disallow: /fourothree
-Disallow: /contract-create
-Disallow: /payment
-Disallow: /wl
-Disallow: /catalog
-Disallow: /documents
-Disallow: /print-contract
-Disallow: /poster
-Disallow: /offer-trip
-Disallow: /offers
-Disallow: /calc
-Disallow: /contacts
-Disallow: /companions
-Disallow: /forgot-password
+Disallow: /
 
 Allow: /$
 Allow: /sitemap.xml
-Allow: /robots.txt
 Allow: /places$
 Allow: /trips$
 Allow: /excursions$
