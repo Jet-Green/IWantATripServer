@@ -34,6 +34,7 @@ ${allRoutes.map(route => `  <url><loc>${BASE_URL}${route}</loc></url>`).join('\n
 Disallow: /
 
 Allow: /$
+Allow: /sitemap.xml
 Allow: /places$
 Allow: /trips$
 Allow: /excursions$
