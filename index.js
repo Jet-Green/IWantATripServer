@@ -36,6 +36,8 @@ const placesRouter = require('./routers/places-router');
 const partnersRouter = require('./routers/partners-router');
 const tasksRouter = require('./routers/tasks-router');
 
+
+app.set('trust proxy', 1);
 // Middleware
 app.use(cors({
   origin: [process.env.CLIENT_URL, "http://localhost:5174", "https://gorodaivesi.ru", "http://localhost:3030"],
