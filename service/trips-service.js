@@ -59,7 +59,8 @@ module.exports = {
       { $pull: { billsList: { $eq: bill._id } } }
     );
 
-    return bill.delete()
+    await bill.deleteOne();
+    return
   },
   async setPayment(bill) {
     return await BillModel.findByIdAndUpdate(bill.bill._id, {
