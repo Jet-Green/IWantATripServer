@@ -3,6 +3,8 @@ const GuideModel = require('../models/guide-model')
 const TaxiModel = require('../models/taxi-model')
 const UserModel = require('../models/user-model')
 
+const ApiError = require("../exceptions/api-error.js");
+
 module.exports = {
     async clear() {
         return GuideElementModel.deleteMany({ 'type': 'watch' })
@@ -22,12 +24,17 @@ module.exports = {
         return GuideElementModel.find({ 'type': type }).exec()
     },
     async addGuide(guide) {
-        const user = await UserModel.findOne({ email: guide.email }).select('_id').lean();
-        const guideToCreate = {
-            ...guide,       
-            user: user._id,   
-        };
-        return GuideModel.create(guideToCreate)
+        try{
+            const user = await UserModel.findOne({ email: guide.email }).select('_id').lean();
+            const guideToCreate = {
+                ...guide,       
+                user: user._id,   
+            };
+            return GuideModel.create(guideToCreate)
+        }catch(e){
+            throw ApiError.BadRequest("Не удалось создать гида")
+        }
+
     },
     async deleteGuide(_id) {
         return GuideModel.deleteOne({ _id: _id })
@@ -51,18 +58,23 @@ module.exports = {
         let isExhausted = false;
     
         // --- Database Query Construction --- (Same as before)
-        let dbQuery = {};
+        let dbQuery = {$and: []};
         // Use a more robust check for non-empty string
-        if (searchQuery && searchQuery.trim() !== "") {
+        if (searchQuery.strQuery && searchQuery.strQuery.trim() !== "") {
             const regexQuery = { $regex: searchQuery, $options: "i" };
-            dbQuery = {
-                $or: [
-                    { offer: regexQuery },
-                    { location: regexQuery },
-                    { name: regexQuery },
-                    { surname: regexQuery }
-                ],
-            };
+            dbQuery.$and.push(
+                {
+                    $or: [
+                        { offer: regexQuery },
+                        { location: regexQuery },
+                        { name: regexQuery },
+                        { surname: regexQuery }
+                    ]
+                }
+            );
+        }
+        if ("isModerated" in searchQuery|| "isRejected" in searchQuery){
+            dbQuery.$and.push({ isModerated: searchQuery.isModerated, isRejected: searchQuery.isRejected })
         }
     
         // --- Looping Fetch ---
