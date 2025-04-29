@@ -498,5 +498,9 @@ module.exports = {
         delete excursion._id
         excursion.isModerated = false
         return await ExcursionModel.findByIdAndUpdate(_id, excursion)
-    }
+    },
+    async  getVisibleExcursionIds() {
+        const items = await ExcursionModel.find({ isHidden: false, isModerated: true })
+        return items.map(p => p._id.toString());
+      }
 }

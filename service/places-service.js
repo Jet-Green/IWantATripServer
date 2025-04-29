@@ -1,18 +1,19 @@
 const PlaceModel = require("../models/place-model");
 const sanitizeHtml = require('sanitize-html');
-function sanitize(input) {    return sanitizeHtml(input, {
+function sanitize(input) {
+  return sanitizeHtml(input, {
     allowedTags: ['b', 'i', 'em', 'strong', 'a', 'p', 'ul', 'ol', 'li', 'br'],
     allowedAttributes: {
-        'a': ['href', 'target', 'rel'], // Разрешаем только ссылки и их атрибуты
-        'img': ['src', 'alt', 'title', 'width', 'height'] // Разрешаем изображения и их атрибуты
+      'a': ['href', 'target', 'rel'], // Разрешаем только ссылки и их атрибуты
+      'img': ['src', 'alt', 'title', 'width', 'height'] // Разрешаем изображения и их атрибуты
     },
     allowedSchemes: ['http', 'https', 'data'], // Запрещаем потенциально опасные схемы (например, javascript:)
     allowedSchemesByTag: {
-        img: ['http', 'https', 'data'] // Специально для тегов <img>
+      img: ['http', 'https', 'data'] // Специально для тегов <img>
     },
     // Предотвращаем JavaScript-инъекции
     enforceHtmlBoundary: true
-})
+  })
 }
 const tripFilter = {
   $and: [
@@ -44,18 +45,18 @@ module.exports = {
     let baseQuery = filter.query;
     let locationQuery = null;
     let radiusQuery = null;
-    
+
     if (baseQuery.conditions) {
       // baseQuery.$and = [];
       if (baseQuery.conditions?.category) {
-        baseQuery.category= baseQuery.conditions.category
+        baseQuery.category = baseQuery.conditions.category
       }
       if (baseQuery.conditions?.name) {
-        baseQuery.name={ $regex: baseQuery.conditions.name, $options: "i" }
+        baseQuery.name = { $regex: baseQuery.conditions.name, $options: "i" }
       }
     }
-    let location=baseQuery.conditions ?baseQuery.conditions.location : null
-    let locationRadius=baseQuery.conditions ? baseQuery.conditions.locationRadius : null
+    let location = baseQuery.conditions ? baseQuery.conditions.location : null
+    let locationRadius = baseQuery.conditions ? baseQuery.conditions.locationRadius : null
     delete baseQuery.conditions;
     if (location?.name) {
       locationQuery = {
@@ -66,7 +67,7 @@ module.exports = {
         },
       };
     }
-    
+
     if (
       location?.coordinates &&
       locationRadius != 0 &&
@@ -87,49 +88,49 @@ module.exports = {
     }
 
     const cursorBase = PlaceModel.find(baseQuery, null)
-    .populate({
-      path: "trips",
-      match: tripFilter,
-      select: {
-        name: 1,
+      .populate({
+        path: "trips",
+        match: tripFilter,
+        select: {
+          name: 1,
         },
       })
       .skip(skip)
       .limit(limit)
       .cursor();
-      
-      const cursorLocation = locationQuery
+
+    const cursorLocation = locationQuery
       ? PlaceModel.find(locationQuery, null)
-          .populate({
-            path: "trips",
-            match: tripFilter,
-            select: {
-              name: 1,
-            },
-          })
-          .skip(skip)
-          .limit(limit)
-          .cursor()
-          : null;
-          
-          const cursorRadius = radiusQuery
-          ? PlaceModel.find(radiusQuery, null)
-          .populate({
-            path: "trips",
-            match: tripFilter,
-            select: {
-              name: 1,
-            },
-          })
-          .skip(skip)
-          .limit(limit)
-          .cursor()
-          : null;
-          
+        .populate({
+          path: "trips",
+          match: tripFilter,
+          select: {
+            name: 1,
+          },
+        })
+        .skip(skip)
+        .limit(limit)
+        .cursor()
+      : null;
+
+    const cursorRadius = radiusQuery
+      ? PlaceModel.find(radiusQuery, null)
+        .populate({
+          path: "trips",
+          match: tripFilter,
+          select: {
+            name: 1,
+          },
+        })
+        .skip(skip)
+        .limit(limit)
+        .cursor()
+      : null;
+
     const results = [];
     const seenDocs = new Set(); // To prevent duplicates
-          
-          
+
+
     if (!location) {
       for (
         let doc = await cursorBase.next();
@@ -179,7 +180,7 @@ module.exports = {
   },
 
   async create(place) {
-    place.description=sanitize(place.description)
+    place.description = sanitize(place.description)
     return await PlaceModel.create(place);
   },
   async delete(_id) {
@@ -187,7 +188,7 @@ module.exports = {
   },
 
   async edit(place, placeId) {
-    place.description=sanitize(place.description)
+    place.description = sanitize(place.description)
     return await PlaceModel.findByIdAndUpdate(placeId, place);
   },
 
@@ -255,4 +256,9 @@ module.exports = {
       { $push: { trips: tripId } }
     );
   },
+  async  getVisiblePlaceIds() {
+    const items = await PlaceModel.find({ isHidden: false, isModerated: true })
+    return items.map(p => p._id.toString());
+  }
+
 };
