@@ -35,7 +35,7 @@ const photosRouter = require('./routers/photos-router');
 const placesRouter = require('./routers/places-router');
 const partnersRouter = require('./routers/partners-router');
 const tasksRouter = require('./routers/tasks-router');
-
+const helmet = require('helmet');
 
 app.set('trust proxy', 1);
 // Middleware
@@ -55,11 +55,15 @@ app.get('/robots.txt', (req, res) => {
     res.sendFile(path.join(__dirname, 'dist', 'sitemap.xml'));
   });
 
+  app.use(helmet({
+    contentSecurityPolicy: false, // иначе ломается загрузка ассетов
+    crossOriginEmbedderPolicy: false, // иначе ломается PWA/картинки
+    crossOriginResourcePolicy: { policy: "cross-origin" }, // разрешает загрузку статики
+  }));
 // Статичные файлы и sitemap
 app.use('/assets', express.static(path.join(__dirname, 'dist/assets')));
 app.use('/favicon.ico', express.static(path.join(__dirname, 'dist/favicon.ico')));
-// app.use('/robots.txt', express.static(path.join(__dirname, 'dist/robots.txt')));
-// app.use('/sitemap.xml', express.static(path.join(__dirname, 'dist/sitemap.xml')));
+
 
 // Playwright и SPA fallback
 app.use(playwrightMiddleware);
