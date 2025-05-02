@@ -35,6 +35,7 @@ Disallow: /
 
 Allow: /$
 Allow: /favicon.ico
+Allow: /android-chrome-192x192.png
 Allow: /sitemap.xml
 Allow: /places$
 Allow: /trips$
