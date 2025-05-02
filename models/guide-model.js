@@ -14,6 +14,7 @@ const GuideSchema = new Schema({
     isHidden: { type: Boolean, default: false },
     isModerated: { type: Boolean, default: false },
     isRejected: { type: Boolean, default: false },
+    excursionsIn: [{ type: Schema.Types.ObjectId, ref: 'Excursion' }],
 })
 
 module.exports = model('Guide', GuideSchema);
