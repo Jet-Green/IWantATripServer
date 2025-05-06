@@ -176,4 +176,32 @@ module.exports = {
             next(err)
         }
     },
+    async getGuideById(req, res, next) {
+        try {
+            res.json(await GuideService.getGuideById(req.body._id))
+        } catch (err) {
+            next(err)
+        }
+    },
+    async moderateGuide(req, res, next) {
+        try {
+            res.json(await GuideService.moderateGuide(req.body._id))
+        } catch (err) {
+            next(err)
+        }
+    },
+    async sendGuideModerationMessage(req, res, next) {
+        try {
+            res.json(await GuideService.sendGuideModerationMessage(req.body._id,req.body.msg))
+        } catch (err) {
+            next(err)
+        }
+    },
+    async getGuidesAutocomplete(req, res, next) {
+        try {
+            res.json(await GuideService.getGuidesAutocomplete(req.body.query))
+        } catch (err) {
+            next(err)
+        }
+    },
 }

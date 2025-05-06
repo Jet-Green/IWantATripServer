@@ -4,6 +4,7 @@ const TaxiModel = require('../models/taxi-model')
 const UserModel = require('../models/user-model')
 
 const ApiError = require("../exceptions/api-error.js");
+const { get } = require('lodash');
 
 module.exports = {
     async clear() {
@@ -41,6 +42,15 @@ module.exports = {
     },
     async getGuideByEmail(email) {
         return await GuideModel.findOne({ email: email })
+    },
+    async getGuideById(_id) {
+        return await GuideModel.findOne({ _id: _id })
+    },
+    async moderateGuide(_id) {
+        return GuideModel.findByIdAndUpdate(_id, { isModerated: true, isRejected: false })
+    },
+    async sendGuideModerationMessage(_id,msg) {
+        return GuideModel.findByIdAndUpdate(_id, { isModerated: false, moderationMessage: msg, isRejected: true } )
     },
     async updateGuide(guide) {
         let id = guide._id;
@@ -136,6 +146,10 @@ module.exports = {
     },
     setTaxi(taxi) {
         return TaxiModel.create(taxi)
+    },
+    async getGuidesAutocomplete(query){
+        //get only name and id in range of 5
+        return GuideModel.find({$and: [{name: {$regex: query, $options: 'i'}}, {isModerated: true}]}, {name: 1, _id: 1}).limit(5)
     },
     getLocalTaxi(location) {
         if (location == null) {
