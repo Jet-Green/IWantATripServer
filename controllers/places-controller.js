@@ -113,7 +113,9 @@ module.exports = {
   },
   async getForCreateTrip(req, res, next) {
     try {
-      return res.json(await PlacesService.getForCreateTrip())
+   
+        const { search } = req.query;
+      return res.json(await PlacesService.getForCreateTrip(search))
     } catch (error) {
       next(error)
     }

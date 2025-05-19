@@ -240,8 +240,9 @@ module.exports = {
     await place.save();
     return place;
   },
-  async getForCreateTrip() {
-    return await PlaceModel.find({}).limit(50).select({
+  async getForCreateTrip(search) {
+  
+    return await PlaceModel.find({name:{ $regex: search, $options: 'i'}}).limit(50).select({
       location: 1,
       name: 1,
     });
