@@ -555,7 +555,7 @@ module.exports = {
   async findById(_id) {
     return TripModel.findById(_id).populate('author').populate('places', { name: 1 })
   },
-  async createdTripsInfo(_id, query, page = 1) {
+  async createdTripsInfo(_id, query, search, page = 1) {
     const limit = 15;
     let result = [];
     let tripsIdArray = [];
@@ -566,9 +566,7 @@ module.exports = {
 
     if (!tripsIdArray.length) return { result, currentPage: page };
 
-    const regexPattern = query["$or"]?.[0]?.name?.["$regex"];
-    const regex = regexPattern ? new RegExp(regexPattern, "i") : null;
-
+    const regex = search?.trim() ? new RegExp(search.trim(), "i") : null;
 
 
     while (result.length < limit) {
@@ -595,6 +593,7 @@ module.exports = {
         hasMoreData = true;
 
         if (trip.parent) {
+
           if (regex && !regex.test(trip.parent.name)) continue; // Фильтруем сразу
 
           trip.name = trip.parent.name;
@@ -605,7 +604,9 @@ module.exports = {
           trip.partner = trip.parent.partner;
           trip.offer = trip.parent.offer;
         }
-
+  
+        if (regex && !regex.test(trip.name)) continue;
+       
         result.push(trip);
 
         if (result.length >= limit) break;
