@@ -14,7 +14,7 @@ module.exports = {
         }
     },
     async create(req, res, next) {
-      
+
         try {
             let eventEmailsBook = await AppStateModel.findOne({ 'sendMailsTo.type': 'CreateExcurtion' }, { 'sendMailsTo.$': 1 })
             let emailsFromDbBook = eventEmailsBook.sendMailsTo[0].emails
@@ -108,9 +108,8 @@ module.exports = {
 
 
     async getAll(req, res, next) {
-
         try {
-            return res.json(await ExcursionService.getAll(req.body.locationId, req.body.query, req.body.start, req.body.end, req.body.type, req.body.directionType, req.body.directionPlace, req.body.minAge, req.body.havePrices))
+            return res.json(await ExcursionService.getAll(req.body))
         } catch (error) {
             next(error)
         }
@@ -183,7 +182,7 @@ module.exports = {
     },
     async buy(req, res, next) {
         try {
-          
+
             let author = await UserModel.findById(req.body.fullinfo.author)
             sendMail(req.body.emailHtml, [author.email], 'Отправлена заявка')
             return res.json(await ExcursionService.buy(req.body))
