@@ -5,7 +5,7 @@ const Router = require('express').Router
 const tripController = require('../controllers/trip-controller')
 
 const authMiddleware = require('../middleware/auth-middleware')
-
+const permissionMiddleware = require('../middleware/permission-middleware')
 
 const MULTER = require('multer')
 const multer = require('../middleware/multer-middleware')
@@ -33,7 +33,7 @@ router.post('/upload-images', MULTER().any(), tripController.uploadImages)
 router.post('/upload-pdf', MULTER().any(), tripController.uploadPdf)
 
 // router.get('/clear', tripController.clear)
-router.post('/created-trips-info', tripController.createdTripsInfo)
+router.post('/created-trips-info',permissionMiddleware, tripController.createdTripsInfo)
 
 router.get('/get-full-trip', tripController.getFullTripById)
 

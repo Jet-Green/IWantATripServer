@@ -574,7 +574,7 @@ module.exports = {
       const skip = (page - 1) * limit;
 
       const cursorBase = TripModel.find(
-        { _id: { $in: tripsIdArray.map(id => new mongoose.Types.ObjectId(id)) }, ...query }, // Основной запрос
+        { _id: { $in: tripsIdArray }, ...query }, // Основной запрос
         null,
         { sort: "start" }
       )
