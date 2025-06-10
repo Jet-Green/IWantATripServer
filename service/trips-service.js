@@ -564,7 +564,7 @@ module.exports = {
     await UserModel.findById(_id, { trips: 1 }).then(data => {
       tripsIdArray = data?.trips || [];
     });
-
+    console.log(tripsIdArray.includes('66fd0499ced97e8517dab248'))
     if (!tripsIdArray.length) return { result, currentPage: page };
 
     const regex = search?.trim() ? new RegExp(search.trim(), "i") : null;
@@ -592,6 +592,10 @@ module.exports = {
         trip = await cursorBase.next()
       ) {
         hasMoreData = true;
+        // проверяем Алтай
+        if(trip.name == "Здравствуй, Алтай! 2025") {
+          console.log(trip.name)
+        }
 
         if (trip.parent) {
 
@@ -605,9 +609,9 @@ module.exports = {
           trip.partner = trip.parent.partner;
           trip.offer = trip.parent.offer;
         }
-  
+
         if (regex && !regex.test(trip.name)) continue;
-       
+
         result.push(trip);
 
         if (result.length >= limit) break;
