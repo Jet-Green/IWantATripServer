@@ -557,14 +557,14 @@ module.exports = {
     return TripModel.findById(_id).populate('author').populate('places', { name: 1 })
   },
   async createdTripsInfo(_id, query, search, page = 1) {
-    const limit = 20;
+    const limit = 15;
     let result = [];
     let tripsIdArray = [];
 
     await UserModel.findById(_id, { trips: 1 }).then(data => {
       tripsIdArray = data?.trips || [];
     });
-    console.log(tripsIdArray.includes('66fd0499ced97e8517dab248'))
+   
     if (!tripsIdArray.length) return { result, currentPage: page };
 
     const regex = search?.trim() ? new RegExp(search.trim(), "i") : null;
@@ -592,10 +592,6 @@ module.exports = {
         trip = await cursorBase.next()
       ) {
         hasMoreData = true;
-        // проверяем Алтай
-        // if(trip.name == "Здравствуй, Алтай! 2025") {
-          console.log(trip.name)
-        // }
 
         if (trip.parent) {
 
