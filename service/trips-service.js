@@ -593,9 +593,9 @@ module.exports = {
       ) {
         hasMoreData = true;
         // проверяем Алтай
-        if(trip.name == "Здравствуй, Алтай! 2025") {
+        // if(trip.name == "Здравствуй, Алтай! 2025") {
           console.log(trip.name)
-        }
+        // }
 
         if (trip.parent) {
 
