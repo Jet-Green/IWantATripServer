@@ -556,69 +556,144 @@ module.exports = {
   async findById(_id) {
     return TripModel.findById(_id).populate('author').populate('places', { name: 1 })
   },
+  // async createdTripsInfo(_id, query, search, page = 1) {
+  //   const limit = 15;
+  //   let result = [];
+  //   let tripsIdArray = [];
+
+  //   await UserModel.findById(_id, { trips: 1 }).then(data => {
+  //     tripsIdArray = data?.trips || [];
+  //   });
+
+  //   if (!tripsIdArray.length) return { result, currentPage: page };
+
+  //   const regex = search?.trim() ? new RegExp(search.trim(), "i") : null;
+
+
+  //   while (result.length < limit) {
+  //     const skip = (page - 1) * limit;
+
+  //     const cursorBase = TripModel.find(
+  //       { _id: { $in: tripsIdArray }, ...query }, // Основной запрос
+  //       null,
+  //       { sort: "start" }
+  //     )
+  //       .populate("parent")
+  //       .populate("calculator")
+  //       .skip(skip)
+  //       .limit(limit)
+  //       .cursor();
+
+  //     let hasMoreData = false;
+
+  //     for (
+  //       let trip = await cursorBase.next();
+  //       trip != null;
+  //       trip = await cursorBase.next()
+  //     ) {
+  //       hasMoreData = true;
+
+  //       if (trip.parent) {
+
+  //         if (regex && !regex.test(trip.parent.name)) continue; // Фильтруем сразу
+
+  //         trip.name = trip.parent.name;
+  //         trip.description = trip.parent.description;
+  //         trip.tripRoute = trip.parent.tripRoute;
+  //         trip.tripType = trip.parent.tripType;
+  //         trip.startLocation = trip.parent.startLocation;
+  //         trip.partner = trip.parent.partner;
+  //         trip.offer = trip.parent.offer;
+  //       }
+
+  //       if (regex && !regex.test(trip.name)) continue;
+
+  //       result.push(trip);
+
+  //       if (result.length >= limit) break;
+  //     }
+
+  //     if (!hasMoreData) break;
+  //     page++;
+  //   }
+
+  //   return { result, currentPage: page };
+  // },
   async createdTripsInfo(_id, query, search, page = 1) {
     const limit = 15;
     let result = [];
     let tripsIdArray = [];
 
-    await UserModel.findById(_id, { trips: 1 }).then(data => {
-      tripsIdArray = data?.trips || [];
-    });
-   
+    // ... (код получения tripsIdArray)
+
     if (!tripsIdArray.length) return { result, currentPage: page };
 
     const regex = search?.trim() ? new RegExp(search.trim(), "i") : null;
+    console.log(`[DEBUG] Ищем с regex: ${regex}, начальная страница: ${page}`);
 
-
+    let loopCount = 0; // Счетчик итераций while
     while (result.length < limit) {
+      loopCount++;
+      console.log(`\n[DEBUG] Итерация while №${loopCount}. Текущая страница: ${page}, результатов в result: ${result.length}`);
+
       const skip = (page - 1) * limit;
 
       const cursorBase = TripModel.find(
-        { _id: { $in: tripsIdArray }, ...query }, // Основной запрос
-        null,
-        { sort: "start" }
-      )
-        .populate("parent")
-        .populate("calculator")
-        .skip(skip)
-        .limit(limit)
-        .cursor();
+        { _id: { $in: tripsIdArray }, ...query },
+        null, { sort: "start" }
+      ).populate("parent").populate("calculator").skip(skip).limit(limit).cursor();
 
       let hasMoreData = false;
+      let docsInCursor = 0;
 
-      for (
-        let trip = await cursorBase.next();
-        trip != null;
-        trip = await cursorBase.next()
-      ) {
+      for (let trip = await cursorBase.next(); trip != null; trip = await cursorBase.next()) {
         hasMoreData = true;
+        docsInCursor++;
+
+        const originalName = trip.name;
+        const tripId = trip._id.toString();
+        let isFiltered = false;
 
         if (trip.parent) {
-
-          if (regex && !regex.test(trip.parent.name)) continue; // Фильтруем сразу
-
+          if (regex && !regex.test(trip.parent.name)) {
+            console.log(`[DEBUG] Тур ${tripId} отфильтрован по PARENT.NAME: "${trip.parent.name}"`);
+            isFiltered = true;
+            continue;
+          }
           trip.name = trip.parent.name;
-          trip.description = trip.parent.description;
-          trip.tripRoute = trip.parent.tripRoute;
-          trip.tripType = trip.parent.tripType;
-          trip.startLocation = trip.parent.startLocation;
-          trip.partner = trip.parent.partner;
-          trip.offer = trip.parent.offer;
         }
 
-        if (regex && !regex.test(trip.name)) continue;
+        if (regex && !regex.test(trip.name)) {
+          console.log(`[DEBUG] Тур ${tripId} отфильтрован по TRIP.NAME: "${trip.name}" (ориг. имя: "${originalName}")`);
+          isFiltered = true;
+          continue;
+        }
 
-        result.push(trip);
+        if (!isFiltered) {
+          console.log(`[DEBUG] Тур ${tripId} ("${trip.name}") прошел фильтр и добавлен в result.`);
+          result.push(trip);
+        }
 
         if (result.length >= limit) break;
       }
 
-      if (!hasMoreData) break;
+      console.log(`[DEBUG] Итерация while №${loopCount} завершена. Документов в курсоре: ${docsInCursor}. hasMoreData: ${hasMoreData}`);
+
+      if (!hasMoreData) {
+        console.log("[DEBUG] Больше нет данных от БД. Выходим из цикла while.");
+        break;
+      }
       page++;
+      if (loopCount > 5) { // Защита от бесконечного цикла
+        console.error("[DEBUG] Аварийный выход, слишком много итераций.");
+        break;
+      }
     }
 
+    console.log(`[DEBUG] Финальный результат: ${result.length} туров. Текущая страница: ${page}`);
     return { result, currentPage: page };
   },
+
   async updateBillsTourists({ _id, touristsList }) {
     // console.log(_id, touristsList)
     let bill = await BillModel.findById(_id)
