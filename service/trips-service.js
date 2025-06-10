@@ -557,7 +557,7 @@ module.exports = {
     return TripModel.findById(_id).populate('author').populate('places', { name: 1 })
   },
   async createdTripsInfo(_id, query, search, page = 1) {
-    const limit = 15;
+    const limit = 20;
     let result = [];
     let tripsIdArray = [];
 
