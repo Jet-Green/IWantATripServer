@@ -14,6 +14,7 @@ const LocationService = require("./location-service.js");
 const _ = require("lodash");
 
 const sanitizeHtml = require('sanitize-html');
+const { default: mongoose } = require("mongoose");
 function sanitize(input) {
   return sanitizeHtml(input, {
     allowedTags: ['b', 'i', 'em', 'strong', 'a', 'p', 'ul', 'ol', 'li', 'br'],
@@ -573,7 +574,7 @@ module.exports = {
       const skip = (page - 1) * limit;
 
       const cursorBase = TripModel.find(
-        { _id: { $in: tripsIdArray }, ...query }, // Основной запрос
+        { _id: { $in: tripsIdArray.map(id => new mongoose.Types.ObjectId(id)) }, ...query }, // Основной запрос
         null,
         { sort: "start" }
       )
