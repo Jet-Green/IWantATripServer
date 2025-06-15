@@ -80,5 +80,5 @@ const TripSchema = new Schema({
     },
     tripRegion: String,
 })
-
+TripSchema.index({ start: 1 });
 module.exports = model('Trip', TripSchema);

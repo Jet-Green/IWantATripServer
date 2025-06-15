@@ -557,7 +557,7 @@ module.exports = {
     return TripModel.findById(_id).populate('author').populate('places', { name: 1 })
   },
   async createdTripsInfo(_id, query, search, page = 1) {
-    const limit = 16;
+    const limit = 15;
     let result = [];
     let tripsIdArray = [];
 
@@ -574,10 +574,9 @@ module.exports = {
       const skip = (page - 1) * limit;
 
       const cursorBase = TripModel.find(
-        { _id: { $in: tripsIdArray }, ...query }, // Основной запрос
-        null,
-        { sort: "start" }
+        { _id: { $in: tripsIdArray }, ...query }, // Основной запрос  
       )
+        .sort({ start: 1 })
         .populate("parent")
         .populate("calculator")
         .skip(skip)
@@ -605,9 +604,8 @@ module.exports = {
           trip.partner = trip.parent.partner;
           trip.offer = trip.parent.offer;
         }
-
+    
         if (regex && !regex.test(trip.name)) continue;
-
         result.push(trip);
 
         if (result.length >= limit) break;
@@ -619,7 +617,7 @@ module.exports = {
 
     return { result, currentPage: page };
   },
- 
+
 
   async updateBillsTourists({ _id, touristsList }) {
     // console.log(_id, touristsList)
