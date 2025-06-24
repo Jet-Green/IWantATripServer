@@ -72,7 +72,7 @@ module.exports = {
         // Use a more robust check for non-empty string
         if (searchQuery.strQuery && searchQuery.strQuery.trim() !== "") {
             const regexQuery = { $regex: searchQuery.strQuery, $options: "i" };
-            console.log(regexQuery)
+            // console.log(regexQuery)
             dbQuery.$and.push(
                 {
                     $or: [
