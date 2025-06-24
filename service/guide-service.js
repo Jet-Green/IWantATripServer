@@ -71,7 +71,8 @@ module.exports = {
         let dbQuery = {$and: []};
         // Use a more robust check for non-empty string
         if (searchQuery.strQuery && searchQuery.strQuery.trim() !== "") {
-            const regexQuery = { $regex: searchQuery, $options: "i" };
+            const regexQuery = { $regex: searchQuery.strQuery, $options: "i" };
+            console.log(regexQuery)
             dbQuery.$and.push(
                 {
                     $or: [
