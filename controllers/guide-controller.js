@@ -40,6 +40,7 @@ const data = {
 }
 
 const GuideService = require('../service/guide-service')
+const logger = require('../logger.js');
 
 module.exports = {
     async getAllElements(req, res, next) {
@@ -65,6 +66,12 @@ module.exports = {
         } catch (error) {
         }
     },
+    async deleteGuide(req, res, next) {
+        try {
+            return res.json(await GuideService.deleteGuide(req.body._id))
+        } catch (error) {
+        }
+    },
     async createGuideElement(req, res, next) {
         try {
             let guideCb = await GuideService.createElement(req.body)
@@ -75,7 +82,7 @@ module.exports = {
             // next(err)
         }
     },
-    async uploadImages(req, res, next) {
+    async uploadImage(req, res, next) {
         try {
             let _id = req.files[0].originalname.split('_')[0]
             let filename = process.env.API_URL + '/guide-elements/' + _id + '_0.png';
@@ -106,14 +113,95 @@ module.exports = {
             next(err)
         }
     },
-
+    
     async getLocalTaxi(req, res, next) {
         try {
-          
+            
             res.json(await GuideService.getLocalTaxi(req.body.location))
         } catch (err) {
             next(err)
         }
     },
-    
+    async addGuide(req, res, next) {
+        try {
+          
+            res.json(await GuideService.addGuide(req.body.guide))
+        } catch (err) {
+            next(err)
+        }
+    },
+    async getGuides(req, res, next) {
+        try {
+          
+            res.json(await GuideService.getGuides(req.body.query,req.body.dbSkip))
+        } catch (err) {
+            next(err)
+        }
+    },
+    async updateGuide(req, res, next) {
+        try {
+          
+            res.json(await GuideService.updateGuide(req.body.guide))
+        } catch (err) {
+            next(err)
+        }
+    },
+    async uploadImages(req, res, next) {
+        let _id = req.files[0]?.originalname.split('_')[0]
+        let filenames = []
+        let buffers = []
+        for (let file of req.files) {
+        buffers.push({ buffer: file.buffer, name: file.originalname, });    // Буфер загруженного файла
+        }
+
+        if (buffers.length) {
+        let uploadResult = await s3.Upload(buffers, '/iwat/guides/');
+
+        for (let upl of uploadResult) {
+            filenames.push(upl.Location)
+        }
+        }
+
+        if (filenames.length) {
+        await GuideService.pushGuideImagesUrls(_id, filenames[0])
+        logger.info({ filenames, logType: 'place' }, 'images uploaded')
+        }
+
+        res.status(200).send('Ok')
+    },
+    async getGuideByEmail(req, res, next) {
+        try {
+            res.json(await GuideService.getGuideByEmail(req.body.email))
+        } catch (err) {
+            next(err)
+        }
+    },
+    async getGuideById(req, res, next) {
+        try {
+            res.json(await GuideService.getGuideById(req.body._id))
+        } catch (err) {
+            next(err)
+        }
+    },
+    async moderateGuide(req, res, next) {
+        try {
+            res.json(await GuideService.moderateGuide(req.body._id))
+        } catch (err) {
+            next(err)
+        }
+    },
+    async sendGuideModerationMessage(req, res, next) {
+        try {
+            res.json(await GuideService.sendGuideModerationMessage(req.body._id,req.body.msg))
+        } catch (err) {
+            next(err)
+        }
+    },
+    async getGuidesAutocomplete(req, res, next) {
+        try {
+            res.json(await GuideService.getGuidesAutocomplete(req.body.query))
+        } catch (err) {
+            next(err)
+        }
+    },
 }

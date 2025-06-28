@@ -240,9 +240,9 @@ module.exports = {
 
         const dateQuery = {
             $and: []
-        };
-
-        // Нижняя граница: >= current
+        }; 
+        // sus filter
+        // Нижняя граница: >= current  
         dateQuery.$and.push({
             $or: [
                 { 'date.year': { $gt: currentYear } },
@@ -293,27 +293,25 @@ module.exports = {
         }
 
         if (locationId) {
-            let location = await LocationModel.findById(locationId)
-            if (location) {
-                try {
-                    query.$and.push({
-                        'location.coordinates': {
-                            $near: {
-                                $geometry: {
-                                    type: 'Point',
-                                    coordinates: location.coordinates,
-                                },
-                                $maxDistance: 50000 // 50 km
-                            }
-                        }
-                    });
-                } catch (error) {
-                    console.log(error);
+          try {
+            const location = await LocationModel.findById(locationId);
+            if (location?.coordinates) {
+              query.$and.push({
+                'location.coordinates': {
+                  $near: {
+                    $geometry: {
+                      type: 'Point',
+                      coordinates: location.coordinates,
+                    },
+                    $maxDistance: 50000 // 50 km
+                  }
                 }
-            } else {
-                console.log('Координаты не найдены для данной локации');
+              });
             }
-
+          } catch (error) {
+            console.error('Location search error:', error);
+            throw new Error('Failed to process location filter');
+          }
         }
 
         if (search) {
@@ -326,23 +324,24 @@ module.exports = {
                 }
             )
         }
+      
         if (type) {
-            query.$and.push(
-                {
-
-                    "excursionType.type": { $regex: type, $options: 'i' },
-                    "excursionType.directionType": { $regex: directionType, $options: 'i' },
-                    "excursionType.directionPlace": { $regex: directionPlace, $options: 'i' },
-                }
-            )
+          query.$and.push(
+              {
+      
+                  "excursionType.type": { $regex: type, $options: 'i' },
+                  "excursionType.directionType": { $regex: directionType, $options: 'i' },
+                  "excursionType.directionPlace": { $regex: directionPlace, $options: 'i' },
+              }
+          )
         }
+      
+        // Age filter
         if (minAge) {
-            query.$and.push(
-                {
-                    minAge: { $lte: minAge },
-                }
-            )
+          query.$and.push({ minAge: { $lte: minAge } });
         }
+      
+        // Price availability filter
         if (havePrices) {
             query.$and.push(
                 {
