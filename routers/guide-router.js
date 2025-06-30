@@ -6,7 +6,7 @@ const upload = multer.upload
 // here all controllers
 const guideController = require('../controllers/guide-controller')
 const authMiddleware = require('../middleware/auth-middleware')
-
+const permissionMiddleware = require('../middleware/permission-middleware')
 
 const router = Router()
 
@@ -22,6 +22,7 @@ router.post('/set-taxi', guideController.setTaxi)
 router.post('/add-guide', guideController.addGuide)
 router.post('/update-guide', guideController.updateGuide)
 router.post('/get-guides', guideController.getGuides)
+router.post('/get-guides-by-user-id', guideController.getGuidesByUserId)
 router.post('/upload-images', MULTER().any(), guideController.uploadImages)
 router.post('/get-guide-by-email', guideController.getGuideByEmail)
 router.post('/get-guide-by-id', guideController.getGuideById)
