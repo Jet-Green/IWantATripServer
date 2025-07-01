@@ -73,10 +73,10 @@ module.exports = {
   },
   async getFullTripById(_id, token) {
 
-    const userData = tokenService.validateAccessToken(token);
-    if (!userData) {
-      throw ApiError.UnauthorizedError();
-    }
+    // const userData = tokenService.validateAccessToken(token);
+    // if (!userData) {
+    //   throw ApiError.UnauthorizedError();
+    // }
     let trip = await TripModel.findById(_id)
       .populate('author', { fullinfo: 1 }).populate('parent')
       .populate({
@@ -96,9 +96,9 @@ module.exports = {
         },
         select: { start: 1, end: 1, billsList: 1, touristsList: 1, selectedStartLocation: 1 },
       }).populate('places')
-    if (trip.author._id.toString() != userData._id) {
-      throw ApiError.NotAccess();
-    }
+    // if (trip.author._id.toString() != userData._id) {
+    //   throw ApiError.NotAccess();
+    // }
 
     if (trip.parent) {
       let originalId = trip._id
