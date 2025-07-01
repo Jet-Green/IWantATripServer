@@ -4,6 +4,8 @@ const BillModel = require("../models/bill-model.js");
 const LocationModel = require("../models/location-model.js");
 
 const ApiError = require("../exceptions/api-error.js");
+const tokenService = require("../service/token-service");
+
 const multer = require("../middleware/multer-middleware");
 const UserService = require("./user-service");
 
@@ -69,7 +71,12 @@ module.exports = {
       $push: { 'payment.documents': bill.doc }
     })
   },
-  async getFullTripById(_id) {
+  async getFullTripById(_id, token) {
+
+    const userData = tokenService.validateAccessToken(token);
+    if (!userData) {
+      throw ApiError.UnauthorizedError();
+    }
     let trip = await TripModel.findById(_id)
       .populate('author', { fullinfo: 1 }).populate('parent')
       .populate({
@@ -89,6 +96,9 @@ module.exports = {
         },
         select: { start: 1, end: 1, billsList: 1, touristsList: 1, selectedStartLocation: 1 },
       }).populate('places')
+    if (trip.author._id.toString() != userData._id) {
+      throw ApiError.NotAccess();
+    }
 
     if (trip.parent) {
       let originalId = trip._id
@@ -604,7 +614,7 @@ module.exports = {
           trip.partner = trip.parent.partner;
           trip.offer = trip.parent.offer;
         }
-    
+
         if (regex && !regex.test(trip.name)) continue;
         result.push(trip);
 
