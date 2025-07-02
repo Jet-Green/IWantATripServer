@@ -76,6 +76,14 @@ module.exports = {
             next(error)
         }
     },
+      async getTripById(req, res, next) {
+        try {
+            return res.json(await TripService.getTripById(req.query._id))
+        } catch (error) {
+            next(error)
+        }
+    },
+    
     async getCustomers(req, res, next) {
         try {
             return res.json(await TripService.getCustomers(req.body))
