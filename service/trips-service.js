@@ -4,6 +4,8 @@ const BillModel = require("../models/bill-model.js");
 const LocationModel = require("../models/location-model.js");
 
 const ApiError = require("../exceptions/api-error.js");
+const tokenService = require("../service/token-service");
+
 const multer = require("../middleware/multer-middleware");
 const UserService = require("./user-service");
 
@@ -69,7 +71,13 @@ module.exports = {
       $push: { 'payment.documents': bill.doc }
     })
   },
-  async getFullTripById(_id) {
+    // Для информации о туре в кабинете
+  async getFullTripById(_id, token) {
+
+    const userData = tokenService.validateAccessToken(token);
+    if (!userData) {
+      throw ApiError.UnauthorizedError();
+    }
     let trip = await TripModel.findById(_id)
       .populate('author', { fullinfo: 1 }).populate('parent')
       .populate({
@@ -89,6 +97,9 @@ module.exports = {
         },
         select: { start: 1, end: 1, billsList: 1, touristsList: 1, selectedStartLocation: 1 },
       }).populate('places')
+    if (trip.author._id.toString() != userData._id) {
+      throw ApiError.NotAccess();
+    }
 
     if (trip.parent) {
       let originalId = trip._id
@@ -119,6 +130,59 @@ module.exports = {
       userComment: 1,
       seats: 1,
       date: 1,
+    });
+    return trip;
+  },
+  // Для информации о туре для клиентов
+  async getTripById(_id) {
+    let trip = await TripModel.findById(_id)
+      .populate('author', { fullinfo: 1 }).populate('parent')
+      .populate({
+        path: 'children._id',
+        populate: {
+          path: 'billsList',
+          select: {
+            cart: 1,
+            // payment: 1,
+            // userInfo: 1,
+            // touristsList: 1,
+            // tinkoff: 1,
+            // selectedStartLocation: 1,
+            // userComment: 1,
+            // additionalServices: 1,
+          }
+        },
+        select: { start: 1, end: 1, billsList: 1, touristsList: 1, selectedStartLocation: 1 },
+      }).populate('places')
+    if (trip.parent) {
+      let originalId = trip._id
+      let parentId = trip.parent._id
+      let { start, end, billsList } = trip
+      let isModerated = trip.parent.isModerated
+      let rejected = trip.parent.rejected
+
+      Object.assign(trip, trip.parent)
+      trip.parent = parentId
+      trip.children = []
+      trip._id = originalId
+      trip.start = start
+      trip.end = end
+      trip.isModerated = isModerated
+      trip.rejected = rejected
+      trip.billsList = billsList
+    }
+
+    await trip.populate("billsList", {
+      cart: 1,
+      // additionalServices: 1,
+      // payment: 1,
+      // userInfo: 1,
+      // touristsList: 1,
+      // selectedStartLocation: 1,
+      // tinkoff: 1,
+      // userComment: 1,
+      // seats: 1,
+      // date: 1,
     });
     return trip;
   },
@@ -604,7 +668,7 @@ module.exports = {
           trip.partner = trip.parent.partner;
           trip.offer = trip.parent.offer;
         }
-    
+
         if (regex && !regex.test(trip.name)) continue;
         result.push(trip);
 

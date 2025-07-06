@@ -19,7 +19,7 @@ module.exports = function (req, res, next) {
             return next(ApiError.UnauthorizedError());
         }
 
-        req.user = userData;
+        // req.user = userData;
 
         // 🔒 Проверка соответствия _id в теле запроса
         if (req.body._id && req.body._id !== userData._id) {
