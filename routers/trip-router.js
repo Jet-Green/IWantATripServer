@@ -35,7 +35,8 @@ router.post('/upload-pdf', MULTER().any(), tripController.uploadPdf)
 // router.get('/clear', tripController.clear)
 router.post('/created-trips-info',permissionMiddleware, tripController.createdTripsInfo)
 
-router.get('/get-full-trip', tripController.getFullTripById)
+router.get('/get-full-trip', authMiddleware, tripController.getFullTripById)
+router.get('/get-trip-by-id', tripController.getTripById)
 
 router.get('/get-bought-seats', tripController.getBoughtSeats)
 

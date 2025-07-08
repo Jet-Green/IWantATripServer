@@ -138,6 +138,13 @@ module.exports = {
             next(err)
         }
     },
+    async getGuidesByUserId (req, res, next) {
+          try { 
+            res.json(await GuideService.getGuidesByUserId(req.body))
+        } catch (err) {
+            next(err)
+        }
+    },
     async updateGuide(req, res, next) {
         try {
           
