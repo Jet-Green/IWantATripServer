@@ -69,7 +69,9 @@ module.exports = {
 
     async getFullTripById(req, res, next) {
         try {
-            return res.json(await TripService.getFullTripById(req.query._id))
+            const authHeader = req.headers.authorization;
+            const token = authHeader && authHeader.split(' ')[1];
+            return res.json(await TripService.getFullTripById(req.query._id, token))
         } catch (error) {
             next(error)
         }

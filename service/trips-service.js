@@ -4,6 +4,8 @@ const BillModel = require("../models/bill-model.js");
 const LocationModel = require("../models/location-model.js");
 
 const ApiError = require("../exceptions/api-error.js");
+const tokenService = require("../service/token-service");
+
 const multer = require("../middleware/multer-middleware");
 const UserService = require("./user-service");
 
@@ -14,6 +16,7 @@ const LocationService = require("./location-service.js");
 const _ = require("lodash");
 
 const sanitizeHtml = require('sanitize-html');
+const { default: mongoose } = require("mongoose");
 function sanitize(input) {
   return sanitizeHtml(input, {
     allowedTags: ['b', 'i', 'em', 'strong', 'a', 'p', 'ul', 'ol', 'li', 'br'],
@@ -68,7 +71,12 @@ module.exports = {
       $push: { 'payment.documents': bill.doc }
     })
   },
-  async getFullTripById(_id) {
+  async getFullTripById(_id, token) {
+
+    const userData = tokenService.validateAccessToken(token);
+    if (!userData) {
+      throw ApiError.UnauthorizedError();
+    }
     let trip = await TripModel.findById(_id)
       .populate('author', { fullinfo: 1 }).populate('parent')
       .populate({
@@ -88,6 +96,9 @@ module.exports = {
         },
         select: { start: 1, end: 1, billsList: 1, touristsList: 1, selectedStartLocation: 1 },
       }).populate('places')
+    if (trip.author._id.toString() != userData._id) {
+      throw ApiError.NotAccess();
+    }
 
     if (trip.parent) {
       let originalId = trip._id
@@ -573,10 +584,9 @@ module.exports = {
       const skip = (page - 1) * limit;
 
       const cursorBase = TripModel.find(
-        { _id: { $in: tripsIdArray }, ...query }, // Основной запрос
-        null,
-        { sort: "start" }
+        { _id: { $in: tripsIdArray }, ...query }, // Основной запрос  
       )
+        .sort({ start: 1 })
         .populate("parent")
         .populate("calculator")
         .skip(skip)
@@ -604,9 +614,8 @@ module.exports = {
           trip.partner = trip.parent.partner;
           trip.offer = trip.parent.offer;
         }
-  
+
         if (regex && !regex.test(trip.name)) continue;
-       
         result.push(trip);
 
         if (result.length >= limit) break;
@@ -618,6 +627,8 @@ module.exports = {
 
     return { result, currentPage: page };
   },
+
+
   async updateBillsTourists({ _id, touristsList }) {
     // console.log(_id, touristsList)
     let bill = await BillModel.findById(_id)
