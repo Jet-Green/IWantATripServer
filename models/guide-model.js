@@ -11,7 +11,7 @@ const GuideSchema = new Schema({
     description: String,
     location: { type: Object },
     user : { type: Schema.Types.ObjectId, ref: 'User' },
-    isAccredited: { type: Boolean, default: false },
+    type: String,
     isHidden: { type: Boolean, default: false },
     isModerated: { type: Boolean, default: false },
     isRejected: { type: Boolean, default: false },
