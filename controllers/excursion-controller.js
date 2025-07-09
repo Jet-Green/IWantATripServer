@@ -18,6 +18,7 @@ module.exports = {
         try {
             let eventEmailsBook = await AppStateModel.findOne({ 'sendMailsTo.type': 'CreateExcurtion' }, { 'sendMailsTo.$': 1 })
             let emailsFromDbBook = eventEmailsBook.sendMailsTo[0].emails
+            // console.log(req.body)
             // req.body.email - это емейл пользователя
             sendMail(req.body.emailHtml, [req.body.email, ...emailsFromDbBook], 'Создана экскурсия')
             return res.json(await ExcursionService.create(req.body))
