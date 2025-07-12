@@ -120,7 +120,8 @@ async function start() {
       db.collections.companions.createIndex({ 'startLocation': '2dsphere' }),
       db.collections.trips.createIndex({ 'includedLocations': '2dsphere' }),
       db.collections.excursions.createIndex({ 'location.coordinates': '2dsphere' }),
-      db.collections.places.createIndex({ 'location.coordinates': '2dsphere' })
+      db.collections.places.createIndex({ 'location.coordinates': '2dsphere' }),
+      db.collections.guides.createIndex({ 'location': '2dsphere' }),
     ]);
 
     console.log('✅ MongoDB connected');
