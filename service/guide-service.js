@@ -18,12 +18,11 @@ module.exports = {
         element.image = filename
         return element.save()
     },
-    async deleteOne(_id) {
-        return GuideElementModel.deleteOne({ _id: _id })
-    },
+
     async getAllElements(type) {
         return GuideElementModel.find({ 'type': type }).exec()
     },
+      // Гиды
     async addGuide(guide) {
         try {
             const user = await UserModel.findOne({ email: guide.email }).select('_id').lean();
@@ -37,8 +36,14 @@ module.exports = {
         }
 
     },
-    async deleteGuide(_id) {
-        return GuideModel.deleteOne({ _id: _id })
+
+    async deleteById(_id) {
+        try {
+          return  await GuideModel.deleteOne({ _id: _id })
+        }
+        catch {
+            throw ApiError.BadRequest("Не удалось удалить гида")
+        }
     },
     async getGuideByEmail(email) {
         return await GuideModel.findOne({ email: email })

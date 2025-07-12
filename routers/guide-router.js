@@ -13,9 +13,9 @@ const router = Router()
 
 // here all routes
 router.get('/get-all-elements', guideController.getAllElements)
-router.get('/get-by-id', guideController.getById)
-router.post('/delete-by-id', guideController.deleteById)
-router.post('/delete-guide', guideController.deleteGuide)
+// router.get('/get-by-id', guideController.getById)
+router.post('/delete-by-id', authMiddleware, guideController.deleteById)
+// router.post('/delete-guide', guideController.deleteGuide)
 router.post('/create-element', guideController.createGuideElement)
 router.post('/upload-image', upload.any(), guideController.uploadImage)
 router.post('/set-taxi', guideController.setTaxi)
