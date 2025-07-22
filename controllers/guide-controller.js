@@ -161,6 +161,13 @@ module.exports = {
             next(err)
         }
     },
+    async getGuideExcursions(req, res, next) {
+        try {
+            res.json(await GuideService.getGuideExcursions(req.body._id))
+        } catch (err) {
+            next(err)
+        }
+    },
     async moderateGuide(req, res, next) {
         try {
             res.json(await GuideService.moderateGuide(req.body._id))

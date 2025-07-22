@@ -2,6 +2,7 @@ const GuideElementModel = require('../models/guide-element-model')
 const GuideModel = require('../models/guide-model')
 const TaxiModel = require('../models/taxi-model')
 const UserModel = require('../models/user-model')
+const ExcursionModel = require('../models/excursion-model')
 
 const ApiError = require("../exceptions/api-error.js");
 const { get } = require('lodash');
@@ -50,6 +51,10 @@ module.exports = {
     },
     async getGuideById(_id) {
         return await GuideModel.findOne({ _id: _id })
+    },
+    async getGuideExcursions(_id) {
+        //contains guide id in guides
+        return await ExcursionModel.find({ guides: _id })
     },
     async moderateGuide(_id) {
         return GuideModel.findByIdAndUpdate(_id, { isModerated: true, isRejected: false })
