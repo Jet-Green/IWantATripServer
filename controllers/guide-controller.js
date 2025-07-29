@@ -175,6 +175,13 @@ module.exports = {
             next(err)
         }
     },
+    async hideGuide(req, res, next) {
+        try {
+            res.json(await GuideService.hideGuide(req.body._id,req.body.isHidden))
+        } catch (err) {
+            next(err)
+        }
+    },
     async sendGuideModerationMessage(req, res, next) {
         try {
             res.json(await GuideService.sendGuideModerationMessage(req.body._id, req.body.msg))
