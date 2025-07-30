@@ -72,94 +72,134 @@ module.exports = {
     async pushGuideImagesUrls(_id, filename) {
         return await GuideModel.findByIdAndUpdate(_id, { image: filename });
     },
-    async getGuides(searchQuery, initialDbSkip) {
-        const TARGET_DOC_COUNT = 20; // How many documents we want to fetch in total for this call
-        const INTERNAL_BATCH_SIZE = 10; // How many docs to fetch in each *internal* DB query. Adjust for performance vs. DB load.
+    async getGuides(page,filter) {
+        const limit = 20;
+        page = page || 1;
+        const skip = (page - 1) * limit;
+        console.log(filter)
 
-        let accumulatedGuides = [];
-        let currentDbSkip = initialDbSkip; // Start skipping from the value provided by the client
-        let isExhausted = false;
-
-        // --- Database Query Construction --- (Same as before)
-        let dbQuery = { $and: [] };
-        // Use a more robust check for non-empty string
-        if (searchQuery.strQuery && searchQuery.strQuery.trim() !== "") {
-            const regexQuery = { $regex: searchQuery.strQuery, $options: "i" };
-            // console.log(regexQuery)
-            dbQuery.$and.push(
-                {
-                    $or: [
-                        { offer: regexQuery },
-                        { location: regexQuery },
-                        { name: regexQuery },
-                        { surname: regexQuery }
-                    ]
-                }
-            );
-        }
-        if ("isModerated" in searchQuery || "isRejected" in searchQuery) {
-            dbQuery.$and.push({ isModerated: searchQuery.isModerated, isRejected: searchQuery.isRejected })
-        }
-        if ("isHidden" in searchQuery){
-            dbQuery.$and.push({ isHidden: searchQuery.isHidden })
-        }
-
-        // --- Looping Fetch ---
-        // Keep fetching until we have enough documents or the database runs out
-        while (accumulatedGuides.length < TARGET_DOC_COUNT) {
-            // Calculate how many more docs we need to reach the target
-            const remainingNeeded = TARGET_DOC_COUNT - accumulatedGuides.length;
-            // Determine the limit for the *next* internal DB query
-            const limitForThisQuery = Math.min(INTERNAL_BATCH_SIZE, remainingNeeded);
-
-            if (limitForThisQuery <= 0) { // Should not happen with current logic, but safe check
-                break;
-            }
-
-            // console.log(`Fetching batch: skip=${currentDbSkip}, limit=${limitForThisQuery}`); // Optional: for debugging
-
-            const fetchedBatch = await GuideModel.find(dbQuery)
-                .skip(currentDbSkip)       // Skip documents based on previous internal fetches
-                .limit(limitForThisQuery)  // Limit the number of results for *this specific batch*
-                .lean();                   // Use lean() for performance
-
-            // console.log(`Fetched ${fetchedBatch.length} documents in this batch.`); // Optional: for debugging
-
-            if (fetchedBatch.length === 0) {
-                // If a query returns zero results, the cursor is exhausted for this query.
-                isExhausted = true;
-                break; // Exit the loop, no more documents matching the query
-            }
-
-            // Add the newly fetched documents to our accumulated list
-            accumulatedGuides = accumulatedGuides.concat(fetchedBatch);
-
-            // Update the skip value for the next potential internal query or the final return value
-            currentDbSkip += fetchedBatch.length;
-
-            // If we received fewer documents than we asked for in this batch,
-            // it means we've reached the end of the available documents matching the query.
-            if (fetchedBatch.length < limitForThisQuery) {
-                isExhausted = true;
-                break; // Exit the loop, no more documents available
-            }
-
-            // If we have reached or exceeded the target count after this batch, we can stop.
-            // (The check at the start of the while loop already handles this, but double-checking doesn't hurt)
-            if (accumulatedGuides.length >= TARGET_DOC_COUNT) {
-                break;
-            }
-        } // End of while loop
-
-        // --- Return the accumulated data and pagination info ---
-        return {
-            data: accumulatedGuides,    // The guides retrieved in this call (up to 20)
-            // The 'dbSkip' returned to the client should be the starting point for the *next* client request.
-            // This is the total number of documents skipped *up to the end of this call*.
-            dbSkip: currentDbSkip,
-            // 'ended' is true if we stopped fetching *because* the database ran out of matching documents.
-            ended: isExhausted,
+        let baseQuery = {
+            $and: [
+                { isHidden: filter.isHidden, isModerated: filter.isModerated, isRejected: filter.isRejected },
+            ],
         };
+        let locationQuery = null;
+        let radiusQuery = null;
+
+        if (filter?.search != '') {
+            baseQuery.$and.push = { $regex: filter.search, $options: "i" }
+        }
+
+        let location = filter ? filter.location : null
+        let locationRadius = filter ? filter.locationRadius : null
+
+        if (location?.name) {
+            locationQuery = {
+                $and:[
+                    ...baseQuery.$and,
+                    {
+                        "location.name": {
+                            $regex: location?.name,
+                            $options: "i",
+                        }
+                    },
+                ]
+            };
+        }
+
+        if (
+            location?.coordinates &&
+            locationRadius != 0 &&
+            locationRadius
+        ) {
+            radiusQuery = {
+            $and:[
+                ...baseQuery.$and,
+                {
+                    "location.coordinates": 
+                    {
+                        $near: {
+                            $geometry: {
+                            type: "Point",
+                            coordinates: location?.coordinates,
+                            },
+                            $maxDistance: Number(locationRadius) * 1000,
+                        },
+                    },
+                }
+            ]
+            };
+        }
+
+        const cursorBase = GuideModel.find(baseQuery, null)
+        .skip(skip)
+        .limit(limit)
+        .cursor();
+
+        const cursorLocation = locationQuery
+        ? GuideModel.find(locationQuery, null)
+        .skip(skip)
+        .limit(limit)
+        .cursor()
+        : null;
+
+        const cursorRadius = radiusQuery
+        ? GuideModel.find(radiusQuery, null)
+        .skip(skip)
+        .limit(limit)
+        .cursor()
+        : null;
+
+        const results = [];
+        const seenDocs = new Set(); // To prevent duplicates
+
+
+        if (!location) {
+        for (
+            let doc = await cursorBase.next();
+            doc != null;
+            doc = await cursorBase.next()
+        ) {
+            if (!seenDocs.has(doc._id.toString())) {
+            results.push(doc);
+            seenDocs.add(doc._id.toString());
+            }
+        }
+        }
+
+        // Collect results from locationQuery (if defined)
+        if (location?.name) {
+        for (
+            let doc = await cursorLocation.next();
+            doc != null;
+            doc = await cursorLocation.next()
+        ) {
+            if (!seenDocs.has(doc._id.toString())) {
+            results.push(doc);
+            seenDocs.add(doc._id.toString());
+            }
+        }
+        }
+
+        // Collect results from radiusQuery (if defined)
+        if (
+        location?.coordinates &&
+        locationRadius != 0 &&
+        locationRadius
+        ) {
+        for (
+            let doc = await cursorRadius.next();
+            doc != null;
+            doc = await cursorRadius.next()
+        ) {
+            if (!seenDocs.has(doc._id.toString())) {
+            results.push(doc);
+            seenDocs.add(doc._id.toString());
+            }
+        }
+        }
+
+        return results;
     },
     async getGuidesByUserId(body) {
         const limit = 20;

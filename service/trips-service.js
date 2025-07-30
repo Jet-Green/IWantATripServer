@@ -503,10 +503,6 @@ module.exports = {
 
     const results = [];
     const seenDocs = new Set(); // To prevent duplicates
-    // for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
-    //     results.push(doc);
-    // }
-    // console.log(location,location=="null")
     if (location == "null") {
       for (
         let doc = await cursorBase.next();

@@ -104,7 +104,7 @@ module.exports = {
     async getGuides(req, res, next) {
         try {
 
-            res.json(await GuideService.getGuides(req.body.query, req.body.dbSkip))
+            res.json(await GuideService.getGuides(req.body.page,req.body.filter))
         } catch (err) {
             next(err)
         }
