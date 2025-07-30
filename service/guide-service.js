@@ -60,7 +60,6 @@ module.exports = {
         return GuideModel.findByIdAndUpdate(_id, { isModerated: true, isRejected: false })
     },
     async hideGuide(_id, isHidden) {
-        console.log(_id,isHidden)
         return GuideModel.findByIdAndUpdate(_id, {isHidden: !isHidden})
     },
     async sendGuideModerationMessage(_id, msg) {
@@ -82,7 +81,7 @@ module.exports = {
         let isExhausted = false;
 
         // --- Database Query Construction --- (Same as before)
-        let dbQuery = { $and: [{ isHidden: false }] };
+        let dbQuery = { $and: [] };
         // Use a more robust check for non-empty string
         if (searchQuery.strQuery && searchQuery.strQuery.trim() !== "") {
             const regexQuery = { $regex: searchQuery.strQuery, $options: "i" };
@@ -100,6 +99,9 @@ module.exports = {
         }
         if ("isModerated" in searchQuery || "isRejected" in searchQuery) {
             dbQuery.$and.push({ isModerated: searchQuery.isModerated, isRejected: searchQuery.isRejected })
+        }
+        if ("isHidden" in searchQuery){
+            dbQuery.$and.push({ isHidden: searchQuery.isHidden })
         }
 
         // --- Looping Fetch ---
