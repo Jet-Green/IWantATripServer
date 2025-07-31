@@ -83,9 +83,8 @@ module.exports = {
         };
         let locationQuery = null;
         let radiusQuery = null;
-
-        if (filter?.isHidden){
-            baseQuery.$and.push = { isHidden: filter.isHidden }
+        if (typeof filter?.isHidden== "boolean"){
+            baseQuery.$and.push({ isHidden: filter.isHidden })
         }
 
         if (filter?.search != '') {
