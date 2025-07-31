@@ -76,23 +76,24 @@ module.exports = {
         const limit = 20;
         page = page || 1;
         const skip = (page - 1) * limit;
-        console.log(filter)
-
         let baseQuery = {
             $and: [
-                { isHidden: filter.isHidden, isModerated: filter.isModerated, isRejected: filter.isRejected },
+                { isModerated: filter.isModerated, isRejected: filter.isRejected },
             ],
         };
         let locationQuery = null;
         let radiusQuery = null;
 
+        if (filter?.isHidden){
+            baseQuery.$and.push = { isHidden: filter.isHidden }
+        }
+
         if (filter?.search != '') {
             baseQuery.$and.push = { $regex: filter.search, $options: "i" }
         }
 
-        let location = filter ? filter.location : null
-        let locationRadius = filter ? filter.locationRadius : null
-
+        let location = filter.location.coordinates.length!=0 ? filter.location : null
+        let locationRadius = filter.locationRadius!=0 ? filter.locationRadius : null
         if (location?.name) {
             locationQuery = {
                 $and:[
@@ -192,13 +193,14 @@ module.exports = {
             doc != null;
             doc = await cursorRadius.next()
         ) {
+            
             if (!seenDocs.has(doc._id.toString())) {
             results.push(doc);
             seenDocs.add(doc._id.toString());
             }
         }
         }
-
+        // console.log(results)
         return results;
     },
     async getGuidesByUserId(body) {
