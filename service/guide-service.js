@@ -23,7 +23,7 @@ module.exports = {
     async getAllElements(type) {
         return GuideElementModel.find({ 'type': type }).exec()
     },
-      // Гиды
+    // Гиды
     async addGuide(guide) {
         try {
             const user = await UserModel.findOne({ email: guide.email }).select('_id').lean();
@@ -40,7 +40,7 @@ module.exports = {
 
     async deleteById(_id) {
         try {
-          return  await GuideModel.deleteOne({ _id: _id })
+            return await GuideModel.deleteOne({ _id: _id })
         }
         catch {
             throw ApiError.BadRequest("Не удалось удалить гида")
@@ -60,7 +60,7 @@ module.exports = {
         return GuideModel.findByIdAndUpdate(_id, { isModerated: true, isRejected: false })
     },
     async hideGuide(_id, isHidden) {
-        return GuideModel.findByIdAndUpdate(_id, {isHidden: !isHidden})
+        return GuideModel.findByIdAndUpdate(_id, { isHidden: !isHidden })
     },
     async sendGuideModerationMessage(_id, msg) {
         return GuideModel.findByIdAndUpdate(_id, { isModerated: false, moderationMessage: msg, isRejected: true })
@@ -72,136 +72,58 @@ module.exports = {
     async pushGuideImagesUrls(_id, filename) {
         return await GuideModel.findByIdAndUpdate(_id, { image: filename });
     },
-    async getGuides(page,filter) {
-        const limit = 20;
-        page = page || 1;
-        const skip = (page - 1) * limit;
-        let baseQuery = {
-            $and: [
-                { isModerated: filter.isModerated, isRejected: filter.isRejected },
+   async getGuides(page, filter) {
+    const limit = 20;
+    page = page || 1;
+    const skip = (page - 1) * limit;
+
+    const baseQuery = {
+        $and: [
+            {
+                isModerated: filter.isModerated,
+                isRejected: filter.isRejected,
+                isHidden: filter.isHidden,
+            },
+        ],
+    };
+
+    if (filter?.search?.trim() !== '') {
+        baseQuery.$and.push({
+            $or: [
+                { offer: { $regex: filter.search, $options: 'i' } },
+                { name: { $regex: filter.search, $options: 'i' } },
+                { surname: { $regex: filter.search, $options: 'i' } },
             ],
+        });
+    }
+    let finalQuery = baseQuery;
+
+    if (
+        filter?.location?.coordinates &&
+        filter.location.coordinates.length === 2 &&
+        filter.locationRadius 
+    ) {
+        finalQuery = {
+            location: {
+                $near: {
+                    $geometry: {
+                        type: 'Point',
+                        coordinates: filter.location.coordinates,
+                    },
+                    $maxDistance: Number(filter.locationRadius) * 1000,
+                },
+            },
+            ...baseQuery,
         };
-        let locationQuery = null;
-        let radiusQuery = null;
-        if (typeof filter?.isHidden== "boolean"){
-            baseQuery.$and.push({ isHidden: filter.isHidden })
-        }
+    }
 
-        if (filter?.search != '') {
-            baseQuery.$and.push = { $regex: filter.search, $options: "i" }
-        }
-
-        let location = filter.location.coordinates.length!=0 ? filter.location : null
-        let locationRadius = filter.locationRadius!=0 ? filter.locationRadius : null
-        if (location?.name) {
-            locationQuery = {
-                $and:[
-                    ...baseQuery.$and,
-                    {
-                        "location.name": {
-                            $regex: location?.name,
-                            $options: "i",
-                        }
-                    },
-                ]
-            };
-        }
-
-        if (
-            location?.coordinates &&
-            locationRadius != 0 &&
-            locationRadius
-        ) {
-            radiusQuery = {
-            $and:[
-                ...baseQuery.$and,
-                {
-                    "location.coordinates": 
-                    {
-                        $near: {
-                            $geometry: {
-                            type: "Point",
-                            coordinates: location?.coordinates,
-                            },
-                            $maxDistance: Number(locationRadius) * 1000,
-                        },
-                    },
-                }
-            ]
-            };
-        }
-
-        const cursorBase = GuideModel.find(baseQuery, null)
+    const result = GuideModel.find(finalQuery)
         .skip(skip)
-        .limit(limit)
-        .cursor();
+        .limit(limit);
 
-        const cursorLocation = locationQuery
-        ? GuideModel.find(locationQuery, null)
-        .skip(skip)
-        .limit(limit)
-        .cursor()
-        : null;
+    return result;
+},
 
-        const cursorRadius = radiusQuery
-        ? GuideModel.find(radiusQuery, null)
-        .skip(skip)
-        .limit(limit)
-        .cursor()
-        : null;
-
-        const results = [];
-        const seenDocs = new Set(); // To prevent duplicates
-
-
-        if (!location) {
-        for (
-            let doc = await cursorBase.next();
-            doc != null;
-            doc = await cursorBase.next()
-        ) {
-            if (!seenDocs.has(doc._id.toString())) {
-            results.push(doc);
-            seenDocs.add(doc._id.toString());
-            }
-        }
-        }
-
-        // Collect results from locationQuery (if defined)
-        if (location?.name) {
-        for (
-            let doc = await cursorLocation.next();
-            doc != null;
-            doc = await cursorLocation.next()
-        ) {
-            if (!seenDocs.has(doc._id.toString())) {
-            results.push(doc);
-            seenDocs.add(doc._id.toString());
-            }
-        }
-        }
-
-        // Collect results from radiusQuery (if defined)
-        if (
-        location?.coordinates &&
-        locationRadius != 0 &&
-        locationRadius
-        ) {
-        for (
-            let doc = await cursorRadius.next();
-            doc != null;
-            doc = await cursorRadius.next()
-        ) {
-            
-            if (!seenDocs.has(doc._id.toString())) {
-            results.push(doc);
-            seenDocs.add(doc._id.toString());
-            }
-        }
-        }
-        // console.log(results)
-        return results;
-    },
     async getGuidesByUserId(body) {
         const limit = 20;
         const page = body.page || 1;
