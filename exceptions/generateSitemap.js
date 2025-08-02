@@ -3,20 +3,23 @@ const path = require('path');
 const TripService = require('../service/trips-service.js')
 const ExcursionService = require('../service/excursion-service.js')
 const PlaceService = require('../service/places-service.js')
+const GuideService = require('../service/guide-service.js');
 
 const BASE_URL = process.env.CLIENT_URL; 
 
 async function generateSitemapAndRobots() {
-  const staticRoutes = ['/', '/places', '/trips', '/excursions'];
+  const staticRoutes = ['/', '/places', '/trips', '/excursions', '/guides'];
 
   const tripIds = await TripService.getVisibleTripIds();
   const placeIds = await PlaceService.getVisiblePlaceIds();
   const excursionIds = await ExcursionService.getVisibleExcursionIds();
+  const guideIds = await GuideService.getVisibleGuidesIds();
 
   const dynamicRoutes = [
     ...tripIds.map(id => `/trip?_id=${id}`),
     ...placeIds.map(id => `/place?_id=${id}`),
     ...excursionIds.map(id => `/excursion?_id=${id}`),
+    ...guideIds.map(id => `/guide?_id=${id}`),
   ];
 
   const allRoutes = [...staticRoutes, ...dynamicRoutes];

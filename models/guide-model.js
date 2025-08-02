@@ -2,13 +2,13 @@ const { Schema, model } = require('mongoose')
 
 const GuideSchema = new Schema({
     name: { type: String, required: true },
-    surname: String,
+    surname: { type: String, required: true },
     image: { type: String },
-    email: { type: String, required: true },
-    phone: { type: String, required: true },
-    offer: String,
+    email: { type: String},
+    phone: { type: String},
+    offer: { type: String, required: true },
     socialMedia: String,
-    description: String,
+    description: { type: String, required: true },
     location: { type: Object },
     user : { type: Schema.Types.ObjectId, ref: 'User' },
     type: String,

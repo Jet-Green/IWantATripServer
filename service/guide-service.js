@@ -3,6 +3,7 @@ const GuideModel = require('../models/guide-model')
 const TaxiModel = require('../models/taxi-model')
 const UserModel = require('../models/user-model')
 const ExcursionModel = require('../models/excursion-model')
+const tokenService = require("../service/token-service");
 
 const ApiError = require("../exceptions/api-error.js");
 const { get } = require('lodash');
@@ -26,12 +27,7 @@ module.exports = {
     // Гиды
     async addGuide(guide) {
         try {
-            const user = await UserModel.findOne({ email: guide.email }).select('_id').lean();
-            const guideToCreate = {
-                ...guide,
-                user: user._id,
-            };
-            return GuideModel.create(guideToCreate)
+            return GuideModel.create(guide)
         } catch (e) {
             throw ApiError.BadRequest("Не удалось создать гида")
         }
@@ -39,6 +35,11 @@ module.exports = {
     },
 
     async deleteById(_id) {
+        const userData = tokenService.validateAccessToken(token);
+        if (!userData) {
+            throw ApiError.UnauthorizedError();
+        }
+        
         try {
             return await GuideModel.deleteOne({ _id: _id })
         }
@@ -72,57 +73,61 @@ module.exports = {
     async pushGuideImagesUrls(_id, filename) {
         return await GuideModel.findByIdAndUpdate(_id, { image: filename });
     },
-   async getGuides(page, filter) {
-    const limit = 20;
-    page = page || 1;
-    const skip = (page - 1) * limit;
+    async getVisibleGuidesIds() {
+        const items = await GuideModel.find({ isHidden: false, isModerated: true, isRejected: false })
+        return items.map(p => p._id.toString());
+    },
+    async getGuides(page, filter) {
+        const limit = 20;
+        page = page || 1;
+        const skip = (page - 1) * limit;
 
-    const baseQuery = {
-        $and: [
-            {
-                isModerated: filter.isModerated,
-                isRejected: filter.isRejected,
-                isHidden: filter.isHidden,
-            },
-        ],
-    };
-
-    if (filter?.search?.trim() !== '') {
-        baseQuery.$and.push({
-            $or: [
-                { offer: { $regex: filter.search, $options: 'i' } },
-                { name: { $regex: filter.search, $options: 'i' } },
-                { surname: { $regex: filter.search, $options: 'i' } },
-            ],
-        });
-    }
-    let finalQuery = baseQuery;
-
-    if (
-        filter?.location?.coordinates &&
-        filter.location.coordinates.length === 2 &&
-        filter.locationRadius 
-    ) {
-        finalQuery = {
-            location: {
-                $near: {
-                    $geometry: {
-                        type: 'Point',
-                        coordinates: filter.location.coordinates,
-                    },
-                    $maxDistance: Number(filter.locationRadius) * 1000,
+        const baseQuery = {
+            $and: [
+                {
+                    isModerated: filter.isModerated,
+                    isRejected: filter.isRejected,
+                    isHidden: filter.isHidden,
                 },
-            },
-            ...baseQuery,
+            ],
         };
-    }
 
-    const result = GuideModel.find(finalQuery)
-        .skip(skip)
-        .limit(limit);
+        if (filter?.search?.trim() !== '') {
+            baseQuery.$and.push({
+                $or: [
+                    { offer: { $regex: filter.search, $options: 'i' } },
+                    { name: { $regex: filter.search, $options: 'i' } },
+                    { surname: { $regex: filter.search, $options: 'i' } },
+                ],
+            });
+        }
+        let finalQuery = baseQuery;
 
-    return result;
-},
+        if (
+            filter?.location?.coordinates &&
+            filter.location.coordinates.length === 2 &&
+            filter.locationRadius
+        ) {
+            finalQuery = {
+                location: {
+                    $near: {
+                        $geometry: {
+                            type: 'Point',
+                            coordinates: filter.location.coordinates,
+                        },
+                        $maxDistance: Number(filter.locationRadius) * 1000,
+                    },
+                },
+                ...baseQuery,
+            };
+        }
+
+        const result = GuideModel.find(finalQuery)
+            .skip(skip)
+            .limit(limit);
+
+        return result;
+    },
 
     async getGuidesByUserId(body) {
         const limit = 20;
