@@ -46,6 +46,8 @@ Allow: /excursions$
 Allow: /trip?_id=
 Allow: /place?_id=
 Allow: /excursion?_id=
+Allow: /guides$
+Allow: /guide?_id=
 
 Sitemap: ${BASE_URL}/sitemap.xml
 `;
