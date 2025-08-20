@@ -91,18 +91,16 @@ module.exports = {
                 },
             ],
         };
-
         if (filter?.search?.trim() !== '') {
             baseQuery.$and.push({
                 $or: [
-                    { offer: { $regex: filter.search, $options: 'i' } },
-                    { name: { $regex: filter.search, $options: 'i' } },
-                    { surname: { $regex: filter.search, $options: 'i' } },
+                    { offer: { $regex: filter.search, $options: "i" } },
+                    { name: { $regex: filter.search, $options: "i" } },
+                    { surname: { $regex: filter.search, $options: "i" } },
                 ],
             });
         }
         let finalQuery = baseQuery;
-
         if (
             filter?.location?.coordinates &&
             filter.location.coordinates.length === 2 &&
@@ -121,11 +119,10 @@ module.exports = {
                 ...baseQuery,
             };
         }
-
         const result = GuideModel.find(finalQuery)
-            .skip(skip)
-            .limit(limit);
-
+        .skip(skip)
+        .limit(limit);
+        
         return result;
     },
 
