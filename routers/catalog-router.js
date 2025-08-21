@@ -16,7 +16,7 @@ const router = Router()
 router.get('/get-all-catalog', catalogController.getCatalog)
 router.post('/get-my-catalog-trips', authMiddleware, catalogController.getMyCatalogTrips)
 
-router.post('/delete-catalog-by-id', catalogController.deleteCatalogById)
+router.post('/delete-catalog-by-id',authMiddleware, catalogController.deleteCatalogById)
 router.post('/create-catalog-trip', authMiddleware, catalogController.createCatalogTrip)
 router.post('/update-catalog-trip', authMiddleware, catalogController.updateCatalogTrip)
 router.post('/edit-catalog-trip', authMiddleware, catalogController.editCatalogTrip)

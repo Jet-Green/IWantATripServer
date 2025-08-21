@@ -79,7 +79,7 @@ module.exports = {
                     offer: trip.tripOffer,
                     description: trip.description,
                     rejected: trip.rejected,         
-                    tripType: trip.type,
+                    tripType: trip.tripType,
                     fromAge: trip.fromAge,
                     isHidden: trip.isHidden,
                     isModerated: trip.isModerated,
