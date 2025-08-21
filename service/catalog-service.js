@@ -10,19 +10,20 @@ const LocationService = require('./location-service.js')
 
 const _ = require('lodash');
 const sanitizeHtml = require('sanitize-html');
-function sanitize(input) {    return sanitizeHtml(input, {
-    allowedTags: ['b', 'i', 'em', 'strong', 'a', 'p', 'ul', 'ol', 'li', 'br'],
-    allowedAttributes: {
-        'a': ['href', 'target', 'rel'], // Разрешаем только ссылки и их атрибуты
-        'img': ['src', 'alt', 'title', 'width', 'height'] // Разрешаем изображения и их атрибуты
-    },
-    allowedSchemes: ['http', 'https', 'data'], // Запрещаем потенциально опасные схемы (например, javascript:)
-    allowedSchemesByTag: {
-        img: ['http', 'https', 'data'] // Специально для тегов <img>
-    },
-    // Предотвращаем JavaScript-инъекции
-    enforceHtmlBoundary: true
-})
+function sanitize(input) {
+    return sanitizeHtml(input, {
+        allowedTags: ['b', 'i', 'em', 'strong', 'a', 'p', 'ul', 'ol', 'li', 'br'],
+        allowedAttributes: {
+            'a': ['href', 'target', 'rel'], // Разрешаем только ссылки и их атрибуты
+            'img': ['src', 'alt', 'title', 'width', 'height'] // Разрешаем изображения и их атрибуты
+        },
+        allowedSchemes: ['http', 'https', 'data'], // Запрещаем потенциально опасные схемы (например, javascript:)
+        allowedSchemesByTag: {
+            img: ['http', 'https', 'data'] // Специально для тегов <img>
+        },
+        // Предотвращаем JavaScript-инъекции
+        enforceHtmlBoundary: true
+    })
 }
 
 module.exports = {
@@ -37,38 +38,29 @@ module.exports = {
         );
         return result;
     },
-    async deleteOneCatalog(_id, s3) {
-        let catalogTripToDelete = await CatalogTripModel.findById(_id)
-        if (catalogTripToDelete) {
-            // у userа нет поля с каталожными турами
-            // await UserModel.findByIdAndUpdate(catalogTripToDelete.author, {
-            //     $pull: { trips: { $in: _id } }
-            // })
-
-            let images = catalogTripToDelete.images
-            // multer.deleteImages(images)
-            for (let image of images) {
-                let s = image.split('/')
-                let filename = s[s.length - 1]
-
-                let remove = await s3.Remove('/iwat/' + filename)
+    async deleteOneCatalog(_id) {
+        try {
+            const deletedCatalog = await CatalogTripModel.findByIdAndDelete(_id)
+            if (!deletedCatalog) {
+                return { success: false, message: 'Каталог не найден' }
             }
-
-            return catalogTripToDelete.remove()
+            return { success: true, data: deletedCatalog }
+        } catch (error) {
+            console.error('Ошибка при удалении каталога:', error)
+            return { success: false, message: 'Ошибка при удалении', error }
         }
-        return null
     },
     async hideCatalog(_id, v) {
         return CatalogTripModel.findByIdAndUpdate(_id, { isHidden: v })
     },
     async editCatalogTrip(data) {
         const { _id, trip } = data;
-        const { startLocation } = trip 
+        const { startLocation } = trip
         if (startLocation && startLocation.coordinates) {
             startLocation.coordinates = startLocation.coordinates.map(coord => parseFloat(coord));
         }
-        trip.description=sanitize(trip.description)
-        let location = await LocationService.createLocation(startLocation)   
+        trip.description = sanitize(trip.description)
+        let location = await LocationService.createLocation(startLocation)
         return CatalogTripModel.findByIdAndUpdate(
             _id,
             {
@@ -78,7 +70,7 @@ module.exports = {
                     tripRoute: trip.tripRoute,
                     offer: trip.tripOffer,
                     description: trip.description,
-                    rejected: trip.rejected,         
+                    rejected: trip.rejected,
                     tripType: trip.tripType,
                     fromAge: trip.fromAge,
                     isHidden: trip.isHidden,
@@ -166,7 +158,7 @@ module.exports = {
         return results
     },
     async moderateCatalog(_id, t) {
-        
+
         return CatalogTripModel.findByIdAndUpdate(_id, { isModerated: t, rejected: false })
     },
     async sendCatalogModerationMessage(tripId, msg) {
