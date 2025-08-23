@@ -81,7 +81,8 @@ module.exports = {
                     "startLocation.name": location.name,
                     "startLocation.shortName": location.shortName,
                     "startLocation.type": location.type,
-                    "startLocation.coordinates": location.coordinates
+                    "startLocation.coordinates": location.coordinates,
+                    ...(trip.images !== undefined ? { images: trip.images } : {})
                 }
             },
             { new: true, runValidators: true } // Включаем валидацию и возвращаем новый документ
