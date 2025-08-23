@@ -12,7 +12,6 @@ module.exports = {
         )
     },
     async createLocation(loc) {
-
         loc.coordinates = [Number(loc.coordinates[0]), Number(loc.coordinates[1])]
 
         // find by lon and lat
@@ -46,5 +45,10 @@ module.exports = {
     // },
     selectUserLocation(userId, location) {
         return UserModel.findByIdAndUpdate(userId, { userLocation: location })
+    },
+    async updateLocationImageUrl(_id, imageURL) {
+        let locationFromDb = await LocationModel.findById(_id)
+        locationFromDb.image = imageURL
+        return locationFromDb.save()
     }
 }
