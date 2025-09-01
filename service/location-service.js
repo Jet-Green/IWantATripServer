@@ -27,6 +27,14 @@ module.exports = {
         }
         return candidate
     },
+    async deletePhotoFromLocation(_id) {
+        return await LocationModel.findByIdAndUpdate(
+            _id,
+            { image: "" },       
+            { new: true }        
+        )
+    },
+
     // isNearPlace(userPlaceGeo, placeGeo) {
     //     // когда нет локации
     //     if (userPlaceGeo.geo_lat == '' || userPlaceGeo.geo_lon == '') {

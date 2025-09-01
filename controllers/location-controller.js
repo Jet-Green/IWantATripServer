@@ -19,6 +19,10 @@ module.exports = {
     async createLocation(req, res, next) {
         return res.json(await LocationService.createLocation(req.body.location))
     },
+     async deletePhotoFromLocation(req, res, next) {
+        return res.json(await LocationService.deletePhotoFromLocation(req.body._id))
+    },
+    
     async uploadImage(req, res, next) {
         try {
             let _id = req.files[0]?.originalname.split('_')[0]
