@@ -71,7 +71,7 @@ module.exports = {
       $push: { 'payment.documents': bill.doc }
     })
   },
-    // Для информации о туре в кабинете
+  // Для информации о туре в кабинете
   async getFullTripById(_id, token) {
 
     const userData = tokenService.validateAccessToken(token);
@@ -308,44 +308,53 @@ module.exports = {
     return trip.save();
   },
   async deleteMany() {
+    return
     return TripModel.deleteMany({});
   },
-  async deleteOne(_id, s3) {
+ async deleteOne(_id, s3) {
+  try {
     let tripToDelete = await TripModel.findById(_id);
-    if (tripToDelete) {
-      // if bought by user
-      if (tripToDelete.billsList.length > 0) {
-        throw ApiError.BadRequest("Нельзя удалять купленные туры");
-      }
-      let childrenIds = [];
-      for (let ch of tripToDelete.children) {
-        await TripModel.findByIdAndDelete(ch);
-        // если так не сделать, то вместо String получаем new ObjectId("64ba6635a5f641523c785c55")
-        childrenIds.push(ch.toString());
-      }
-      await UserModel.findByIdAndUpdate(tripToDelete.author, {
-        $pull: { trips: { $in: [_id, ...childrenIds] } },
-      });
 
-      if (tripToDelete.parent) {
-        await TripModel.findByIdAndUpdate(tripToDelete.parent, {
-          $pull: { children: { _id: tripToDelete._id } },
-        });
-      }
-
-      let images = tripToDelete.images;
-      // multer.deleteImages(images)
-      for (let image of images) {
-        let s = image.split("/");
-        let filename = s[s.length - 1];
-
-        let remove = await s3.Remove("/iwat/" + filename);
-      }
-
-      return tripToDelete.remove();
+    if (!tripToDelete) {
+      throw ApiError.NotFound("Trip not found");
     }
-    return null;
-  },
+
+    // if bought by user
+    if (tripToDelete.billsList.length > 0) {
+      throw ApiError.BadRequest("Нельзя удалять купленные туры");
+    }
+
+    let childrenIds = [];
+    for (let ch of tripToDelete.children) {
+      await TripModel.findByIdAndDelete(ch); // Deletes the child trip
+      childrenIds.push(ch.toString());
+    }
+
+    await UserModel.findByIdAndUpdate(tripToDelete.author, {
+      $pull: { trips: { $in: [_id, ...childrenIds] } },
+    });
+
+    if (tripToDelete.parent) {
+      await TripModel.findByIdAndUpdate(tripToDelete.parent, {
+        $pull: { children: { _id: tripToDelete._id } },
+      });
+    }
+
+    let images = tripToDelete.images;
+    for (let image of images) {
+      let s = image.split("/");
+      let filename = s[s.length - 1];
+      await s3.Remove("/iwat/" + filename);
+    }
+    const deletedMainTrip = await TripModel.findByIdAndDelete(_id); 
+    return  { message: "Trip successfully deleted" };; 
+
+  } catch (error) {
+    console.error("Error in deleteOne:", error);
+    throw error;
+  }
+},
+
   async findMany(
     sitePage,
     lon,
