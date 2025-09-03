@@ -35,10 +35,7 @@ module.exports = {
     },
 
     async deleteById(_id) {
-        const userData = tokenService.validateAccessToken(token);
-        if (!userData) {
-            throw ApiError.UnauthorizedError();
-        }
+     
         
         try {
             return await GuideModel.deleteOne({ _id: _id })
