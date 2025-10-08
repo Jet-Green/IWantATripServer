@@ -191,9 +191,17 @@ module.exports = {
         }).populate('tripCalc').exec()
     },
     async addTripCalc({ userId, tripCalc }) {
-        let cb = await TripCalcModel.create(tripCalc)
+        let cb;
+      
+        if (tripCalc._id) {
 
-        return await UserModel.findByIdAndUpdate(userId, { $push: { tripCalc: cb._id } }, { returnOriginal: false }).populate('tripCalc').exec()
+            const {_id, ...tripCalcData} = tripCalc;
+            cb = await TripCalcModel.findByIdAndUpdate(_id, tripCalcData, { new: true });
+        } else {
+            cb = await TripCalcModel.create(tripCalc);
+            await UserModel.findByIdAndUpdate(userId, { $push: { tripCalc: cb._id } });
+        }
+        return await UserModel.findById(userId).populate('tripCalc').exec();
     },
     async deleteTripCalc({ userId, tripCalcId }) {
         await UserModel.findByIdAndUpdate(userId, { $pull: { tripCalc: tripCalcId } })
