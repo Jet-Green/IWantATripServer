@@ -142,7 +142,7 @@ module.exports = {
         if (location == null) {
             return TaxiModel.find({})
         } else {
-            return TaxiModel.find({ location: location })
+            return TaxiModel.find({ 'location._id': location._id })
         }
     },
     deleteTaxi(_id) {
