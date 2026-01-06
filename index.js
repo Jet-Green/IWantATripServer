@@ -35,6 +35,7 @@ const photosRouter = require('./routers/photos-router');
 const placesRouter = require('./routers/places-router');
 const partnersRouter = require('./routers/partners-router');
 const tasksRouter = require('./routers/tasks-router');
+const trackRouter = require('./routers/track-router');
 const helmet = require('helmet');
 
 app.set('trust proxy', 1);
@@ -97,6 +98,7 @@ app.use('/photos', photosRouter);
 app.use('/places', placesRouter);
 app.use('/partners', partnersRouter);
 app.use('/tasks', tasksRouter);
+app.use('/tracks', trackRouter);
 app.use('/service-functions', serviceFunctionsRouter);
 
 // Обработка ошибок
