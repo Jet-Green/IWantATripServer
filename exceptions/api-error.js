@@ -21,6 +21,10 @@ module.exports = class ApiError extends Error {
         return new ApiError(401, 'Нет прав доступа')
     }
 
+    static NotFound(message = 'Ресурс не найден') {
+        return new ApiError(404, message)
+    }
+
     static BadRequest(message, errors=[]) {
     
         return new ApiError(400, message, errors)

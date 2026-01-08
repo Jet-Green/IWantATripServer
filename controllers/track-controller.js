@@ -35,7 +35,7 @@ class TrackController {
   async edit(req, res, next) {
     try {
       const {trackId, track} = req.body;
-      const result = await trackService.edit(trackId, track);
+      const result = await trackService.edit(trackId, track, req.user);
       return res.json(result);
     } catch (e) {
       next(e);
@@ -47,6 +47,16 @@ class TrackController {
       const {id} = req.body;
       const result = await trackService.delete(id);
       return res.json(result);
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async moderate(req, res, next) {
+    try {
+      const {id} = req.body;
+      const track = await trackService.moderate(id);
+      return res.json(track);
     } catch (e) {
       next(e);
     }
