@@ -61,6 +61,16 @@ class TrackController {
       next(e);
     }
   }
+
+  async editStats(req, res, next) {
+    try {
+      const { trackId, track } = req.body;
+      const result = await trackService.editStats(trackId, track, req.user);
+      return res.json(result);
+    } catch (e) {
+      next(e);
+    }
+  }
 }
 
 module.exports = new TrackController();

@@ -4,22 +4,25 @@ const TripService = require('../service/trips-service.js')
 const ExcursionService = require('../service/excursion-service.js')
 const PlaceService = require('../service/places-service.js')
 const GuideService = require('../service/guide-service.js');
+const TrackService = require('../service/track-service.js');
 
 const BASE_URL = process.env.CLIENT_URL; 
 
 async function generateSitemapAndRobots() {
-  const staticRoutes = ['/', '/places', '/trips', '/excursions', '/guides'];
+  const staticRoutes = ['/', '/places', '/trips', '/excursions', '/guides', '/tracks-list'];
 
   const tripIds = await TripService.getVisibleTripIds();
   const placeIds = await PlaceService.getVisiblePlaceIds();
   const excursionIds = await ExcursionService.getVisibleExcursionIds();
   const guideIds = await GuideService.getVisibleGuidesIds();
+  const trackIds = await TrackService.getVisibleTrackIds();
 
   const dynamicRoutes = [
     ...tripIds.map(id => `/trip?_id=${id}`),
     ...placeIds.map(id => `/place?_id=${id}`),
     ...excursionIds.map(id => `/excursion?_id=${id}`),
     ...guideIds.map(id => `/guide?_id=${id}`),
+    ...trackIds.map(id => `/track?_id=${id}`),
   ];
 
   const allRoutes = [...staticRoutes, ...dynamicRoutes];
@@ -48,6 +51,8 @@ Allow: /place?_id=
 Allow: /excursion?_id=
 Allow: /guides$
 Allow: /guide?_id=
+Allow: /tracks-list$
+Allow: /track?_id=
 
 Sitemap: ${BASE_URL}/sitemap.xml
 `;

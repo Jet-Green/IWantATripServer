@@ -14,7 +14,6 @@ class TrackService {
 
         const limit = 20;
         const skip = (page - 1) * limit;
-        console.log('TrackService.getAll query:', JSON.stringify(query));
         const filter = {
             isActive: true,
         };
@@ -52,8 +51,6 @@ class TrackService {
         const radius = conditions.locationRadius || query.locationRadius;
 
         if (coords?.length === 2 && radius > 0) {
-            console.log('Searching for places near:', coords, 'radius:', radius, 'km');
-            
             const nearbyPlaces = await PlaceModel.find({
                 'location.coordinates': {
                     $near: {
@@ -65,8 +62,6 @@ class TrackService {
                     }
                 }
             }).select('_id');
-
-            console.log('Found nearby places:', nearbyPlaces.length);
 
             const nearbyPlaceIds = nearbyPlaces.map(p => p._id);
 
@@ -166,6 +161,45 @@ class TrackService {
         await track.save();
 
         return await track.populate(['author', 'places']);
+    }
+
+    // Обновление только length/duration, проверяем лишь авторизацию
+    async editStats(trackId, trackData, currentUser) {
+        const track = await TrackModel.findById(trackId);
+
+        if (!track) {
+            throw ApiError.NotFound('Трек не найден');
+        }
+
+        const updates = {};
+        
+        if (trackData.length !== undefined) {
+            updates.length = trackData.length;
+        }
+
+        if (trackData.duration !== undefined) {
+            updates.duration = trackData.duration;
+        }
+
+        if (!('length' in updates) && !('duration' in updates)) {
+            throw ApiError.BadRequest('Нет полей length/duration для обновления');
+        }
+
+        Object.assign(track, updates);
+        await track.save();
+
+        return await track.populate(['author', 'places']);
+    }
+
+    async getVisibleTrackIds() {
+        const items = await TrackModel.find({
+            isActive: true,
+            isHidden: false,
+            isModerated: true,
+            isRejected: false,
+        }).select('_id').lean();
+
+        return items.map(track => track._id.toString());
     }
 }
 

@@ -10,5 +10,6 @@ router.post('/get-all', trackController.getAll);
 router.get('/get-by-id', trackController.getById);
 router.post('/edit', authMiddleware, trackController.edit);
 router.post('/moderate', adminMiddleware, trackController.moderate);
+router.post('/edit-stats', authMiddleware, trackController.editStats);
 
 module.exports = router;
