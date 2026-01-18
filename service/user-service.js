@@ -193,14 +193,20 @@ module.exports = {
     async addTripCalc({ userId, tripCalc }) {
         let cb;
       
-        if (tripCalc._id) {
+        const { _id, ...tripCalcData } = tripCalc;
+        const hasValidId = _id && _id !== 'null';
 
-            const {_id, ...tripCalcData} = tripCalc;
-            cb = await TripCalcModel.findByIdAndUpdate(_id, tripCalcData, { new: true });
+        if (hasValidId) {
+            cb = await TripCalcModel.findByIdAndUpdate(
+                _id,
+                tripCalcData,
+                { new: true, upsert: true, setDefaultsOnInsert: true }
+            );
         } else {
-            cb = await TripCalcModel.create(tripCalc);
-            await UserModel.findByIdAndUpdate(userId, { $push: { tripCalc: cb._id } });
+            cb = await TripCalcModel.create(tripCalcData);
         }
+
+        await UserModel.findByIdAndUpdate(userId, { $addToSet: { tripCalc: cb._id } });
         return await UserModel.findById(userId).populate('tripCalc').exec();
     },
     async deleteTripCalc({ userId, tripCalcId }) {
