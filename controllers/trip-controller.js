@@ -15,6 +15,104 @@ const s3 = require('../yandex-cloud.js')
 const billModel = require('../models/bill-model.js');
 
 const sanitizeHtml = require('sanitize-html');
+
+function toNumberOrNull(value) {
+    if (value === '' || value === null || value === undefined) {
+        return null
+    }
+
+    const number = Number(value)
+    return Number.isFinite(number) ? number : null
+}
+
+function getDaysToTripStart(startTimestamp) {
+    if (!startTimestamp) {
+        return null
+    }
+
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    return Math.max(0, Math.floor((Number(startTimestamp) - today.getTime()) / 86400000))
+}
+
+const PAYMENT_ORDER_VALUES = new Set(['20/80', '30/70', '40/60', '50/50', '60/40', '70/30', '80/20'])
+
+function normalizePaymentOrder(value) {
+    return PAYMENT_ORDER_VALUES.has(value) ? value : '50/50'
+}
+
+function normalizeLoyalty(loyalty, startTimestamp) {
+    const normalized = {
+        enabled: false,
+        type: 'discount',
+        discount: {
+            minProfit: null,
+            fixationDay: null,
+            baseDiscountPercent: null,
+            paymentOrder: '50/50',
+        },
+        freeServices: {
+            levels: [],
+        },
+    }
+
+    if (!loyalty || typeof loyalty !== 'object') {
+        return normalized
+    }
+
+    normalized.enabled = Boolean(loyalty.enabled)
+    normalized.type = loyalty.type === 'free_services' ? 'free_services' : 'discount'
+
+    if (!normalized.enabled) {
+        return normalized
+    }
+
+    if (normalized.type === 'discount') {
+        const daysLimit = getDaysToTripStart(startTimestamp)
+        const minProfit = toNumberOrNull(loyalty.discount?.minProfit)
+        const fixationDay = toNumberOrNull(loyalty.discount?.fixationDay)
+        const baseDiscountPercent = toNumberOrNull(loyalty.discount?.baseDiscountPercent)
+        const paymentOrder = normalizePaymentOrder(loyalty.discount?.paymentOrder)
+
+        normalized.discount.minProfit = minProfit === null ? null : Math.max(0, minProfit)
+        normalized.discount.paymentOrder = paymentOrder
+
+        if (fixationDay !== null) {
+            let normalizedFixationDay = Math.max(1, fixationDay)
+            if (daysLimit !== null && daysLimit > 0) {
+                normalizedFixationDay = Math.min(normalizedFixationDay, daysLimit)
+            }
+            normalized.discount.fixationDay = normalizedFixationDay
+        }
+
+        if (baseDiscountPercent !== null) {
+            normalized.discount.baseDiscountPercent = Math.min(100, Math.max(0, baseDiscountPercent))
+        }
+
+        normalized.freeServices = {
+            levels: [],
+        }
+        return normalized
+    }
+
+    const levels = Array.isArray(loyalty.freeServices?.levels) ? loyalty.freeServices.levels : []
+    normalized.freeServices.levels = levels
+        .map((item) => ({
+            peopleCount: toNumberOrNull(item?.peopleCount),
+            service: String(item?.service || item?.giftService || '').trim(),
+        }))
+        .filter((item) => item.peopleCount && item.peopleCount > 0 && item.service.length > 0)
+
+    normalized.discount = {
+        minProfit: null,
+        fixationDay: null,
+        baseDiscountPercent: null,
+        paymentOrder: '50/50',
+    }
+
+    return normalized
+}
+
 function sanitize(input) {
     return sanitizeHtml(input, {
         allowedTags: ['b', 'i', 'em', 'strong', 'a', 'p', 'ul', 'ol', 'li', 'br'],
@@ -206,6 +304,8 @@ module.exports = {
             }
 
             req.body.trip.description = sanitize(req.body.trip.description)
+
+            req.body.trip.loyalty = normalizeLoyalty(req.body.trip.loyalty, req.body.trip.start)
 
             const tripFromDB = await TripService.insertOne(req.body.trip)
 

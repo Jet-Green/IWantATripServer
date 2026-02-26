@@ -33,6 +33,36 @@ function sanitize(input) {
   })
 }
 
+async function applyLoyaltyDiscountFixation(trip) {
+  if (!trip || !trip.loyalty) {
+    return
+  }
+  if (!trip.loyalty.discount) {
+    trip.loyalty.discount = {}
+  }
+  if (!trip.loyalty.enabled || trip.loyalty.type !== 'discount') {
+    trip.loyalty.discount.isFixed = false
+    return
+  }
+  const fixationDay = Number(trip.loyalty.discount.fixationDay)
+  const startTimestamp = Number(trip.start)
+  if (!Number.isFinite(fixationDay) || !Number.isFinite(startTimestamp)) {
+    trip.loyalty.discount.isFixed = false
+    return
+  }
+  const startDate = new Date(startTimestamp)
+  startDate.setHours(0, 0, 0, 0)
+  const fixationAt = startDate.getTime() - fixationDay * 86400000
+  const newIsFixed = Date.now() >= fixationAt
+
+  if (trip.loyalty.discount.isFixed !== newIsFixed) {
+    trip.loyalty.discount.isFixed = newIsFixed
+    await TripModel.findByIdAndUpdate(trip._id, {
+      'loyalty.discount.isFixed': newIsFixed
+    })
+  }
+}
+
 module.exports = {
   async createManyByDates({ dates, parentId }) {
     let parent = await TripModel.findById(parentId);
@@ -131,6 +161,8 @@ module.exports = {
       seats: 1,
       date: 1,
     });
+    await applyLoyaltyDiscountFixation(trip)
+
     return trip;
   },
   // Для информации о туре для клиентов
@@ -184,6 +216,8 @@ module.exports = {
       // seats: 1,
       // date: 1,
     });
+    await applyLoyaltyDiscountFixation(trip)
+
     return trip;
   },
   async getCustomers(customersIds) {
@@ -247,7 +281,12 @@ module.exports = {
       ),
     };
   },
-  async payTinkoffBill({ billId, tinkoffData }) {
+  async payTinkoffBill({ billId, tinkoffData, confirmedPreviousAmount }) {
+    if (confirmedPreviousAmount && confirmedPreviousAmount > 0) {
+      await BillModel.findByIdAndUpdate(billId, {
+        $inc: { 'payment.amount': confirmedPreviousAmount }
+      });
+    }
     return BillModel.findByIdAndUpdate(billId, { tinkoff: tinkoffData });
   },
   async insertOne(trip) {
@@ -623,7 +662,9 @@ module.exports = {
     return TripModel.findByIdAndUpdate(tripId, { isModerated: false, moderationMessage: msg, rejected: true })
   },
   async findById(_id) {
-    return TripModel.findById(_id).populate('author').populate('places', { name: 1 })
+    const trip = await TripModel.findById(_id).populate('author').populate('places', { name: 1 })
+    await applyLoyaltyDiscountFixation(trip)
+    return trip
   },
   async createdTripsInfo(_id, query, search, page = 1) {
     const limit = 15;
@@ -767,6 +808,13 @@ module.exports = {
       },
 
     })
+    if (Array.isArray(userFromDb.boughtTrips)) {
+      for (let bill of userFromDb.boughtTrips) {
+        if (bill?.tripId) {
+          await applyLoyaltyDiscountFixation(bill.tripId)
+        }
+      }
+    }
     return userFromDb.boughtTrips
   },
   async findAuthorTrips({ query, _id }) {
@@ -843,6 +891,5 @@ module.exports = {
 
     const trips = await TripModel.find(baseQuery, { _id: 1 }).lean();
     return trips.map(trip => trip._id.toString());
-  }
-
+  },
 }

@@ -36,6 +36,34 @@ const TripSchema = new Schema({
     billsList: { type: [Schema.Types.ObjectId], ref: 'Bill' },
     author: { type: Schema.Types.ObjectId, ref: 'User' },
     bonuses: Array,
+    loyalty: {
+        enabled: { type: Boolean, default: false },
+        type: { type: String, enum: ['discount', 'free_services'], default: 'discount' },
+        discount: {
+            minProfit: { type: Number, default: null },
+            fixationDay: { type: Number, default: null },
+            baseDiscountPercent: { type: Number, default: null },
+            isFixed: { type: Boolean, default: false },
+            fixedDiscountPerPerson: { type: Number, default: 0 },
+            paymentOrder: {
+                type: String,
+                enum: ['20/80', '30/70', '40/60', '50/50', '60/40', '70/30', '80/20'],
+                default: '50/50',
+            },
+        },
+        freeServices: {
+            levels: {
+                type: [
+                    {
+                        peopleCount: { type: Number, default: null },
+                        service: { type: String, default: '' },
+                        _id: false,
+                    }
+                ],
+                default: [],
+            },
+        },
+    },
 
     moderationMessage: { type: String, },
     partner: { type: String, },
