@@ -45,6 +45,8 @@ const TripSchema = new Schema({
             baseDiscountPercent: { type: Number, default: null },
             isFixed: { type: Boolean, default: false },
             fixedDiscountPerPerson: { type: Number, default: 0 },
+            currentDiscountPerPerson: { type: Number, default: 0 },
+            maxDiscountPerPerson: { type: Number, default: 0 },
             paymentOrder: {
                 type: String,
                 enum: ['20/80', '30/70', '40/60', '50/50', '60/40', '70/30', '80/20'],
