@@ -46,6 +46,9 @@ router.get('/delete-payment', tripController.deletePayment)
 router.post('/update-bills-tourists', tripController.updateBillsTourists)
 router.post('/update-partner', tripController.updatePartner)
 
+// Обновление мест в счете
+router.post('/update-bill-seats', tripController.updateBillSeats)
+
 router.post('/create-many-by-dates', tripController.createManyByDates)
 router.post('/update-included-locations', tripController.updateIncludedLocations)
 

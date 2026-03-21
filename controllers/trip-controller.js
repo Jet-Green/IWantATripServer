@@ -178,6 +178,19 @@ module.exports = {
             next(error)
         }
     },
+
+    /**
+     * POST /trips/update-bill-seats
+     * { billId: string, seats: string[] }
+     */
+    async updateBillSeats(req, res, next) {
+        try {
+            return res.json(await TripService.updateBillSeats(req.body))
+        } catch (error) {
+            logger.fatal({ error, logType: 'trip error', brokenMethod: 'updateBillSeats' })
+            next(error)
+        }
+    },
     async clear(req, res, next) {
         return
         try {
