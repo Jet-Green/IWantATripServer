@@ -141,7 +141,7 @@ module.exports = {
         const currentMonth = currentDate.getMonth(); // месяцы в JS начинаются с 0
         const currentDay = currentDate.getDate();
 
-        let excursion = await ExcursionModel.findById(_id).populate('dates')
+        let excursion = await ExcursionModel.findById(_id).populate('dates').populate('author')
 
         const filteredDates = excursion.dates.filter(date => {
 
@@ -381,7 +381,7 @@ module.exports = {
         const currentDate = new Date();
 
 
-        let excursion = await ExcursionModel.findById(_id).populate('dates')
+        let excursion = await ExcursionModel.findById(_id).populate(['dates'])
 
         // Correctly filter dates to include only upcoming dates
         const filteredDates = excursion.dates.filter(date => {
