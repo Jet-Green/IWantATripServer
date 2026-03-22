@@ -6,6 +6,7 @@ const LocationModel = require('../models/location-model.js')
 const ExcursionBookingModel = require('../models/excursion-booking-model.js')
 const _ = require('lodash')
 const { sendMail } = require('../middleware/mailer')
+const ApiError = require('../exceptions/api-error.js')
 
 const LocationService = require('../service/location-service.js')
 const excursionBillModel = require('../models/excursion-bill-model.js')
@@ -381,7 +382,11 @@ module.exports = {
         const currentDate = new Date();
 
 
-        let excursion = await ExcursionModel.findById(_id).populate('dates')
+        let excursion = await ExcursionModel.findById(_id).populate(['dates'])
+
+        if (!excursion) {
+            throw ApiError.NotFound('Экскурсия не найдена')
+        }
 
         // Correctly filter dates to include only upcoming dates
         const filteredDates = excursion.dates.filter(date => {

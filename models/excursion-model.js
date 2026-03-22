@@ -2,6 +2,7 @@ const { Schema, model } = require('mongoose')
 
 const ExcursionSchema = new Schema({
     name: { type: String, required: true },
+    organizer: { type: String },
     author: { type: Schema.Types.ObjectId, ref: 'User' },
     contacts: { type: Object },
     description: { type: String },
