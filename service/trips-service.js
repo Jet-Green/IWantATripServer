@@ -63,7 +63,8 @@ async function getActualParticipants(trip) {
 }
 
 // Расчёт clearProfit при заданном кол-ве туристов (формула PriceCalc)
-function computeClearProfit(calc, tourists) {
+// fallbackPrice — цена за человека из trip.cost, используется если в калькуляторе tourePrice не задана
+function computeClearProfit(calc, tourists, fallbackPrice = 0) {
   const individualCost = (calc.individualCost || []).reduce(
     (sum, item) => sum + Number(item.price || 0), 0
   )
@@ -81,20 +82,46 @@ function computeClearProfit(calc, tourists) {
     }
   }
   const commissionState = Number(calc.commissionState || 0)
+  const tourePrice = Number(calc.tourePrice || 0) || fallbackPrice
   const cost = individualCost * tourists + groupCost + transportCostValue
-  const totalPrice = Math.round(tourists * Number(calc.tourePrice || 0))
+  const totalPrice = Math.round(tourists * tourePrice)
   const profit = Math.round(totalPrice - cost)
   const commission = Math.round((totalPrice * commissionState) / 100)
   return Math.round(profit - commission)
 }
 
-// Расчёт фиксированной скидки: 4.1 (minProfit) + 4.5 (baseDiscountPercent)
-async function calculateFixedDiscount(trip) {
-  // Если скидка уже рассчитана — не пересчитываем
-  if (trip.loyalty.discount.fixedDiscountPerPerson > 0) {
-    return trip.loyalty.discount.fixedDiscountPerPerson
+function computeBaseDiscountPerPerson(pricePerPerson, baseDiscountPercent) {
+  const normalizedPrice = Number(pricePerPerson)
+  const normalizedPercent = Number(baseDiscountPercent)
+  if (!Number.isFinite(normalizedPrice) || normalizedPrice <= 0) {
+    return 0
+  }
+  if (!Number.isFinite(normalizedPercent) || normalizedPercent <= 0) {
+    return 0
+  }
+  return Math.max(0, Math.round((normalizedPrice * normalizedPercent) / 100))
+}
+
+function resolvePricePerPersonForDiscount(trip, calc) {
+  const calculatorPrice = Number(calc?.tourePrice || 0)
+  if (Number.isFinite(calculatorPrice) && calculatorPrice > 0) {
+    return calculatorPrice
   }
 
+  if (trip?.cost && trip.cost.length > 0) {
+    const firstPositiveCost = trip.cost
+      .map(c => Number(c.price || 0))
+      .find(price => Number.isFinite(price) && price > 0)
+    if (Number.isFinite(firstPositiveCost) && firstPositiveCost > 0) {
+      return firstPositiveCost
+    }
+  }
+
+  return 0
+}
+
+// Расчёт фиксированной скидки (формула как в виджете calculateDiscount)
+async function calculateFixedDiscount(trip) {
   const minProfit = trip.loyalty.discount.minProfit
   const baseDiscountPercent = trip.loyalty.discount.baseDiscountPercent
   const hasMinProfit = minProfit !== null && minProfit !== undefined && Number.isFinite(Number(minProfit))
@@ -103,72 +130,42 @@ async function calculateFixedDiscount(trip) {
   if (!hasMinProfit && !hasBaseDiscount) {
     return 0
   }
-  if (!trip.calculator) {
-    return 0
+  let calc = null
+  if (trip.calculator) {
+    const calcId = trip.calculator._id || trip.calculator
+    calc = await TripCalcModel.findById(calcId)
   }
+  const canUseMinProfit = hasMinProfit && Boolean(calc)
+  const pricePerPerson = resolvePricePerPersonForDiscount(trip, calc)
 
-  const calcId = trip.calculator._id || trip.calculator
-  const calc = await TripCalcModel.findById(calcId)
-  if (!calc) {
-    return 0
-  }
-
-  let discount = 0
-
-  // 4.1: Скидка по минимальной прибыли (фактические участники, фактическая цена)
-  if (hasMinProfit) {
-    const actualParticipants = await getActualParticipants(trip)
-    if (actualParticipants > 0) {
-      const clearProfit = computeClearProfit(calc, actualParticipants)
-      if (clearProfit > Number(minProfit)) {
-        discount += Math.max(0, Math.round((clearProfit - Number(minProfit)) / actualParticipants))
-      }
-    }
-  }
-
-  // 4.5: Базовая скидка (maxPeople, процент рентабельности)
-  if (hasBaseDiscount) {
-    const maxPeople = trip.maxPeople || calc.max
-    if (maxPeople && maxPeople > 0) {
-      const individualCost = (calc.individualCost || []).reduce(
-        (sum, item) => sum + Number(item.price || 0), 0
-      )
-      const groupCost = (calc.groupCost || []).reduce(
-        (sum, item) => sum + Number(item.price || 0), 0
-      )
-      let transportCostValue = 0
-      if (calc.transportCost && calc.transportCost.length) {
-        const sorted = [...calc.transportCost].sort((a, b) => a.price - b.price)
-        for (const t of sorted) {
-          if (t.capacity >= maxPeople) {
-            transportCostValue = Number(t.price || 0)
-            break
-          }
-        }
-      }
-      const commissionState = Number(calc.commissionState || 0)
-      const cost = individualCost * maxPeople + groupCost + transportCostValue
-      const costForOne = cost / maxPeople
-      const tourePrice = Math.round(
-        (costForOne * (1 + baseDiscountPercent / 100)) / (1 - commissionState / 100)
-      )
-      const totalPrice = maxPeople * tourePrice
-      const profit = totalPrice - cost
-      const commission = Math.round((totalPrice * commissionState) / 100)
-      const clearProfit = profit - commission
-      discount += Math.max(0, Math.round(clearProfit / maxPeople))
-    }
-  }
-
+  // Лимит: суммарная скидка не более secondPaymentFraction от цены
   const paymentOrder = trip.loyalty.discount.paymentOrder || '50/50'
   const [firstPart] = paymentOrder.split('/').map(Number)
   const secondPaymentFraction = (100 - firstPart) / 100
-  const pricePerPerson = (trip.cost && trip.cost.length > 0)
-    ? Math.min(...trip.cost.map(c => Number(c.price || 0)))
-    : Number(calc.tourePrice || 0)
-  const maxAllowedDiscount = Math.round(pricePerPerson * secondPaymentFraction)
+  const maxTotalDiscount = Math.round(pricePerPerson * secondPaymentFraction)
 
-  const fixedDiscountPerPerson = Math.min(Math.max(0, discount), maxAllowedDiscount)
+  // Базовая скидка — процент от цены, но не более лимита
+  const baseDiscount = hasBaseDiscount
+    ? Math.min(computeBaseDiscountPerPerson(pricePerPerson, baseDiscountPercent), maxTotalDiscount)
+    : 0
+
+  // Остаток лимита после базовой скидки — столько можно дать за кол-во людей
+  const remainingCap = maxTotalDiscount - baseDiscount
+
+  // Скидка по минимальной прибыли (фактические участники)
+  let profitDiscount = 0
+  if (canUseMinProfit) {
+    const actualParticipants = await getActualParticipants(trip)
+    if (actualParticipants > 0) {
+      const clearProfit = computeClearProfit(calc, actualParticipants, pricePerPerson)
+      if (clearProfit > Number(minProfit)) {
+        const rawDiscount = Math.max(0, Math.round((clearProfit - Number(minProfit)) / actualParticipants))
+        profitDiscount = Math.min(rawDiscount, remainingCap)
+      }
+    }
+  }
+
+  const fixedDiscountPerPerson = profitDiscount + baseDiscount
 
   await TripModel.findByIdAndUpdate(trip._id, {
     'loyalty.discount.fixedDiscountPerPerson': fixedDiscountPerPerson
@@ -178,6 +175,7 @@ async function calculateFixedDiscount(trip) {
   return fixedDiscountPerPerson
 }
 
+// Динамический перерасчёт скидки (формула как в виджете calculateDiscount)
 async function computeDiscountEstimates(trip) {
   if (!trip?.loyalty?.enabled || trip.loyalty.type !== 'discount') return
   if (!trip.loyalty.discount) trip.loyalty.discount = {}
@@ -189,10 +187,8 @@ async function computeDiscountEstimates(trip) {
     return
   }
 
-  const calcId = trip.calculator?._id || trip.calculator
-  if (!calcId) return
-  const calc = await TripCalcModel.findById(calcId)
-  if (!calc) return
+  trip.loyalty.discount.currentDiscountPerPerson = 0
+  trip.loyalty.discount.maxDiscountPerPerson = 0
 
   const minProfit = trip.loyalty.discount.minProfit
   const baseDiscountPercent = trip.loyalty.discount.baseDiscountPercent
@@ -200,75 +196,47 @@ async function computeDiscountEstimates(trip) {
   const hasBaseDiscount = baseDiscountPercent && baseDiscountPercent > 0
   if (!hasMinProfit && !hasBaseDiscount) return
 
-  const maxPeople = trip.maxPeople || calc.max
+  let calc = null
+  if (trip.calculator) {
+    const calcId = trip.calculator?._id || trip.calculator
+    if (calcId) {
+      calc = await TripCalcModel.findById(calcId)
+    }
+  }
+  const canUseMinProfit = hasMinProfit && Boolean(calc)
 
   const paymentOrder = trip.loyalty.discount.paymentOrder || '50/50'
   const [firstPart] = paymentOrder.split('/').map(Number)
   const secondPaymentFraction = (100 - firstPart) / 100
-  const pricePerPerson = (trip.cost && trip.cost.length > 0)
-    ? Math.min(...trip.cost.map(c => Number(c.price || 0)))
-    : Number(calc.tourePrice || 0)
-  const maxAllowedDiscount = Math.round(pricePerPerson * secondPaymentFraction)
+  const pricePerPerson = resolvePricePerPersonForDiscount(trip, calc)
 
+  // Лимит: суммарная скидка не более secondPaymentFraction от цены
+  const maxTotalDiscount = Math.round(pricePerPerson * secondPaymentFraction)
+
+  // Базовая скидка — процент от цены, но не более лимита
+  const baseDiscount = hasBaseDiscount
+    ? Math.min(computeBaseDiscountPerPerson(pricePerPerson, baseDiscountPercent), maxTotalDiscount)
+    : 0
+
+  // Остаток лимита после базовой скидки — столько можно дать за кол-во людей
+  const remainingCap = maxTotalDiscount - baseDiscount
+
+  // Скидка за кол-во людей: излишек прибыли, но не более остатка лимита
   const actualParticipants = await getActualParticipants(trip)
-  let currentDiscount = 0
+  let profitDiscount = 0
 
-  if (hasMinProfit && actualParticipants > 0) {
-    const clearProfit = computeClearProfit(calc, actualParticipants)
+  if (canUseMinProfit && actualParticipants > 0) {
+    const clearProfit = computeClearProfit(calc, actualParticipants, pricePerPerson)
     if (clearProfit > Number(minProfit)) {
-      currentDiscount += Math.max(0, Math.round((clearProfit - Number(minProfit)) / actualParticipants))
+      const rawDiscount = Math.max(0, Math.round((clearProfit - Number(minProfit)) / actualParticipants))
+      profitDiscount = Math.min(rawDiscount, remainingCap)
     }
   }
 
-  if (hasBaseDiscount && maxPeople > 0) {
-    const individualCost = (calc.individualCost || []).reduce((s, i) => s + Number(i.price || 0), 0)
-    const groupCost = (calc.groupCost || []).reduce((s, i) => s + Number(i.price || 0), 0)
-    let transportCostValue = 0
-    if (calc.transportCost && calc.transportCost.length) {
-      const sorted = [...calc.transportCost].sort((a, b) => a.price - b.price)
-      for (const t of sorted) { if (t.capacity >= maxPeople) { transportCostValue = Number(t.price || 0); break } }
-    }
-    const commissionState = Number(calc.commissionState || 0)
-    const cost = individualCost * maxPeople + groupCost + transportCostValue
-    const costForOne = cost / maxPeople
-    const tourePrice = Math.round((costForOne * (1 + baseDiscountPercent / 100)) / (1 - commissionState / 100))
-    const totalPrice = maxPeople * tourePrice
-    const profit = totalPrice - cost
-    const commission = Math.round((totalPrice * commissionState) / 100)
-    const clearProfit = profit - commission
-    currentDiscount += Math.max(0, Math.round(clearProfit / maxPeople))
-  }
+  trip.loyalty.discount.currentDiscountPerPerson = profitDiscount + baseDiscount
 
-  trip.loyalty.discount.currentDiscountPerPerson = Math.min(Math.max(0, currentDiscount), maxAllowedDiscount)
-
-  let maxDiscount = 0
-  if (maxPeople > 0) {
-    if (hasMinProfit) {
-      const clearProfit = computeClearProfit(calc, maxPeople)
-      if (clearProfit > Number(minProfit)) {
-        maxDiscount += Math.max(0, Math.round((clearProfit - Number(minProfit)) / maxPeople))
-      }
-    }
-    if (hasBaseDiscount) {
-      const individualCost = (calc.individualCost || []).reduce((s, i) => s + Number(i.price || 0), 0)
-      const groupCost = (calc.groupCost || []).reduce((s, i) => s + Number(i.price || 0), 0)
-      let transportCostValue = 0
-      if (calc.transportCost && calc.transportCost.length) {
-        const sorted = [...calc.transportCost].sort((a, b) => a.price - b.price)
-        for (const t of sorted) { if (t.capacity >= maxPeople) { transportCostValue = Number(t.price || 0); break } }
-      }
-      const commissionState = Number(calc.commissionState || 0)
-      const cost = individualCost * maxPeople + groupCost + transportCostValue
-      const costForOne = cost / maxPeople
-      const tourePrice = Math.round((costForOne * (1 + baseDiscountPercent / 100)) / (1 - commissionState / 100))
-      const totalPrice = maxPeople * tourePrice
-      const profit = totalPrice - cost
-      const commission = Math.round((totalPrice * commissionState) / 100)
-      const clearProfit = profit - commission
-      maxDiscount += Math.max(0, Math.round(clearProfit / maxPeople))
-    }
-  }
-  trip.loyalty.discount.maxDiscountPerPerson = Math.min(Math.max(0, maxDiscount), maxAllowedDiscount)
+  // Максимальная скидка — теоретический потолок (как в виджете)
+  trip.loyalty.discount.maxDiscountPerPerson = maxTotalDiscount
 }
 
 async function applyLoyaltyDiscountFixation(trip) {
@@ -294,14 +262,16 @@ async function applyLoyaltyDiscountFixation(trip) {
   const fixationAt = startDate.getTime() - fixationDay * 86400000
   const newIsFixed = Date.now() >= fixationAt
 
-  if (trip.loyalty.discount.isFixed !== newIsFixed) {
+  const wasFixed = trip.loyalty.discount.isFixed
+  if (wasFixed !== newIsFixed) {
     trip.loyalty.discount.isFixed = newIsFixed
     await TripModel.findByIdAndUpdate(trip._id, {
       'loyalty.discount.isFixed': newIsFixed
     })
-    if (newIsFixed) {
-      await calculateFixedDiscount(trip)
-    }
+  }
+  // Считаем фиксированную скидку только один раз — в момент перехода в isFixed
+  if (newIsFixed && !wasFixed) {
+    await calculateFixedDiscount(trip)
   }
   await computeDiscountEstimates(trip)
 }
@@ -545,6 +515,18 @@ module.exports = {
     delete trip._id;
 
     let oldTrip = await TripModel.findById(_id);
+    if (trip.calculatorData) {
+      if (oldTrip.calculator) {
+        const calcId = oldTrip.calculator._id || oldTrip.calculator
+        await TripCalcModel.findByIdAndUpdate(calcId, trip.calculatorData)
+        trip.calculator = calcId
+      } else {
+        const calc = await TripCalcModel.create(trip.calculatorData)
+        trip.calculator = calc._id
+      }
+      delete trip.calculatorData
+    }
+
     if (trip.startLocation && trip.startLocation != "") {
       trip.startLocation = await LocationService.createLocation(
         trip.startLocation
@@ -576,7 +558,9 @@ module.exports = {
 
     oldTrip.overwrite(trip);
 
-    return await oldTrip.save();
+    const savedTrip = await oldTrip.save();
+    await applyLoyaltyDiscountFixation(savedTrip)
+    return savedTrip;
   },
   async updateTripImagesUrls(_id, filenames) {
     const trip = await TripModel.findById(_id);
