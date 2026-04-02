@@ -8,7 +8,7 @@ const TripSchema = new Schema({
     name: { type: String },
     start: { type: Number },
     end: { type: Number },
-    timezoneOffset:{ type: Number },
+    timezoneOffset: { type: Number },
     maxPeople: { type: Number },
     duration: { type: String },
     images: { type: Array },
@@ -60,7 +60,7 @@ const TripSchema = new Schema({
     },
     createdDay: { type: Number },
     userComment: { type: String },
-    places: [{ 
+    places: [{
         type: Schema.Types.ObjectId, ref: 'Place', required: false,
     }],
     tinkoffContract: {
@@ -79,6 +79,7 @@ const TripSchema = new Schema({
         required: false
     },
     tripRegion: String,
+    privetMirPaymentLink: { type: String, default: '', required: false },
 })
 TripSchema.index({ start: 1 });
 module.exports = model('Trip', TripSchema);
