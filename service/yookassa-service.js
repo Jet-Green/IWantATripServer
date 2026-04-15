@@ -1,6 +1,3 @@
-const mongoose = require('mongoose');
-const BillModel = require('../models/bill-model');
-const ExcursionBillModel = require('../models/excursion-bill-model');
 const logger = require('../logger');
 
 const EVENT_PAYMENT_SUCCEEDED = 'payment.succeeded';
@@ -48,52 +45,6 @@ function isYooKassaWebhookIp(ip) {
   return first === 0x2a02 && second === 0x5180;
 }
 
-function buildSnapshot(event, payment) {
-  return {
-    lastEvent: event,
-    paymentId: payment.id,
-    status: payment.status,
-    paid: payment.paid,
-    amount: payment.amount,
-    created_at: payment.created_at,
-    captured_at: payment.captured_at,
-    description: payment.description,
-    cancellation_details: payment.cancellation_details,
-    metadata: payment.metadata,
-    receivedAt: new Date().toISOString(),
-  };
-}
-
-async function persistPaymentState(event, payment) {
-  const meta = payment.metadata && typeof payment.metadata === 'object' ? payment.metadata : {};
-  const billId = meta.billId;
-  if (!billId || !mongoose.Types.ObjectId.isValid(String(billId))) {
-    logger.info(
-      { event, paymentId: payment.id, logType: 'yookassa webhook' },
-      'yookassa: нет валидного metadata.billId, счёт не обновляем'
-    );
-    return;
-  }
-
-  const billType = String(meta.billType || 'trip').toLowerCase();
-  const snapshot = buildSnapshot(event, payment);
-  const update = { $set: { yookassa: snapshot } };
-
-  let updated = null;
-  if (billType === 'excursion') {
-    updated = await ExcursionBillModel.findByIdAndUpdate(billId, update, { new: true });
-  } else {
-    updated = await BillModel.findByIdAndUpdate(billId, update, { new: true });
-  }
-
-  if (!updated) {
-    logger.warn(
-      { event, paymentId: payment.id, billId, billType, logType: 'yookassa webhook' },
-      'yookassa: счёт не найден по billId'
-    );
-  }
-}
-
 module.exports = {
   EVENT_PAYMENT_SUCCEEDED,
   EVENT_PAYMENT_CANCELED,
@@ -101,9 +52,10 @@ module.exports = {
 
   /**
    * Обработка HTTP-уведомления ЮKassa (тело POST — JSON из документации).
+   * Пока только логирование, без записи в БД.
    * @returns {{ httpStatus: number }}
    */
-  async handleNotification(body, clientIp) {
+  handleNotification(body, clientIp) {
     const strictIp = process.env.YOOKASSA_WEBHOOK_STRICT_IP === 'true';
     if (strictIp && !isYooKassaWebhookIp(clientIp)) {
       logger.warn({ clientIp, logType: 'yookassa webhook' }, 'yookassa: отклонено по IP');
@@ -121,19 +73,20 @@ module.exports = {
       return { httpStatus: 200 };
     }
 
-    try {
-      await persistPaymentState(event, payment);
-      logger.info(
-        { event, paymentId: payment.id, status: payment.status, logType: 'yookassa webhook' },
-        'yookassa: уведомление обработано'
-      );
-    } catch (err) {
-      logger.error(
-        { err, event, paymentId: payment && payment.id, logType: 'yookassa webhook error' },
-        'yookassa: ошибка при сохранении'
-      );
-      return { httpStatus: 500 };
-    }
+    logger.info(
+      {
+        logType: 'yookassa webhook',
+        event,
+        paymentId: payment.id,
+        status: payment.status,
+        paid: payment.paid,
+        amount: payment.amount,
+        description: payment.description,
+        metadata: payment.metadata,
+        cancellation_details: payment.cancellation_details,
+      },
+      'yookassa: уведомление о платеже'
+    );
 
     return { httpStatus: 200 };
   },
