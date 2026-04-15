@@ -36,7 +36,6 @@ const placesRouter = require('./routers/places-router');
 const partnersRouter = require('./routers/partners-router');
 const tasksRouter = require('./routers/tasks-router');
 const trackRouter = require('./routers/track-router');
-const yookassaRouter = require('./routers/yookassa-router');
 const helmet = require('helmet');
 
 app.set('trust proxy', 1);
@@ -48,8 +47,6 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
-
-app.use('/payments/yookassa', yookassaRouter);
 
 app.get('/robots.txt', (req, res) => {
     res.sendFile(path.join(__dirname, 'dist', 'robots.txt'));
