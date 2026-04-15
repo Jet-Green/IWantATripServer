@@ -8,7 +8,8 @@ const ExcursionBillSchema = new Schema({
   // for buying from cabinet
   userInfo: { type: Object, required: false },
   cart: { type: Array },
-  tinkoff: { type: Object }
+  tinkoff: { type: Object },
+  yookassa: { type: Object }
 },
   {
     methods: {

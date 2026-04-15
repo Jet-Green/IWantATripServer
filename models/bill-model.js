@@ -15,6 +15,7 @@ const BillSchema = new Schema({
         documents: [{ paySum: Number, payDocument: String }]
     },
     tinkoff: { type: Object },
+    yookassa: { type: Object },
     tripId: { type: Schema.Types.ObjectId, ref: 'Trip' },
     userInfo: {
         phone: String,
