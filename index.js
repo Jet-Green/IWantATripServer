@@ -49,20 +49,21 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+app.use('/payments/yookassa', yookassaRouter);
 
 app.get('/robots.txt', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'robots.txt'));
-});
+    res.sendFile(path.join(__dirname, 'dist', 'robots.txt'));
+  });
+  
+  app.get('/sitemap.xml', (req, res) => {
+    res.sendFile(path.join(__dirname, 'dist', 'sitemap.xml'));
+  });
 
-app.get('/sitemap.xml', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'sitemap.xml'));
-});
-
-app.use(helmet({
-  contentSecurityPolicy: false, // иначе ломается загрузка ассетов
-  crossOriginEmbedderPolicy: false, // иначе ломается PWA/картинки
-  crossOriginResourcePolicy: { policy: "cross-origin" }, // разрешает загрузку статики
-}));
+  app.use(helmet({
+    contentSecurityPolicy: false, // иначе ломается загрузка ассетов
+    crossOriginEmbedderPolicy: false, // иначе ломается PWA/картинки
+    crossOriginResourcePolicy: { policy: "cross-origin" }, // разрешает загрузку статики
+  }));
 // Статичные файлы и sitemap
 app.use('/assets', express.static(path.join(__dirname, 'dist/assets')));
 app.use('/favicon.ico', express.static(path.join(__dirname, 'dist/favicon.ico')));
@@ -102,7 +103,6 @@ app.use('/partners', partnersRouter);
 app.use('/tasks', tasksRouter);
 app.use('/tracks', trackRouter);
 app.use('/service-functions', serviceFunctionsRouter);
-app.use('/payments/yookassa', yookassaRouter);
 
 // Обработка ошибок
 app.use(errorFilter);
