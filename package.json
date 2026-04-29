@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "aws-sdk": "^2.1693.0",
     "@playwright/test": "^1.52.0",
     "bcryptjs": "^2.4.3",
     "connect-history-api-fallback": "^2.0.0",
@@ -35,6 +36,7 @@
     "path": "^0.12.7",
     "pino": "^8.16.1",
     "playwright": "^1.52.0",
+    "sharp": "^0.33.5",
     "sanitize-html": "^2.14.0"
   },
   "devDependencies": {
