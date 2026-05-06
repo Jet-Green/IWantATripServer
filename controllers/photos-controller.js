@@ -11,6 +11,19 @@ module.exports = {
         }
     },
 
+    async searchPhotobank(req, res, next) {
+        try {
+            return res.json(
+                await PhotosService.searchPhotos(req.query.q, req.query.page)
+            );
+        } catch (error) {
+            if (error.statusCode === 400) {
+                return res.status(400).json({ message: error.message });
+            }
+            next(error);
+        }
+    },
+
     async uploadPhotobank(req, res, next) {
         try {
             if (!req.files || req.files.length === 0) {

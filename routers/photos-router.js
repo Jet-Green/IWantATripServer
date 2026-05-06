@@ -9,6 +9,8 @@ const MULTER = require('multer')
 
 router.get('/get-photos', photosController.getPhotos)
 
+router.get('/search', photosController.searchPhotobank)
+
 router.post('/upload-photobank', MULTER().any(), authMiddleware, photosController.uploadPhotobank)
 
 module.exports = router

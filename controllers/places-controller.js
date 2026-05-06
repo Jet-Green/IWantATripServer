@@ -59,6 +59,32 @@ module.exports = {
 
     res.status(200).send('Ok')
   },
+
+  async pushPhotobankUrls(req, res, next) {
+    try {
+      const { placeId, urls } = req.body || {};
+      const userId =
+        req.user?._id != null
+          ? String(req.user._id)
+          : req.user?.id != null
+            ? String(req.user.id)
+            : '';
+      if (!userId) {
+        return res.status(401).json({ message: 'Не авторизован' });
+      }
+      if (!placeId) {
+        return res.status(400).json({ message: 'Нужен placeId' });
+      }
+      const result = await PlacesService.pushPhotobankImageUrlsIfOwned(placeId, urls, userId);
+      return res.status(200).json(result);
+    } catch (e) {
+      if (e.statusCode === 400 || e.statusCode === 403 || e.statusCode === 404) {
+        return res.status(e.statusCode).json({ message: e.message });
+      }
+      next(e);
+    }
+  },
+
   async getForModeration(req, res, next) {
     try {
       const { status } = req.query

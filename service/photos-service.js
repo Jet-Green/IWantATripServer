@@ -11,6 +11,10 @@ function pageLimit() {
   return 24;
 }
 
+function escapeRegex(str) {
+  return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 /**
  * Список URL для фотобанка из MongoDB (коллекция photobankphotos), пагинация по page (с 1).
  * Берём limit+1 строку, чтобы точно знать, есть ли следующая страница.
@@ -22,6 +26,50 @@ async function getPhotosFromDb(page) {
   const skip = (p - 1) * limit;
 
   const docs = await PhotobankPhoto.find({})
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit + 1)
+    .select('url')
+    .lean();
+
+  const hasMore = docs.length > limit;
+  const slice = hasMore ? docs.slice(0, limit) : docs;
+  const urls = slice.map((d) => d.url);
+
+  return { urls, hasMore };
+}
+
+/**
+ * Поиск фотобанка по подстроке в url или objectKey (без учёта регистра).
+ * @param {string} rawQuery текст из query-параметра q
+ * @param {number|string} page страница с 1
+ * @returns {{ urls: string[], hasMore: boolean }}
+ */
+async function searchPhotosByQuery(rawQuery, page) {
+  const q = String(rawQuery ?? '').trim();
+  if (!q.length) {
+    const err = new Error('Укажите непустой параметр q');
+    err.statusCode = 400;
+    throw err;
+  }
+  if (q.length > 200) {
+    const err = new Error('Запрос не длиннее 200 символов');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const limit = pageLimit();
+  const p = Math.max(1, parseInt(String(page ?? '1'), 10) || 1);
+  const skip = (p - 1) * limit;
+  const pattern = new RegExp(escapeRegex(q), 'i');
+
+  const docs = await PhotobankPhoto.find({
+    $or: [
+      { url: pattern },
+      { objectKey: pattern },
+      { caption: pattern },
+    ],
+  })
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit + 1)
@@ -116,6 +164,10 @@ async function uploadPhotobankPhotos(files, userId) {
 module.exports = {
   async getPhotos(page) {
     return getPhotosFromDb(page);
+  },
+
+  async searchPhotos(q, page) {
+    return searchPhotosByQuery(q, page);
   },
 
   uploadPhotobankPhotos,

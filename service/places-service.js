@@ -1,4 +1,5 @@
 const PlaceModel = require("../models/place-model");
+const PhotobankPhoto = require("../models/photobank-photo-model");
 const sanitizeHtml = require('sanitize-html');
 function sanitize(input) {
   return sanitizeHtml(input, {
@@ -201,6 +202,46 @@ module.exports = {
     return await PlaceModel.findByIdAndUpdate(_id, {
       $push: { images: { $each: filenames } },
     });
+  },
+
+  /**
+   * Добавить к месту готовые URL из фотобанка (должны существовать в коллекции photobankphotos).
+   * Проверяется автор места.
+   */
+  async pushPhotobankImageUrlsIfOwned(placeId, urls, userId) {
+    const uniq = [
+      ...new Set(
+        (urls || [])
+          .filter((u) => typeof u === 'string')
+          .map((u) => u.trim())
+          .filter(Boolean)
+      ),
+    ];
+    if (!uniq.length) {
+      return { count: 0 };
+    }
+
+    const n = await PhotobankPhoto.countDocuments({ url: { $in: uniq } });
+    if (n !== uniq.length) {
+      const err = new Error('Один или несколько адресов не найдены в фотобанке');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    const place = await PlaceModel.findById(placeId).select('author').lean();
+    if (!place) {
+      const err = new Error('Место не найдено');
+      err.statusCode = 404;
+      throw err;
+    }
+    if (String(place.author) !== String(userId)) {
+      const err = new Error('Нет прав на редактирование');
+      err.statusCode = 403;
+      throw err;
+    }
+
+    await this.pushPlaceImagesUrls(placeId, uniq);
+    return { count: uniq.length };
   },
 
   async getById(_id) {

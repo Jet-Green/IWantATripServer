@@ -18,6 +18,12 @@ const PhotobankPhotoSchema = new Schema(
       required: true,
       trim: true,
     },
+    /** необязательное описание для поиска GET /photos/search?q= */
+    caption: {
+      type: String,
+      default: '',
+      trim: true,
+    },
   },
   {
     timestamps: true,
