@@ -1,6 +1,7 @@
 /**
  * Образец: nmp-backend/src/s3/bucket.ts — загрузка в Yandex Object Storage через aws-sdk.S3.upload
- * Бакет только из PHOTOBANK_BUCKET_NAME (как при get-photos в photos-service).
+ * Бакет: PHOTOBANK_BUCKET_NAME.
+ * Ключи Object Storage для фотобанка (отдельно от основного S3): PHOTOBANK_YC_KEY_ID, PHOTOBANK_YC_SECRET.
  */
 const AWS = require('aws-sdk');
 
@@ -14,16 +15,19 @@ function getPhotobankBucketName() {
 
 class PhotobankYandexCloud {
   constructor() {
+    const accessKeyId = String(process.env.PHOTOBANK_YC_KEY_ID || '').trim();
+    const secretAccessKey = String(process.env.PHOTOBANK_YC_SECRET || '').trim();
     this.aws = new AWS.S3({
       endpoint: 'https://storage.yandexcloud.net',
-      accessKeyId: process.env.YC_KEY_ID,
-      secretAccessKey: process.env.YC_SECRET,
+      accessKeyId,
+      secretAccessKey,
       region: 'ru-central1',
       httpOptions: {
         timeout: 10000,
         connectTimeout: 10000,
       },
     });
+    this.photobankCredsOk = Boolean(accessKeyId && secretAccessKey);
   }
 
   /**
@@ -42,6 +46,10 @@ class PhotobankYandexCloud {
    * Список публичных URL всех объектов в бакете фотобанка (aws-sdk listObjectsV2 + пагинация).
    */
   listPublicFileUrls = async () => {
+    if (!this.photobankCredsOk) {
+      console.warn('[photobank] PHOTOBANK_YC_KEY_ID / PHOTOBANK_YC_SECRET не заданы — список пуст');
+      return [];
+    }
     const bucketName = getPhotobankBucketName();
     if (!bucketName) {
       console.warn('[photobank] PHOTOBANK_BUCKET_NAME не задан — список фото пуст');
@@ -83,6 +91,11 @@ class PhotobankYandexCloud {
    * @param {string} fileName имя файла в ключе `${path}/${fileName}`
    */
   Upload = async ({ file, path, fileName }) => {
+    if (!this.photobankCredsOk) {
+      const err = new Error('PHOTOBANK_YC_KEY_ID и PHOTOBANK_YC_SECRET должны быть заданы в окружении');
+      err.statusCode = 500;
+      throw err;
+    }
     const bucketName = getPhotobankBucketName();
     if (!bucketName) {
       const err = new Error('PHOTOBANK_BUCKET_NAME не задан в окружении');
