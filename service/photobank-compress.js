@@ -1,14 +1,37 @@
-const sharp = require('sharp');
-
 const MAX_BYTES = 700 * 1024;
 
+let sharpModule = null;
+let sharpResolved = false;
+
+function getSharp() {
+  if (sharpResolved) {
+    return sharpModule === false ? null : sharpModule;
+  }
+  sharpResolved = true;
+  try {
+    sharpModule = require('sharp');
+    return sharpModule;
+  } catch (e) {
+    sharpModule = false;
+    console.warn(
+      '[photobank] модуль sharp не загрузился (часто Node из snap или старый glibc). Сжатие отключено, загружаются исходные байты.',
+      e.message
+    );
+    return null;
+  }
+}
+
 /**
- * Сжимает изображение до ≤ MAX_BYTES (JPEG, mozjpeg).
- * Геометрия: только масштаб «целиком влезает в рамку» (fit: 'inside') — без обрезки кадра.
- * Сначала снижается качество, затем при необходимости уменьшается максимальная сторона.
+ * Сжимает изображение до ≤ MAX_BYTES (JPEG), если доступен sharp.
+ * Иначе возвращает исходный buffer без изменений.
  */
 async function compressPhotobankImage(buffer) {
   if (!buffer || !buffer.length) {
+    return buffer;
+  }
+
+  const sharp = getSharp();
+  if (!sharp) {
     return buffer;
   }
 
@@ -18,7 +41,7 @@ async function compressPhotobankImage(buffer) {
   const ih = meta.height || 1;
 
   /**
-   * @param {number | null} maxSide макс. сторона bbox (width/height для fit inside); null — без resize
+   * @param {number | null} maxSide
    */
   async function toJpeg(maxSide, q) {
     let chain = sharp(buffer, {
