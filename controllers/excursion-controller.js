@@ -136,6 +136,43 @@ module.exports = {
             next(error)
         }
     },
+    async getMyBills(req, res, next) {
+        try {
+            const userId = req.user?._id
+            const page = Number(req.query.page || 1)
+            const limit = Number(req.query.limit || 12)
+            return res.json(await ExcursionService.getMyBills({ userId, page, limit }))
+        } catch (error) {
+            next(error)
+        }
+    },
+    async getMyBillById(req, res, next) {
+        try {
+            const userId = req.user?._id
+            const billId = req.query._id
+            return res.json(await ExcursionService.getMyBillById({ userId, billId }))
+        } catch (error) {
+            next(error)
+        }
+    },
+    async updateBill(req, res, next) {
+        try {
+            const userId = req.user?._id
+            const { billId, tinkoff } = req.body
+            return res.json(await ExcursionService.updateBill({ userId, billId, tinkoff }))
+        } catch (error) {
+            next(error)
+        }
+    },
+    async issueInvoices(req, res, next) {
+        try {
+            const userId = req.user?._id
+            const { timeId } = req.body
+            return res.json(await ExcursionService.issueInvoices({ userId, timeId }))
+        } catch (error) {
+            next(error)
+        }
+    },
     /**
      * req.body {
      *  excursionId

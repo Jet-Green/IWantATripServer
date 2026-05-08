@@ -1,5 +1,6 @@
 const Router = require('express').Router
 const userController = require('../controllers/user-controller')
+const authMiddleware = require('../middleware/auth-middleware')
 
 const { rateLimit } = require('express-rate-limit')
 
@@ -33,6 +34,7 @@ router.post('/forgot-password', limiter, userController.sendResetLink)
 router.post('/reset-password', limiter, userController.resetPassword)
 
 router.get('/get-bought-trips', userController.getBoughtTrips)
+router.get('/my-bills', authMiddleware, userController.getMyBills)
 
 router.post('/cancel-trip', userController.cancelTrip)
 
