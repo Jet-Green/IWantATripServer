@@ -18,6 +18,24 @@ const PhotobankPhotoSchema = new Schema(
       required: true,
       trim: true,
     },
+    /** как у мест: адрес из DaData + координаты [lon, lat] */
+    location: {
+      name: { type: String, default: '' },
+      shortName: { type: String, default: '' },
+      type: { type: String, default: 'Point' },
+      coordinates: { type: [Number], default: undefined },
+    },
+    /** свободный текст «где снято», если без геолокации */
+    placeNameText: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    enterpriseName: {
+      type: String,
+      default: '',
+      trim: true,
+    },
     /** необязательное описание для поиска GET /photos/search?q= */
     caption: {
       type: String,
