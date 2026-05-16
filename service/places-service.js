@@ -1,6 +1,45 @@
 const PlaceModel = require("../models/place-model");
 const PhotobankPhoto = require("../models/photobank-photo-model");
+const {
+  PUBLIC_PHOTOBANK_FILTER,
+  incrementPhotobankUsage,
+  decrementPhotobankUsage,
+  syncPhotobankUsageDiff,
+} = require("./photos-service");
 const sanitizeHtml = require('sanitize-html');
+
+/**
+ * Если URL есть в фотобанке — он должен быть опубликован.
+ * @param {string[]} imageUrls
+ */
+async function assertPublishedPhotobankUrls(imageUrls) {
+  const urls = [
+    ...new Set(
+      (imageUrls || [])
+        .filter((u) => typeof u === "string")
+        .map((u) => u.trim())
+        .filter(Boolean)
+    ),
+  ];
+  if (!urls.length) return;
+
+  const inPhotobank = await PhotobankPhoto.find({ url: { $in: urls } })
+    .select("url")
+    .lean();
+  const photobankUrls = inPhotobank.map((d) => String(d.url));
+  if (!photobankUrls.length) return;
+
+  const publishedCount = await PhotobankPhoto.countDocuments({
+    $and: [PUBLIC_PHOTOBANK_FILTER, { url: { $in: photobankUrls } }],
+  });
+  if (publishedCount !== photobankUrls.length) {
+    const err = new Error(
+      "Можно использовать только опубликованные фото из фотобанка"
+    );
+    err.statusCode = 400;
+    throw err;
+  }
+}
 function sanitize(input) {
   return sanitizeHtml(input, {
     allowedTags: ['b', 'i', 'em', 'strong', 'a', 'p', 'ul', 'ol', 'li', 'br'],
@@ -185,12 +224,25 @@ module.exports = {
     return await PlaceModel.create(place);
   },
   async delete(_id) {
-    return await PlaceModel.findByIdAndDelete(_id);
+    const prev = await PlaceModel.findById(_id).select("images").lean();
+    const deleted = await PlaceModel.findByIdAndDelete(_id);
+    if (prev?.images?.length) {
+      await decrementPhotobankUsage(prev.images);
+    }
+    return deleted;
   },
 
   async edit(place, placeId) {
-    place.description = sanitize(place.description)
-    return await PlaceModel.findByIdAndUpdate(placeId, place);
+    place.description = sanitize(place.description);
+    if (Array.isArray(place.images) && place.images.length) {
+      await assertPublishedPhotobankUrls(place.images);
+    }
+    const prev = await PlaceModel.findById(placeId).select("images").lean();
+    const oldImages = prev?.images || [];
+    const updated = await PlaceModel.findByIdAndUpdate(placeId, place, { new: true });
+    const newImages = Array.isArray(place.images) ? place.images : oldImages;
+    await syncPhotobankUsageDiff(oldImages, newImages);
+    return updated;
   },
 
   async setPlaceImagesUrls(_id, filenames) {
@@ -221,9 +273,13 @@ module.exports = {
       return { count: 0 };
     }
 
-    const n = await PhotobankPhoto.countDocuments({ url: { $in: uniq } });
+    const n = await PhotobankPhoto.countDocuments({
+      $and: [PUBLIC_PHOTOBANK_FILTER, { url: { $in: uniq } }],
+    });
     if (n !== uniq.length) {
-      const err = new Error('Один или несколько адресов не найдены в фотобанке');
+      const err = new Error(
+        'Можно использовать только опубликованные фото из фотобанка'
+      );
       err.statusCode = 400;
       throw err;
     }
@@ -240,7 +296,14 @@ module.exports = {
       throw err;
     }
 
+    const placeBefore = await PlaceModel.findById(placeId).select("images").lean();
+    const existing = new Set((placeBefore?.images || []).map(String));
+    const newUrls = uniq.filter((u) => !existing.has(u));
+
     await this.pushPlaceImagesUrls(placeId, uniq);
+    if (newUrls.length) {
+      await incrementPhotobankUsage(newUrls);
+    }
     return { count: uniq.length };
   },
 

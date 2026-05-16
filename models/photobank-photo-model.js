@@ -42,6 +42,23 @@ const PhotobankPhotoSchema = new Schema(
       default: '',
       trim: true,
     },
+    status: {
+      type: String,
+      enum: ['onModeration', 'published', 'rejected'],
+      default: 'onModeration',
+      index: true,
+    },
+    moderationMessage: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    /** Сколько раз URL добавлен в места (фотобанк → create-place и т.п.) */
+    usageCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
   },
   {
     timestamps: true,
@@ -50,5 +67,6 @@ const PhotobankPhotoSchema = new Schema(
 );
 
 PhotobankPhotoSchema.index({ createdAt: -1 });
+PhotobankPhotoSchema.index({ status: 1, createdAt: -1 });
 
 module.exports = models.PhotobankPhoto || model('PhotobankPhoto', PhotobankPhotoSchema);
