@@ -127,6 +127,7 @@ async function start() {
       db.collections.places.createIndex({ 'location.coordinates': '2dsphere' }),
       db.collections.guides.createIndex({ 'location': '2dsphere' }),
       db.collections.guides.createIndex({ 'location.coordinates': '2dsphere' }),
+      db.collections.photobankphotos.createIndex({ 'location.coordinates': '2dsphere' }),
     ]);
 
     console.log('✅ MongoDB connected');

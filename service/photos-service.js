@@ -234,16 +234,76 @@ function photobankItemFromDoc(d) {
 }
 
 /**
+ * Фильтр по городу из хедера (как у мест / туров): имя локации и/или радиус от координат.
+ * @param {{ lon?: string|number, lat?: string|number, location?: string, locationRadius?: string|number } | null | undefined} geo
+ * @returns {object | null}
+ */
+function buildPhotobankLocationFilter(geo) {
+  const locationName = String(geo?.location ?? '').trim();
+  const lon = Number(geo?.lon);
+  const lat = Number(geo?.lat);
+  const hasCoords = Number.isFinite(lon) && Number.isFinite(lat);
+  let radiusKm = Number(geo?.locationRadius);
+  const radiusSpecified = geo?.locationRadius != null && geo?.locationRadius !== '';
+  if (!radiusSpecified && hasCoords && locationName) {
+    radiusKm = 100;
+  } else if (!Number.isFinite(radiusKm)) {
+    radiusKm = 0;
+  }
+
+  if (!locationName && !hasCoords) {
+    return null;
+  }
+
+  const orClauses = [];
+
+  if (locationName) {
+    const pattern = new RegExp(escapeRegex(locationName), 'i');
+    orClauses.push(
+      { 'location.name': pattern },
+      { 'location.shortName': pattern },
+      { placeNameText: pattern }
+    );
+  }
+
+  if (hasCoords && radiusKm > 0) {
+    const radiusRadians = radiusKm / 6378.137;
+    orClauses.push({
+      'location.coordinates': {
+        $geoWithin: {
+          $centerSphere: [[lon, lat], radiusRadians],
+        },
+      },
+    });
+  }
+
+  if (!orClauses.length) return null;
+  if (orClauses.length === 1) return orClauses[0];
+  return { $or: orClauses };
+}
+
+function buildPublicPhotobankQuery(geo) {
+  const locFilter = buildPhotobankLocationFilter(geo);
+  if (!locFilter) {
+    return PUBLIC_PHOTOBANK_FILTER;
+  }
+  return { $and: [PUBLIC_PHOTOBANK_FILTER, locFilter] };
+}
+
+/**
  * Список фотобанка из MongoDB (коллекция photobankphotos), пагинация по page (с 1).
  * Берём limit+1 строку, чтобы точно знать, есть ли следующая страница.
+ * @param {number|string} page
+ * @param {{ lon?: string|number, lat?: string|number, location?: string, locationRadius?: string|number } | null | undefined} [geo]
  * @returns {{ items: ReturnType<typeof photobankItemFromDoc>[], urls: string[], hasMore: boolean }}
  */
-async function getPhotosFromDb(page) {
+async function getPhotosFromDb(page, geo) {
   const limit = pageLimit();
   const p = Math.max(1, parseInt(String(page ?? '1'), 10) || 1);
   const skip = (p - 1) * limit;
+  const query = buildPublicPhotobankQuery(geo);
 
-  const docs = await PhotobankPhoto.find(PUBLIC_PHOTOBANK_FILTER)
+  const docs = await PhotobankPhoto.find(query)
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit + 1)
@@ -264,7 +324,7 @@ async function getPhotosFromDb(page) {
  * @param {number|string} page страница с 1
  * @returns {{ items: ReturnType<typeof photobankItemFromDoc>[], urls: string[], hasMore: boolean }}
  */
-async function searchPhotosByQuery(rawQuery, page) {
+async function searchPhotosByQuery(rawQuery, page, geo) {
   const q = String(rawQuery ?? '').trim();
   if (!q.length) {
     const err = new Error('Укажите непустой параметр q');
@@ -281,23 +341,24 @@ async function searchPhotosByQuery(rawQuery, page) {
   const p = Math.max(1, parseInt(String(page ?? '1'), 10) || 1);
   const skip = (p - 1) * limit;
   const pattern = new RegExp(escapeRegex(q), 'i');
+  const locFilter = buildPhotobankLocationFilter(geo);
+  const andParts = [
+    PUBLIC_PHOTOBANK_FILTER,
+    {
+      $or: [
+        { url: pattern },
+        { objectKey: pattern },
+        { caption: pattern },
+        { placeNameText: pattern },
+        { enterpriseName: pattern },
+        { 'location.name': pattern },
+        { 'location.shortName': pattern },
+      ],
+    },
+  ];
+  if (locFilter) andParts.push(locFilter);
 
-  const docs = await PhotobankPhoto.find({
-    $and: [
-      PUBLIC_PHOTOBANK_FILTER,
-      {
-        $or: [
-          { url: pattern },
-          { objectKey: pattern },
-          { caption: pattern },
-          { placeNameText: pattern },
-          { enterpriseName: pattern },
-          { 'location.name': pattern },
-          { 'location.shortName': pattern },
-        ],
-      },
-    ],
-  })
+  const docs = await PhotobankPhoto.find({ $and: andParts })
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit + 1)
@@ -602,12 +663,12 @@ async function updateMyPhoto(userId, _id, rawMeta) {
 }
 
 module.exports = {
-  async getPhotos(page) {
-    return getPhotosFromDb(page);
+  async getPhotos(page, geo) {
+    return getPhotosFromDb(page, geo);
   },
 
-  async searchPhotos(q, page) {
-    return searchPhotosByQuery(q, page);
+  async searchPhotos(q, page, geo) {
+    return searchPhotosByQuery(q, page, geo);
   },
 
   uploadPhotobankPhotos,

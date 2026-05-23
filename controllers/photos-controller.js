@@ -5,7 +5,12 @@ module.exports = {
     
         try {
 
-            return res.json(await PhotosService.getPhotos(req.query.page))
+            const { page, lon, lat, location, locationRadius } = req.query;
+            const geo =
+                lon != null || lat != null || location != null || locationRadius != null
+                    ? { lon, lat, location, locationRadius }
+                    : null;
+            return res.json(await PhotosService.getPhotos(page, geo))
         } catch (error) {
             next(error)
         }
@@ -13,8 +18,13 @@ module.exports = {
 
     async searchPhotobank(req, res, next) {
         try {
+            const { q, page, lon, lat, location, locationRadius } = req.query;
+            const geo =
+                lon != null || lat != null || location != null || locationRadius != null
+                    ? { lon, lat, location, locationRadius }
+                    : null;
             return res.json(
-                await PhotosService.searchPhotos(req.query.q, req.query.page)
+                await PhotosService.searchPhotos(q, page, geo)
             );
         } catch (error) {
             if (error.statusCode === 400) {
