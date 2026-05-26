@@ -105,7 +105,15 @@ const ContractSchema = new Schema({
     userEmail: String,
     userEmails: Array,
 
-    shopInfo: Object
+    shopInfo: Object,
+    /** Данные продавца в ЮKassa (сплит, бонусная программа «Привет, мир») */
+    yookassa: {
+        $type: Object,
+        account_id: { $type: String },
+        fullName: { $type: String },
+        inn: { $type: String },
+        updatedAt: { $type: Date },
+    },
 }, { typeKey: '$type' })
 
 module.exports = model('Contract', ContractSchema);
