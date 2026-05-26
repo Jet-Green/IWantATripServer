@@ -703,11 +703,7 @@ module.exports = {
     return bill.save()
   },
   async updatePartner({ partner, _id, canSellPartnerTour }) {
-    const update = { partner }
-    if (canSellPartnerTour !== undefined) {
-      update.canSellPartnerTour = canSellPartnerTour
-    }
-    return TripModel.findByIdAndUpdate(_id, update)
+    return TripModel.findByIdAndUpdate(_id, { partner: partner, canSellPartnerTour: canSellPartnerTour })
   },
   async updateIncludedLocations({ newLocation, locationsToDelete, tripId }) {
     if (newLocation) {

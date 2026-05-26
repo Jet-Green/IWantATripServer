@@ -13,6 +13,5 @@ router.post('/get-all', adminMiddleware, ContractController.getAll)
 router.put('/contract-email', adminMiddleware, ContractController.addContractEmail)
 router.delete('/contract-email', adminMiddleware, ContractController.deleteContractEmail)
 router.get ('/byShopCode',authMiddleware, ContractController.getByShopCode)
-router.post('/yookassa', authMiddleware, ContractController.saveYookassa)
 
 module.exports = router

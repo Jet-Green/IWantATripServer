@@ -65,37 +65,7 @@ module.exports = {
         let result = ContractModel.findOne({'shopInfo.shopCode':Number(shopCode)});
     
         return result
-    },
+    }
 
-    async saveYookassaForUser(userId, account_id) {
-        const normalized = String(account_id || '').trim()
-        if (!/^\d+$/.test(normalized)) {
-            const err = new Error('Укажите корректный ShopId (только цифры)')
-            err.statusCode = 400
-            throw err
-        }
 
-        const user = await UserModel.findById(userId).populate('tinkoffContract')
-        if (!user?.tinkoffContract) {
-            const err = new Error('Сначала оформите договор с платформой (Тинькофф)')
-            err.statusCode = 400
-            throw err
-        }
-
-        const contract = user.tinkoffContract
-        const yookassa = {
-            account_id: normalized,
-            fullName: contract.fullName || contract.name || '',
-            inn: contract.inn || '',
-            updatedAt: new Date(),
-        }
-
-        const updated = await ContractModel.findByIdAndUpdate(
-            contract._id,
-            { $set: { yookassa }, $unset: { yookassaAccountId: 1 } },
-            { new: true }
-        )
-
-        return updated
-    },
 }

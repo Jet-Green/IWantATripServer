@@ -62,18 +62,5 @@ module.exports = {
             next(error)
         }
     },
-
-    async saveYookassa(req, res, next) {
-        try {
-            const userId = req.user?._id || req.user?.id
-            const account_id = req.body?.account_id ?? req.body?.shopId
-            const contract = await ContractService.saveYookassaForUser(userId, account_id)
-            return res.json(contract)
-        } catch (error) {
-            if (error.statusCode) {
-                return res.status(error.statusCode).json({ message: error.message })
-            }
-            next(error)
-        }
-    },
+    
 }

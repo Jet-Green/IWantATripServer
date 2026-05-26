@@ -39,8 +39,7 @@ const TripSchema = new Schema({
 
     moderationMessage: { type: String, },
     partner: { type: String, },
-    /** Партнёрский тур: принимать ли оплату на платформе (по умолчанию — да) */
-    canSellPartnerTour: { type: Boolean, default: true },
+    canSellPartnerTour: { type: Boolean, default: false },
     children:
         [
             {
@@ -81,8 +80,6 @@ const TripSchema = new Schema({
     },
     tripRegion: String,
     privetMirPaymentLink: { type: String, default: '', required: false },
-    /** Оплата на сайте через ЮKassa (бонусная программа «Привет, мир»), комиссия платформы 0 */
-    privetMirBonusProgram: { type: Boolean, default: false },
 })
 TripSchema.index({ start: 1 });
 module.exports = model('Trip', TripSchema);
