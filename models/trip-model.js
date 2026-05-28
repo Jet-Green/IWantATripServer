@@ -79,7 +79,8 @@ const TripSchema = new Schema({
         required: false
     },
     tripRegion: String,
-    privetMirPaymentLink: { type: String, default: '', required: false },
+    /** Оплата через ЮKassa включена (чекбокс «Оплата ЮKassa» в форме тура) */
+    privetMirYookassaEnabled: { type: Boolean, default: false },
 })
 TripSchema.index({ start: 1 });
 module.exports = model('Trip', TripSchema);

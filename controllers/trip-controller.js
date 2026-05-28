@@ -132,7 +132,10 @@ module.exports = {
 
             logger.info({ _id: tripFromDb._id, billId: buyCallBack.billId, logType: 'trip' }, 'trip purchased')
 
-            return res.json(buyCallBack.userCallback)
+            return res.json({
+                user: buyCallBack.userCallback,
+                billId: buyCallBack.billId,
+            })
         } catch (error) {
             logger.fatal({ error, logType: 'trip error', brokenMethod: 'buyTrip' })
             next(error)
