@@ -235,8 +235,18 @@ async function computeDiscountEstimates(trip) {
 
   trip.loyalty.discount.currentDiscountPerPerson = profitDiscount + baseDiscount
 
-  // Максимальная скидка — теоретический потолок (как в виджете)
-  trip.loyalty.discount.maxDiscountPerPerson = maxTotalDiscount
+  // Максимальная скидка
+  let realisticMax = maxTotalDiscount
+  const maxPeople = Number(trip.maxPeople || 0)
+  if (canUseMinProfit && maxPeople > 0) {
+    const maxClearProfit = computeClearProfit(calc, maxPeople, pricePerPerson)
+    let maxProfitDiscount = 0
+    if (maxClearProfit > Number(minProfit)) {
+      maxProfitDiscount = Math.max(0, Math.round((maxClearProfit - Number(minProfit)) / maxPeople))
+    }
+    realisticMax = Math.min(maxProfitDiscount + baseDiscount, maxTotalDiscount)
+  }
+  trip.loyalty.discount.maxDiscountPerPerson = realisticMax
 }
 
 async function applyLoyaltyDiscountFixation(trip) {
@@ -894,7 +904,7 @@ module.exports = {
     return TripModel.findByIdAndUpdate(tripId, { isModerated: false, moderationMessage: msg, rejected: true })
   },
   async findById(_id) {
-    const trip = await TripModel.findById(_id).populate('author').populate('places', { name: 1 })
+      const trip = await TripModel.findById(_id).populate('author').populate('places', { name: 1 }).populate('calculator')
     await applyLoyaltyDiscountFixation(trip)
     return trip
   },
