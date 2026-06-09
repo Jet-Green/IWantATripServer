@@ -123,6 +123,16 @@ module.exports = {
             next(error)
         }
     },
+    async getMyBills(req, res, next) {
+        try {
+            const userId = req.user?._id
+            const page = Number(req.query.page || 1)
+            const limit = Number(req.query.limit || 12)
+            return res.json(await UserService.getMyBills({ userId, page, limit }))
+        } catch (error) {
+            next(error)
+        }
+    },
     async checkUserEmail(req, res, next) {
         try {
             return res.json(await UserService.checkUserEmail(req.query.user_email))

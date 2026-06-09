@@ -19,6 +19,8 @@ router.post('/edit',  authMiddleware, placesController.edit)
 
 router.post('/upload-images', MULTER().any(), placesController.uploadImages)
 
+router.post('/push-photobank-urls', authMiddleware, placesController.pushPhotobankUrls)
+
 router.get('/for-moderation',managerMiddleware, placesController.getForModeration)
 router.get('/get-by-id', placesController.getById)
 router.get('/moderate-place',managerMiddleware, placesController.moderatePlace)

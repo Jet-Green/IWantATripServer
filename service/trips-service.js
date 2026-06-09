@@ -588,6 +588,14 @@ module.exports = {
     }
     return trip.save();
   },
+
+    /**
+     * Обновляет seats у счета по billId
+     * @param {{ billId: string, seats: string[] }} param0
+     */
+    async updateBillSeats({ billId, seats }) {
+      return await BillModel.findByIdAndUpdate(billId, { $set: { seats: seats } }, { new: true });
+    },
   async deleteMany() {
     return
     return TripModel.deleteMany({});
@@ -703,7 +711,7 @@ module.exports = {
         $or: [
           { tripRegion: { $eq: tripRegion } },
           { name: { $regex: strQuery, $options: "i" } },
-          // { tripRoute: { $regex: strQuery, $options: 'i' } },
+          { tripRoute: { $regex: strQuery, $options: "i" } },
           // { offer: { $regex: strQuery, $options: 'i' } },
           // { description: { $regex: strQuery, $options: 'i' } },
         ],

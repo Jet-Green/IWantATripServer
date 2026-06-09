@@ -6,6 +6,7 @@ const LocationModel = require('../models/location-model.js')
 const ExcursionBookingModel = require('../models/excursion-booking-model.js')
 const _ = require('lodash')
 const { sendMail } = require('../middleware/mailer')
+const ApiError = require('../exceptions/api-error.js')
 
 const LocationService = require('../service/location-service.js')
 const excursionBillModel = require('../models/excursion-bill-model.js')
@@ -72,7 +73,7 @@ module.exports = {
 
 
         let excursion = await ExcursionModel.findById(excursionId)
-            .select({ name: 1, dates: 1, bookings: 1 })
+            .select({ name: 1, dates: 1, bookings: 1, minPeople: 1, prices: 1 })
             .populate(
                 {
                     path: 'dates',
@@ -80,7 +81,7 @@ module.exports = {
                     populate: {
                         path: 'times.bills',
                         model: 'ExcursionBill',
-                        select: { cart: 1 }
+                        select: { cart: 1, needPay: 1 }
                     },
                 },
             )
@@ -117,6 +118,153 @@ module.exports = {
     },
     async getWithBookings(excursionId) {
         return await ExcursionModel.findById(excursionId).populate('bookings').populate('dates')
+    },
+    async getMyBills({ userId, page = 1, limit = 12 }) {
+        if (!userId) {
+            throw ApiError.UnauthorizedError()
+        }
+
+        const safePage = Number.isFinite(page) && page > 0 ? Math.floor(page) : 1
+        const safeLimit = Number.isFinite(limit) && limit > 0 ? Math.min(Math.floor(limit), 50) : 12
+        const skip = (safePage - 1) * safeLimit
+
+        const total = await ExcursionBillModel.countDocuments({ user: userId })
+        const bills = await ExcursionBillModel.find({ user: userId })
+            .sort({ _id: -1 })
+            .skip(skip)
+            .limit(safeLimit)
+            .lean()
+
+        const items = []
+        for (const bill of bills) {
+            const dateDoc = await ExcursionDateModel.findOne({ times: { $elemMatch: { _id: bill.time } } })
+                .populate({ path: 'excursion', select: { name: 1 } })
+                .lean()
+
+            let timeObj = null
+            if (dateDoc?.times?.length) {
+                timeObj = dateDoc.times.find((t) => String(t._id) === String(bill.time)) || null
+            }
+
+            items.push({
+                ...bill,
+                excursion: dateDoc?.excursion
+                    ? { _id: dateDoc.excursion._id, name: dateDoc.excursion.name }
+                    : null,
+                date: dateDoc?.date || null,
+                timeObj: timeObj ? { _id: timeObj._id, hours: timeObj.hours, minutes: timeObj.minutes } : null,
+            })
+        }
+
+        return {
+            items,
+            total,
+            page: safePage,
+            limit: safeLimit,
+            pages: Math.ceil(total / safeLimit)
+        }
+    },
+    async getMyBillById({ userId, billId }) {
+        if (!userId) {
+            throw ApiError.UnauthorizedError()
+        }
+        if (!billId) {
+            throw ApiError.BadRequest('billId обязателен')
+        }
+
+        const bill = await ExcursionBillModel.findOne({ _id: billId, user: userId }).lean()
+        if (!bill) {
+            throw ApiError.NotFound('Счет не найден')
+        }
+
+        const dateDoc = await ExcursionDateModel.findOne({ times: { $elemMatch: { _id: bill.time } } })
+            .populate({ path: 'excursion', select: { name: 1, tinkoffContract: 1 } })
+            .lean()
+
+        let timeObj = null
+        if (dateDoc?.times?.length) {
+            timeObj = dateDoc.times.find((t) => String(t._id) === String(bill.time)) || null
+        }
+
+        return {
+            ...bill,
+            excursion: dateDoc?.excursion
+                ? { _id: dateDoc.excursion._id, name: dateDoc.excursion.name, tinkoffContract: dateDoc.excursion.tinkoffContract }
+                : null,
+            date: dateDoc?.date || null,
+            timeObj: timeObj ? { _id: timeObj._id, hours: timeObj.hours, minutes: timeObj.minutes } : null,
+        }
+    },
+    async updateBill({ userId, billId, tinkoff }) {
+        if (!userId) throw ApiError.UnauthorizedError()
+        if (!billId) throw ApiError.BadRequest('billId обязателен')
+
+        const updated = await ExcursionBillModel.findOneAndUpdate(
+            { _id: billId, user: userId },
+            { $set: { tinkoff } },
+            { new: true }
+        )
+        if (!updated) throw ApiError.NotFound('Счет не найден')
+        return updated
+    },
+    async issueInvoices({ userId, timeId }) {
+        if (!userId) throw ApiError.UnauthorizedError()
+        if (!timeId) throw ApiError.BadRequest('timeId обязателен')
+
+        const dateDoc = await ExcursionDateModel.findOne({ times: { $elemMatch: { _id: timeId } } })
+            .populate({ path: 'excursion', select: { minPeople: 1, author: 1, name: 1 } })
+            .populate({ path: 'times.bills', model: 'ExcursionBill', populate: { path: 'user', model: 'User', select: { email: 1 } } })
+
+        if (!dateDoc?.excursion?._id) throw ApiError.NotFound('Экскурсия/дата не найдена')
+
+        // only author can issue invoices
+        if (String(dateDoc.excursion.author) !== String(userId)) {
+            throw ApiError.NotAccess()
+        }
+
+        const t = (dateDoc.times || []).find((x) => String(x._id) === String(timeId))
+        if (!t) throw ApiError.NotFound('Время не найдено')
+
+        const bills = Array.isArray(t.bills) ? t.bills : []
+        const peopleCount = bills.reduce((sum, b) => {
+            const cart = Array.isArray(b.cart) ? b.cart : []
+            return sum + cart.reduce((s, it) => s + (it.count || 0), 0)
+        }, 0)
+
+        if (peopleCount < Number(dateDoc.excursion.minPeople || 0)) {
+            throw ApiError.BadRequest(`Порог не достигнут: нужно ещё ${Number(dateDoc.excursion.minPeople || 0) - peopleCount} чел.`)
+        }
+
+        const toIssue = bills.filter((b) => !b?.needPay)
+        const billIds = toIssue.map((b) => b._id).filter(Boolean)
+        if (!bills.length) {
+            throw ApiError.BadRequest('Нет участников для выставления счета')
+        }
+        if (!billIds.length) {
+            return { status: 'already', updatedCount: 0, emailed: 0 }
+        }
+
+        await ExcursionBillModel.updateMany({ _id: { $in: billIds } }, { $set: { needPay: true } })
+
+        const baseUrl = process.env.CLIENT_URL || ''
+        let emailed = 0
+        for (const b of toIssue) {
+            const email = b?.user?.email
+            if (!email) continue
+            const link = `${baseUrl}/cabinet/my-orders?bill_to_pay=${b._id}`
+            sendMail(
+                `<!DOCTYPE html><html><body>
+                <h2>Вам выставлен счет за экскурсию «${dateDoc.excursion.name}»</h2>
+                <p>Перейдите по ссылке для оплаты:</p>
+                <p><a href="${link}">${link}</a></p>
+                </body></html>`,
+                [email],
+                'Счет на оплату экскурсии'
+            )
+            emailed += 1
+        }
+
+        return { status: 'ok', updatedCount: billIds.length, emailed }
     },
     async create({ excursion, userId }) {
 
@@ -240,7 +388,7 @@ module.exports = {
 
         const dateQuery = {
             $and: []
-        }; 
+        };
         // sus filter
         // Нижняя граница: >= current  
         dateQuery.$and.push({
@@ -293,25 +441,25 @@ module.exports = {
         }
 
         if (locationId) {
-          try {
-            const location = await LocationModel.findById(locationId);
-            if (location?.coordinates) {
-              query.$and.push({
-                'location.coordinates': {
-                  $near: {
-                    $geometry: {
-                      type: 'Point',
-                      coordinates: location.coordinates,
-                    },
-                    $maxDistance: 50000 // 50 km
-                  }
+            try {
+                const location = await LocationModel.findById(locationId);
+                if (location?.coordinates) {
+                    query.$and.push({
+                        'location.coordinates': {
+                            $near: {
+                                $geometry: {
+                                    type: 'Point',
+                                    coordinates: location.coordinates,
+                                },
+                                $maxDistance: 50000 // 50 km
+                            }
+                        }
+                    });
                 }
-              });
+            } catch (error) {
+                console.error('Location search error:', error);
+                throw new Error('Failed to process location filter');
             }
-          } catch (error) {
-            console.error('Location search error:', error);
-            throw new Error('Failed to process location filter');
-          }
         }
 
         if (search) {
@@ -324,23 +472,23 @@ module.exports = {
                 }
             )
         }
-      
+
         if (type) {
-          query.$and.push(
-              {
-      
-                  "excursionType.type": { $regex: type, $options: 'i' },
-                  "excursionType.directionType": { $regex: directionType, $options: 'i' },
-                  "excursionType.directionPlace": { $regex: directionPlace, $options: 'i' },
-              }
-          )
+            query.$and.push(
+                {
+
+                    "excursionType.type": { $regex: type, $options: 'i' },
+                    "excursionType.directionType": { $regex: directionType, $options: 'i' },
+                    "excursionType.directionPlace": { $regex: directionPlace, $options: 'i' },
+                }
+            )
         }
-      
+
         // Age filter
         if (minAge) {
-          query.$and.push({ minAge: { $lte: minAge } });
+            query.$and.push({ minAge: { $lte: minAge } });
         }
-      
+
         // Price availability filter
         if (havePrices) {
             query.$and.push(
@@ -381,7 +529,11 @@ module.exports = {
         const currentDate = new Date();
 
 
-        let excursion = await ExcursionModel.findById(_id).populate('dates')
+        let excursion = await ExcursionModel.findById(_id).populate(['dates'])
+
+        if (!excursion) {
+            throw ApiError.NotFound('Экскурсия не найдена')
+        }
 
         // Correctly filter dates to include only upcoming dates
         const filteredDates = excursion.dates.filter(date => {

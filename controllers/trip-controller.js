@@ -230,7 +230,10 @@ module.exports = {
 
             logger.info({ _id: tripFromDb._id, billId: buyCallBack.billId, logType: 'trip' }, 'trip purchased')
 
-            return res.json(buyCallBack.userCallback)
+            return res.json({
+                user: buyCallBack.userCallback,
+                billId: buyCallBack.billId,
+            })
         } catch (error) {
             logger.fatal({ error, logType: 'trip error', brokenMethod: 'buyTrip' })
             next(error)
@@ -273,6 +276,19 @@ module.exports = {
 
             return res.json(removeTripCallback);
         } catch (error) {
+            next(error)
+        }
+    },
+
+    /**
+     * POST /trips/update-bill-seats
+     * { billId: string, seats: string[] }
+     */
+    async updateBillSeats(req, res, next) {
+        try {
+            return res.json(await TripService.updateBillSeats(req.body))
+        } catch (error) {
+            logger.fatal({ error, logType: 'trip error', brokenMethod: 'updateBillSeats' })
             next(error)
         }
     },

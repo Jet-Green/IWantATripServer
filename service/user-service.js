@@ -264,6 +264,67 @@ module.exports = {
         }
         return result
     },
+    async getMyBills({ userId, page = 1, limit = 12 }) {
+        if (!userId) {
+            throw ApiError.UnauthorizedError()
+        }
+
+        const safePage = Number.isFinite(page) && page > 0 ? Math.floor(page) : 1
+        const safeLimit = Number.isFinite(limit) && limit > 0 ? Math.min(Math.floor(limit), 50) : 12
+        const skip = (safePage - 1) * safeLimit
+
+        const user = await UserModel.findById(userId).select('boughtTrips')
+        if (!user) {
+            throw ApiError.NotFound('Пользователь не найден')
+        }
+
+        const ids = (user.boughtTrips || []).filter(Boolean)
+        if (!ids.length) {
+            return { items: [], total: 0, page: safePage, limit: safeLimit, pages: 0 }
+        }
+
+        const total = await BillModel.countDocuments({ _id: { $in: ids } })
+
+        const bills = await BillModel.find({ _id: { $in: ids } })
+            .sort({ date: -1 })
+            .skip(skip)
+            .limit(safeLimit)
+            .populate('tripId')
+            .exec()
+
+        // keep same trip "parent merge" logic as getBoughtTrips
+        const items = []
+        for (let bill of bills) {
+            if (bill.tripId) {
+                await bill.tripId.populate('parent')
+            }
+
+            if (bill.tripId?.parent) {
+                let originalId = bill.tripId._id
+                let parentId = bill.tripId.parent._id
+                let { start, end } = bill.tripId
+                let isModerated = bill.tripId.parent.isModerated
+
+                Object.assign(bill.tripId, bill.tripId.parent)
+                bill.tripId.parent = parentId
+                bill.tripId.children = []
+                bill.tripId._id = originalId
+                bill.tripId.start = start
+                bill.tripId.end = end
+                bill.tripId.isModerated = isModerated
+            }
+
+            items.push(bill)
+        }
+
+        return {
+            items,
+            total,
+            page: safePage,
+            limit: safeLimit,
+            pages: Math.ceil(total / safeLimit)
+        }
+    },
     async checkUserEmail(userEmail) {
         const user = await UserModel.findOne({ email: userEmail })
         return user;

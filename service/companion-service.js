@@ -19,7 +19,7 @@ module.exports = {
                 startLocation: {
                     $near: {
                         $geometry: {
-                            type: 'Pointer',
+                            type: 'Point',
                             coordinates: [Number(lon), Number(lat)]
                         },
                         // 100 km

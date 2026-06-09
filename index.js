@@ -36,6 +36,7 @@ const placesRouter = require('./routers/places-router');
 const partnersRouter = require('./routers/partners-router');
 const tasksRouter = require('./routers/tasks-router');
 const trackRouter = require('./routers/track-router');
+const paymentRouter = require('./routers/payment-router');
 const helmet = require('helmet');
 
 app.set('trust proxy', 1);
@@ -80,6 +81,7 @@ app.use('/images', express.static('uploads'));
 app.use('/guide-elements', express.static('uploads/guide-elements/'));
 
 // Роуты
+app.use('/payments', paymentRouter);
 app.use('/auth', authRouter);
 app.use('/trips', tripRouter);
 app.use('/guide', guideRouter);
@@ -125,6 +127,7 @@ async function start() {
       db.collections.places.createIndex({ 'location.coordinates': '2dsphere' }),
       db.collections.guides.createIndex({ 'location': '2dsphere' }),
       db.collections.guides.createIndex({ 'location.coordinates': '2dsphere' }),
+      db.collections.photobankphotos.createIndex({ 'location.coordinates': '2dsphere' }),
     ]);
 
     console.log('✅ MongoDB connected');
