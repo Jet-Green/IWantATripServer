@@ -169,6 +169,14 @@ module.exports = {
             next(error)
         }
     },
+    async getBySlug(req, res, next) {
+        try {
+            const slug = req.query.slug
+            return res.json(await TripService.getTripBySlug(slug));
+        } catch (error) {
+            next(error)
+        }
+    },
     async deleteById(req, res, next) {
         try {
             const _id = req.body._id

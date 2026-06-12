@@ -13,6 +13,8 @@ const { sendMail } = require("../middleware/mailer");
 
 const LocationService = require("./location-service.js");
 
+const { generateUniqueSlug } = require("./slug-util.js");
+
 const _ = require("lodash");
 
 const sanitizeHtml = require('sanitize-html');
@@ -45,6 +47,7 @@ module.exports = {
         parent: parentId,
         author: d.author,
         isModerated: parent.isModerated,
+        slug: await generateUniqueSlug(parent.name),
       });
       parent.children.push({ _id: r._id, start: d.start, end: d.end });
       createdIds.push(r._id);
@@ -251,6 +254,7 @@ module.exports = {
     return BillModel.findByIdAndUpdate(billId, { tinkoff: tinkoffData });
   },
   async insertOne(trip) {
+    trip.slug = await generateUniqueSlug(trip.name);
     return TripModel.create(trip);
   },
   async updateOne(trip) {
@@ -258,6 +262,14 @@ module.exports = {
     delete trip._id;
 
     let oldTrip = await TripModel.findById(_id);
+
+    // slug перегенерируется при смене названия, иначе сохраняем прежний
+    if (trip.name && trip.name !== oldTrip.name) {
+      trip.slug = await generateUniqueSlug(trip.name, _id);
+    } else {
+      trip.slug = oldTrip.slug;
+    }
+
     if (trip.startLocation && trip.startLocation != "") {
       trip.startLocation = await LocationService.createLocation(
         trip.startLocation
@@ -632,6 +644,12 @@ module.exports = {
   },
   async findById(_id) {
     return TripModel.findById(_id).populate('author').populate('places', { name: 1 })
+  },
+  // slug -> _id, дальше та же богатая загрузка, что и у getTripById
+  async getTripBySlug(slug) {
+    const found = await TripModel.findOne({ slug }, { _id: 1 });
+    if (!found) return null;
+    return module.exports.getTripById(found._id);
   },
   async createdTripsInfo(_id, query, search, page = 1) {
     const limit = 15;

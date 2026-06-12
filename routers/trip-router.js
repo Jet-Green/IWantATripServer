@@ -21,6 +21,7 @@ router.post('/pay-tinkoff', authMiddleware, tripController.payTinkoffBill)
 router.get('/get-all', tripController.getAll)
 router.post('/search', tripController.search)
 router.get('/get-by-id', tripController.getById)
+router.get('/get-by-slug', tripController.getBySlug)
 
 router.post('/delete-by-id',authMiddleware, tripController.deleteById)
 router.post('/create', authMiddleware, tripController.create)

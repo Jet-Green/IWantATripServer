@@ -6,6 +6,7 @@ const LocationSchema = LocationModel.schema
 
 const TripSchema = new Schema({
     name: { type: String },
+    slug: { type: String, index: true },
     start: { type: Number },
     end: { type: Number },
     timezoneOffset: { type: Number },
