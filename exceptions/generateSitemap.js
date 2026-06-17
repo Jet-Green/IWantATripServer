@@ -11,14 +11,14 @@ const BASE_URL = process.env.CLIENT_URL;
 async function generateSitemapAndRobots() {
   const staticRoutes = ['/', '/places', '/trips', '/excursions', '/guides', '/tracks-list'];
 
-  const tripIds = await TripService.getVisibleTripIds();
+  const trips = await TripService.getVisibleTripIds();
   const placeIds = await PlaceService.getVisiblePlaceIds();
   const excursionIds = await ExcursionService.getVisibleExcursionIds();
   const guideIds = await GuideService.getVisibleGuidesIds();
   const trackIds = await TrackService.getVisibleTrackIds();
 
   const dynamicRoutes = [
-    ...tripIds.map(id => `/trip?_id=${id}`),
+    ...trips.map(t => (t.slug ? `/trip/${t.slug}` : `/trip?_id=${t._id}`)),
     ...placeIds.map(id => `/place?_id=${id}`),
     ...excursionIds.map(id => `/excursion?_id=${id}`),
     ...guideIds.map(id => `/guide?_id=${id}`),
@@ -46,6 +46,7 @@ Allow: /sitemap.xml
 Allow: /places$
 Allow: /trips$
 Allow: /excursions$
+Allow: /trip/
 Allow: /trip?_id=
 Allow: /place?_id=
 Allow: /excursion?_id=

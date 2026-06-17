@@ -867,8 +867,8 @@ module.exports = {
       ],
     })
 
-    const trips = await TripModel.find(baseQuery, { _id: 1 }).lean();
-    return trips.map(trip => trip._id.toString());
+    const trips = await TripModel.find(baseQuery, { _id: 1, slug: 1 }).lean();
+    return trips.map(trip => ({ _id: trip._id.toString(), slug: trip.slug }));
   }
 
 }
