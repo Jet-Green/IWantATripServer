@@ -240,6 +240,26 @@ module.exports = {
                 bill.tripId.isModerated = isModerated
             }
 
+            if (bill.tripId) {
+                const trip = bill.tripId
+                if (!trip.loyalty) {
+                    trip.loyalty = { discount: {} }
+                } else if (!trip.loyalty.discount) {
+                    trip.loyalty.discount = {}
+                }
+                const enabled = Boolean(trip.loyalty?.enabled && trip.loyalty?.type === 'discount')
+                const fixationDay = Number(trip.loyalty?.discount?.fixationDay)
+                const startTimestamp = Number(trip.start)
+                let isFixed = false
+                if (enabled && Number.isFinite(fixationDay) && Number.isFinite(startTimestamp)) {
+                    const startDate = new Date(startTimestamp)
+                    startDate.setHours(0, 0, 0, 0)
+                    const fixationAt = startDate.getTime() - fixationDay * 86400000
+                    isFixed = Date.now() >= fixationAt
+                }
+                trip.loyalty.discount.isFixed = isFixed
+            }
+
             result.push(bill)
         }
         return result

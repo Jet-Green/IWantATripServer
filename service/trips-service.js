@@ -1,4 +1,5 @@
 const TripModel = require("../models/trip-model.js");
+const TripCalcModel = require("../models/trip-calc-model.js");
 const UserModel = require("../models/user-model.js");
 const BillModel = require("../models/bill-model.js");
 const LocationModel = require("../models/location-model.js");
@@ -33,6 +34,258 @@ function sanitize(input) {
     // Предотвращаем JavaScript-инъекции
     enforceHtmlBoundary: true
   })
+}
+
+// Подсчёт фактических участников по всем датам тура
+async function getActualParticipants(trip) {
+  const tripIds = [trip._id]
+  if (trip.children && trip.children.length) {
+    for (const child of trip.children) {
+      tripIds.push(child._id || child)
+    }
+  } else if (trip.parent) {
+    const parent = await TripModel.findById(trip.parent, { children: 1 })
+    if (parent && parent.children) {
+      for (const child of parent.children) {
+        const childId = child._id || child
+        if (String(childId) !== String(trip._id)) {
+          tripIds.push(childId)
+        }
+      }
+    }
+  }
+  const bills = await BillModel.find({ tripId: { $in: tripIds } }, { cart: 1 })
+  let count = 0
+  for (const bill of bills) {
+    for (const item of bill.cart || []) {
+      count += Number(item.count || 0)
+    }
+  }
+  return count
+}
+
+// Расчёт clearProfit при заданном кол-ве туристов (формула PriceCalc)
+// fallbackPrice — цена за человека из trip.cost, используется если в калькуляторе tourePrice не задана
+function computeClearProfit(calc, tourists, fallbackPrice = 0) {
+  const individualCost = (calc.individualCost || []).reduce(
+    (sum, item) => sum + Number(item.price || 0), 0
+  )
+  const groupCost = (calc.groupCost || []).reduce(
+    (sum, item) => sum + Number(item.price || 0), 0
+  )
+  let transportCostValue = 0
+  if (calc.transportCost && calc.transportCost.length) {
+    const sorted = [...calc.transportCost].sort((a, b) => a.price - b.price)
+    for (const t of sorted) {
+      if (t.capacity >= tourists) {
+        transportCostValue = Number(t.price || 0)
+        break
+      }
+    }
+  }
+  const commissionState = Number(calc.commissionState || 0)
+  const tourePrice = Number(calc.tourePrice || 0) || fallbackPrice
+  const cost = individualCost * tourists + groupCost + transportCostValue
+  const totalPrice = Math.round(tourists * tourePrice)
+  const profit = Math.round(totalPrice - cost)
+  const commission = Math.round((totalPrice * commissionState) / 100)
+  return Math.round(profit - commission)
+}
+
+function computeBaseDiscountPerPerson(pricePerPerson, baseDiscountPercent) {
+  const normalizedPrice = Number(pricePerPerson)
+  const normalizedPercent = Number(baseDiscountPercent)
+  if (!Number.isFinite(normalizedPrice) || normalizedPrice <= 0) {
+    return 0
+  }
+  if (!Number.isFinite(normalizedPercent) || normalizedPercent <= 0) {
+    return 0
+  }
+  return Math.max(0, Math.round((normalizedPrice * normalizedPercent) / 100))
+}
+
+function resolvePricePerPersonForDiscount(trip, calc) {
+  const calculatorPrice = Number(calc?.tourePrice || 0)
+  if (Number.isFinite(calculatorPrice) && calculatorPrice > 0) {
+    return calculatorPrice
+  }
+
+  if (trip?.cost && trip.cost.length > 0) {
+    const firstPositiveCost = trip.cost
+      .map(c => Number(c.price || 0))
+      .find(price => Number.isFinite(price) && price > 0)
+    if (Number.isFinite(firstPositiveCost) && firstPositiveCost > 0) {
+      return firstPositiveCost
+    }
+  }
+
+  return 0
+}
+
+// Расчёт фиксированной скидки (формула как в виджете calculateDiscount)
+async function calculateFixedDiscount(trip) {
+  const minProfit = trip.loyalty.discount.minProfit
+  const baseDiscountPercent = trip.loyalty.discount.baseDiscountPercent
+  const hasMinProfit = minProfit !== null && minProfit !== undefined && Number.isFinite(Number(minProfit))
+  const hasBaseDiscount = baseDiscountPercent && baseDiscountPercent > 0
+
+  if (!hasMinProfit && !hasBaseDiscount) {
+    return 0
+  }
+  let calc = null
+  if (trip.calculator) {
+    const calcId = trip.calculator._id || trip.calculator
+    calc = await TripCalcModel.findById(calcId)
+  }
+  const canUseMinProfit = hasMinProfit && Boolean(calc)
+  const pricePerPerson = resolvePricePerPersonForDiscount(trip, calc)
+
+  // Лимит: суммарная скидка не более secondPaymentFraction от цены
+  const paymentOrder = trip.loyalty.discount.paymentOrder || '50/50'
+  const [firstPart] = paymentOrder.split('/').map(Number)
+  const secondPaymentFraction = (100 - firstPart) / 100
+  const maxTotalDiscount = Math.round(pricePerPerson * secondPaymentFraction)
+
+  // Базовая скидка — процент от цены, но не более лимита
+  const baseDiscount = hasBaseDiscount
+    ? Math.min(computeBaseDiscountPerPerson(pricePerPerson, baseDiscountPercent), maxTotalDiscount)
+    : 0
+
+  // Остаток лимита после базовой скидки — столько можно дать за кол-во людей
+  const remainingCap = maxTotalDiscount - baseDiscount
+
+  // Скидка по минимальной прибыли (фактические участники)
+  let profitDiscount = 0
+  if (canUseMinProfit) {
+    const actualParticipants = await getActualParticipants(trip)
+    if (actualParticipants > 0) {
+      const clearProfit = computeClearProfit(calc, actualParticipants, pricePerPerson)
+      if (clearProfit > Number(minProfit)) {
+        const rawDiscount = Math.max(0, Math.round((clearProfit - Number(minProfit)) / actualParticipants))
+        profitDiscount = Math.min(rawDiscount, remainingCap)
+      }
+    }
+  }
+
+  const fixedDiscountPerPerson = profitDiscount + baseDiscount
+
+  await TripModel.findByIdAndUpdate(trip._id, {
+    'loyalty.discount.fixedDiscountPerPerson': fixedDiscountPerPerson
+  })
+  trip.loyalty.discount.fixedDiscountPerPerson = fixedDiscountPerPerson
+
+  return fixedDiscountPerPerson
+}
+
+// Динамический перерасчёт скидки (формула как в виджете calculateDiscount)
+async function computeDiscountEstimates(trip) {
+  if (!trip?.loyalty?.enabled || trip.loyalty.type !== 'discount') return
+  if (!trip.loyalty.discount) trip.loyalty.discount = {}
+
+  if (trip.loyalty.discount.isFixed) {
+    const fixed = trip.loyalty.discount.fixedDiscountPerPerson || 0
+    trip.loyalty.discount.currentDiscountPerPerson = fixed
+    trip.loyalty.discount.maxDiscountPerPerson = fixed
+    return
+  }
+
+  trip.loyalty.discount.currentDiscountPerPerson = 0
+  trip.loyalty.discount.maxDiscountPerPerson = 0
+
+  const minProfit = trip.loyalty.discount.minProfit
+  const baseDiscountPercent = trip.loyalty.discount.baseDiscountPercent
+  const hasMinProfit = minProfit !== null && minProfit !== undefined && Number.isFinite(Number(minProfit))
+  const hasBaseDiscount = baseDiscountPercent && baseDiscountPercent > 0
+  if (!hasMinProfit && !hasBaseDiscount) return
+
+  let calc = null
+  if (trip.calculator) {
+    const calcId = trip.calculator?._id || trip.calculator
+    if (calcId) {
+      calc = await TripCalcModel.findById(calcId)
+    }
+  }
+  const canUseMinProfit = hasMinProfit && Boolean(calc)
+
+  const paymentOrder = trip.loyalty.discount.paymentOrder || '50/50'
+  const [firstPart] = paymentOrder.split('/').map(Number)
+  const secondPaymentFraction = (100 - firstPart) / 100
+  const pricePerPerson = resolvePricePerPersonForDiscount(trip, calc)
+
+  // Лимит: суммарная скидка не более secondPaymentFraction от цены
+  const maxTotalDiscount = Math.round(pricePerPerson * secondPaymentFraction)
+
+  // Базовая скидка — процент от цены, но не более лимита
+  const baseDiscount = hasBaseDiscount
+    ? Math.min(computeBaseDiscountPerPerson(pricePerPerson, baseDiscountPercent), maxTotalDiscount)
+    : 0
+
+  // Остаток лимита после базовой скидки — столько можно дать за кол-во людей
+  const remainingCap = maxTotalDiscount - baseDiscount
+
+  // Скидка за кол-во людей: излишек прибыли, но не более остатка лимита
+  const actualParticipants = await getActualParticipants(trip)
+  let profitDiscount = 0
+
+  if (canUseMinProfit && actualParticipants > 0) {
+    const clearProfit = computeClearProfit(calc, actualParticipants, pricePerPerson)
+    if (clearProfit > Number(minProfit)) {
+      const rawDiscount = Math.max(0, Math.round((clearProfit - Number(minProfit)) / actualParticipants))
+      profitDiscount = Math.min(rawDiscount, remainingCap)
+    }
+  }
+
+  trip.loyalty.discount.currentDiscountPerPerson = profitDiscount + baseDiscount
+
+  // Максимальная скидка
+  let realisticMax = maxTotalDiscount
+  const maxPeople = Number(trip.maxPeople || 0)
+  if (canUseMinProfit && maxPeople > 0) {
+    const maxClearProfit = computeClearProfit(calc, maxPeople, pricePerPerson)
+    let maxProfitDiscount = 0
+    if (maxClearProfit > Number(minProfit)) {
+      maxProfitDiscount = Math.max(0, Math.round((maxClearProfit - Number(minProfit)) / maxPeople))
+    }
+    realisticMax = Math.min(maxProfitDiscount + baseDiscount, maxTotalDiscount)
+  }
+  trip.loyalty.discount.maxDiscountPerPerson = realisticMax
+}
+
+async function applyLoyaltyDiscountFixation(trip) {
+  if (!trip || !trip.loyalty) {
+    return
+  }
+  if (!trip.loyalty.discount) {
+    trip.loyalty.discount = {}
+  }
+  if (!trip.loyalty.enabled || trip.loyalty.type !== 'discount') {
+    trip.loyalty.discount.isFixed = false
+    return
+  }
+  const fixationDay = Number(trip.loyalty.discount.fixationDay)
+  const startTimestamp = Number(trip.start)
+  if (!Number.isFinite(fixationDay) || !Number.isFinite(startTimestamp)) {
+    trip.loyalty.discount.isFixed = false
+    await computeDiscountEstimates(trip)
+    return
+  }
+  const startDate = new Date(startTimestamp)
+  startDate.setHours(0, 0, 0, 0)
+  const fixationAt = startDate.getTime() - fixationDay * 86400000
+  const newIsFixed = Date.now() >= fixationAt
+
+  const wasFixed = trip.loyalty.discount.isFixed
+  if (wasFixed !== newIsFixed) {
+    trip.loyalty.discount.isFixed = newIsFixed
+    await TripModel.findByIdAndUpdate(trip._id, {
+      'loyalty.discount.isFixed': newIsFixed
+    })
+  }
+  // Считаем фиксированную скидку только один раз — в момент перехода в isFixed
+  if (newIsFixed && !wasFixed) {
+    await calculateFixedDiscount(trip)
+  }
+  await computeDiscountEstimates(trip)
 }
 
 module.exports = {
@@ -134,6 +387,8 @@ module.exports = {
       seats: 1,
       date: 1,
     });
+    await applyLoyaltyDiscountFixation(trip)
+
     return trip;
   },
   // Для информации о туре для клиентов
@@ -187,6 +442,8 @@ module.exports = {
       // seats: 1,
       // date: 1,
     });
+    await applyLoyaltyDiscountFixation(trip)
+
     return trip;
   },
   async getCustomers(customersIds) {
@@ -250,11 +507,21 @@ module.exports = {
       ),
     };
   },
-  async payTinkoffBill({ billId, tinkoffData }) {
+  async payTinkoffBill({ billId, tinkoffData, confirmedPreviousAmount }) {
+    if (confirmedPreviousAmount && confirmedPreviousAmount > 0) {
+      await BillModel.findByIdAndUpdate(billId, {
+        $inc: { 'payment.amount': confirmedPreviousAmount }
+      });
+    }
     return BillModel.findByIdAndUpdate(billId, { tinkoff: tinkoffData });
   },
   async insertOne(trip) {
     trip.slug = await generateUniqueSlug(trip.name);
+    if (trip.calculatorData) {
+      const calc = await TripCalcModel.create(trip.calculatorData)
+      trip.calculator = calc._id
+      delete trip.calculatorData
+    }
     return TripModel.create(trip);
   },
   async updateOne(trip) {
@@ -268,6 +535,18 @@ module.exports = {
       trip.slug = await generateUniqueSlug(trip.name, _id);
     } else {
       trip.slug = oldTrip.slug;
+    }
+
+    if (trip.calculatorData) {
+      if (oldTrip.calculator) {
+        const calcId = oldTrip.calculator._id || oldTrip.calculator
+        await TripCalcModel.findByIdAndUpdate(calcId, trip.calculatorData)
+        trip.calculator = calcId
+      } else {
+        const calc = await TripCalcModel.create(trip.calculatorData)
+        trip.calculator = calc._id
+      }
+      delete trip.calculatorData
     }
 
     if (trip.startLocation && trip.startLocation != "") {
@@ -301,7 +580,9 @@ module.exports = {
 
     oldTrip.overwrite(trip);
 
-    return await oldTrip.save();
+    const savedTrip = await oldTrip.save();
+    await applyLoyaltyDiscountFixation(savedTrip)
+    return savedTrip;
   },
   async updateTripImagesUrls(_id, filenames) {
     const trip = await TripModel.findById(_id);
@@ -643,7 +924,9 @@ module.exports = {
     return TripModel.findByIdAndUpdate(tripId, { isModerated: false, moderationMessage: msg, rejected: true })
   },
   async findById(_id) {
-    return TripModel.findById(_id).populate('author').populate('places', { name: 1 })
+      const trip = await TripModel.findById(_id).populate('author').populate('places', { name: 1 }).populate('calculator')
+    await applyLoyaltyDiscountFixation(trip)
+    return trip
   },
   // slug -> _id, дальше та же богатая загрузка, что и у getTripById
   async getTripBySlug(slug) {
@@ -793,6 +1076,13 @@ module.exports = {
       },
 
     })
+    if (Array.isArray(userFromDb.boughtTrips)) {
+      for (let bill of userFromDb.boughtTrips) {
+        if (bill?.tripId) {
+          await applyLoyaltyDiscountFixation(bill.tripId)
+        }
+      }
+    }
     return userFromDb.boughtTrips
   },
   async findAuthorTrips({ query, _id }) {
@@ -869,6 +1159,5 @@ module.exports = {
 
     const trips = await TripModel.find(baseQuery, { _id: 1, slug: 1 }).lean();
     return trips.map(trip => ({ _id: trip._id.toString(), slug: trip.slug }));
-  }
-
+  },
 }
