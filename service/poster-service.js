@@ -2,6 +2,10 @@ const mongoose = require('mongoose')
 const { Schema } = require('mongoose')
 
 const conn = mongoose.createConnection(process.env.POSTERS_DB_URL);
+conn.on('error', (err) => {
+    console.error('[poster-service] MongoDB connection error:', err.message);
+});
+
 const PostersModel = conn.model('Poster', new Schema({
     image: { type: String },
     title: { type: String },
@@ -16,15 +20,8 @@ const PostersModel = conn.model('Poster', new Schema({
     isModerated: { type: Boolean, default: false },
 }));
 
-module.exports = conn;
-
 module.exports = {
     async getAll() {
-        try {
-            // console.log(await PostersModel.find({}))
-            return PostersModel.find({})
-        } catch (error) {
-            next(error);
-        }
+        return await PostersModel.find({});
     }
 }
