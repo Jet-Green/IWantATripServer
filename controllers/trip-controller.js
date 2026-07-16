@@ -619,7 +619,57 @@ module.exports = {
         }
     },
 
-
-
-
+    /**
+     * POST /trips/push-photobank-urls
+     * body { tripId: string, urls: string[] }
+     * Добавляет к туру опубликованные фото из фотобанка (только автору тура).
+     */
+    async pushPhotobankUrls(req, res, next) {
+        try {
+            const { tripId, urls } = req.body || {};
+            const userId =
+                req.user?._id != null
+                    ? String(req.user._id)
+                    : req.user?.id != null
+                        ? String(req.user.id)
+                        : '';
+            if (!userId) {
+                return res.status(401).json({ message: 'Не авторизован' });
+            }
+            if (!tripId) {
+                return res.status(400).json({ message: 'Нужен tripId' });
+            }
+            const result = await TripService.pushPhotobankImageUrlsIfOwned(tripId, urls, userId);
+            return res.status(200).json(result);
+        } catch (e) {
+            if (e.statusCode === 400 || e.statusCode === 403 || e.statusCode === 404) {
+                return res.status(e.statusCode).json({ message: e.message });
+            }
+            next(e);
+        }
+    },
+    async markPhotobankUsed(req, res, next) {
+        try {
+            const { tripId, urls } = req.body || {};
+            const userId =
+                req.user?._id != null
+                    ? String(req.user._id)
+                    : req.user?.id != null
+                        ? String(req.user.id)
+                        : '';
+            if (!userId) {
+                return res.status(401).json({ message: 'Не авторизован' });
+            }
+            if (!tripId) {
+                return res.status(400).json({ message: 'Нужен tripId' });
+            }
+            const result = await TripService.markPhotobankUsedIfOwned(tripId, urls, userId);
+            return res.status(200).json(result);
+        } catch (e) {
+            if (e.statusCode === 400 || e.statusCode === 403 || e.statusCode === 404) {
+                return res.status(e.statusCode).json({ message: e.message });
+            }
+            next(e);
+        }
+    },
 }

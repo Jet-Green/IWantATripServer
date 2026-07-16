@@ -8,6 +8,7 @@ const CatalogTripSchema = new Schema({
     name: { type: String },
     duration: { type: String },
     images: { type: Array },
+    usedPhotobankUrls: { type: [String], default: [] },
     tripRoute: { type: String },
     offer: { type: String },
     description: { type: String },

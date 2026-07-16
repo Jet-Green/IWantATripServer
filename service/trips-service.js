@@ -3,6 +3,15 @@ const TripCalcModel = require("../models/trip-calc-model.js");
 const UserModel = require("../models/user-model.js");
 const BillModel = require("../models/bill-model.js");
 const LocationModel = require("../models/location-model.js");
+const PhotobankPhoto = require("../models/photobank-photo-model");
+
+// Учёт использования фото из фотобанка (публикация/счётчики использования)
+const {
+  PUBLIC_PHOTOBANK_FILTER,
+  incrementPhotobankUsage,
+  decrementPhotobankUsage,
+  syncPhotobankUsageDiff,
+} = require("./photos-service");
 
 const ApiError = require("../exceptions/api-error.js");
 const tokenService = require("../service/token-service");
@@ -578,6 +587,9 @@ module.exports = {
     }
     multer.deleteImages(imagesToDelete);
 
+    // Синхронизируем счётчики использования фотобанка: добавленные/удалённые фото
+    await syncPhotobankUsageDiff(oldTrip.images || [], trip.images || []);
+
     oldTrip.overwrite(trip);
 
     const savedTrip = await oldTrip.save();
@@ -599,6 +611,122 @@ module.exports = {
       }
     }
     return trip.save();
+  },
+
+  /**
+   * Добавить к туру готовые URL из фотобанка (должны существовать в коллекции photobankphotos
+   * и быть опубликованы). Проверяется автор тура.
+   * @param {string} tripId
+   * @param {string[]} urls
+   * @param {string} userId
+   */
+  async pushPhotobankImageUrlsIfOwned(tripId, urls, userId) {
+    // Нормализуем и дедуплицируем входящие URL
+    const uniq = [
+      ...new Set(
+        (urls || [])
+          .filter((u) => typeof u === "string")
+          .map((u) => u.trim())
+          .filter(Boolean)
+      ),
+    ];
+    if (!uniq.length) {
+      return { count: 0 };
+    }
+
+    // Все переданные URL должны быть опубликованными фото из фотобанка
+    const n = await PhotobankPhoto.countDocuments({
+      $and: [PUBLIC_PHOTOBANK_FILTER, { url: { $in: uniq } }],
+    });
+    if (n !== uniq.length) {
+      const err = new Error(
+        "Можно использовать только опубликованные фото из фотобанка"
+      );
+      err.statusCode = 400;
+      throw err;
+    }
+
+    // Проверяем существование тура и права автора
+    const trip = await TripModel.findById(tripId).select("author").lean();
+    if (!trip) {
+      const err = new Error("Тур не найден");
+      err.statusCode = 404;
+      throw err;
+    }
+    if (String(trip.author) !== String(userId)) {
+      const err = new Error("Нет прав на редактирование");
+      err.statusCode = 403;
+      throw err;
+    }
+
+    // Вычисляем реально новые URL (которых ещё нет в изображениях тура)
+    const tripBefore = await TripModel.findById(tripId).select("images").lean();
+    const existing = new Set((tripBefore?.images || []).map(String));
+    const newUrls = uniq.filter((u) => !existing.has(u));
+
+    // updateTripImagesUrls уже дедуплицирует при добавлении
+    await this.updateTripImagesUrls(tripId, uniq);
+    if (newUrls.length) {
+      await incrementPhotobankUsage(newUrls);
+    }
+    return { count: uniq.length };
+  },
+
+  /**
+   * Отмечает фото из фотобанка как использованные в туре (usageCount++), НЕ добавляя
+   * сам URL в images (в тур попадает обрезанная копия как обычное изображение).
+   * Оригинальные URL сохраняются в trip.usedPhotobankUrls, чтобы при удалении тура
+   * можно было корректно уменьшить usageCount.
+   */
+  async markPhotobankUsedIfOwned(tripId, urls, userId) {
+    const uniq = [
+      ...new Set(
+        (urls || [])
+          .filter((u) => typeof u === "string")
+          .map((u) => u.trim())
+          .filter(Boolean)
+      ),
+    ];
+    if (!uniq.length) {
+      return { count: 0 };
+    }
+
+    // Все переданные URL должны быть опубликованными фото из фотобанка
+    const n = await PhotobankPhoto.countDocuments({
+      $and: [PUBLIC_PHOTOBANK_FILTER, { url: { $in: uniq } }],
+    });
+    if (n !== uniq.length) {
+      const err = new Error(
+        "Можно использовать только опубликованные фото из фотобанка"
+      );
+      err.statusCode = 400;
+      throw err;
+    }
+
+    // Проверяем существование тура и права автора
+    const trip = await TripModel.findById(tripId)
+      .select("author usedPhotobankUrls")
+      .lean();
+    if (!trip) {
+      const err = new Error("Тур не найден");
+      err.statusCode = 404;
+      throw err;
+    }
+    if (String(trip.author) !== String(userId)) {
+      const err = new Error("Нет прав на редактирование");
+      err.statusCode = 403;
+      throw err;
+    }
+
+    const existing = new Set((trip.usedPhotobankUrls || []).map(String));
+    const newUrls = uniq.filter((u) => !existing.has(u));
+    if (newUrls.length) {
+      await TripModel.findByIdAndUpdate(tripId, {
+        $addToSet: { usedPhotobankUrls: { $each: newUrls } },
+      });
+      await incrementPhotobankUsage(newUrls);
+    }
+    return { count: newUrls.length };
   },
 
     /**
@@ -641,13 +769,20 @@ module.exports = {
       });
     }
 
+    // Уменьшаем счётчики использования фотобанка: и для прямых ссылок в images,
+    // и для использованных (обрезанных) фото из фотобанка
+    await decrementPhotobankUsage([
+      ...(tripToDelete.images || []),
+      ...(tripToDelete.usedPhotobankUrls || []),
+    ]);
+
     let images = tripToDelete.images;
     for (let image of images) {
       let s = image.split("/");
       let filename = s[s.length - 1];
       await s3.Remove("/iwat/" + filename);
     }
-    const deletedMainTrip = await TripModel.findByIdAndDelete(_id); 
+    const deletedMainTrip = await TripModel.findByIdAndDelete(_id);
     return  { message: "Trip successfully deleted" };; 
 
   } catch (error) {

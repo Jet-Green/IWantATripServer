@@ -13,6 +13,9 @@ const TripSchema = new Schema({
     maxPeople: { type: Number },
     duration: { type: String },
     images: { type: Array },
+    // Оригинальные URL фото из фотобанка, обрезанные копии которых использованы в туре
+    // (нужно для корректного usageCount при удалении тура)
+    usedPhotobankUrls: { type: [String], default: [] },
     pdfs: { type: Array },
     tripRoute: { type: String },
     distance: { type: String },

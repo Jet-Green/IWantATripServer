@@ -37,4 +37,7 @@ router.post('/my-catalog-on-moderation', catalogController.myCatalogOnModeration
 // not realisated func
 router.get('/catalog-trips-on-moderation', catalogController.myCatalogOnModeration)
 
+router.post('/push-photobank-urls', authMiddleware, catalogController.pushPhotobankUrls)
+router.post('/mark-photobank-used', authMiddleware, catalogController.markPhotobankUsed)
+
 module.exports = router

@@ -214,4 +214,58 @@ module.exports = {
             next(error)
         }
     },
+
+    /**
+     * POST /catalog/push-photobank-urls
+     * body { catalogTripId: string, urls: string[] }
+     * Добавляет к каталожному туру опубликованные фото из фотобанка (только автору).
+     */
+    async pushPhotobankUrls(req, res, next) {
+        try {
+            const { catalogTripId, urls } = req.body || {};
+            const userId =
+                req.user?._id != null
+                    ? String(req.user._id)
+                    : req.user?.id != null
+                        ? String(req.user.id)
+                        : '';
+            if (!userId) {
+                return res.status(401).json({ message: 'Не авторизован' });
+            }
+            if (!catalogTripId) {
+                return res.status(400).json({ message: 'Нужен catalogTripId' });
+            }
+            const result = await CatalogService.pushPhotobankImageUrlsIfOwned(catalogTripId, urls, userId);
+            return res.status(200).json(result);
+        } catch (e) {
+            if (e.statusCode === 400 || e.statusCode === 403 || e.statusCode === 404) {
+                return res.status(e.statusCode).json({ message: e.message });
+            }
+            next(e);
+        }
+    },
+    async markPhotobankUsed(req, res, next) {
+        try {
+            const { catalogTripId, urls } = req.body || {};
+            const userId =
+                req.user?._id != null
+                    ? String(req.user._id)
+                    : req.user?.id != null
+                        ? String(req.user.id)
+                        : '';
+            if (!userId) {
+                return res.status(401).json({ message: 'Не авторизован' });
+            }
+            if (!catalogTripId) {
+                return res.status(400).json({ message: 'Нужен catalogTripId' });
+            }
+            const result = await CatalogService.markPhotobankUsedIfOwned(catalogTripId, urls, userId);
+            return res.status(200).json(result);
+        } catch (e) {
+            if (e.statusCode === 400 || e.statusCode === 403 || e.statusCode === 404) {
+                return res.status(e.statusCode).json({ message: e.message });
+            }
+            next(e);
+        }
+    },
 }

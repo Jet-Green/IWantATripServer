@@ -1,8 +1,17 @@
 const CatalogTripModel = require('../models/catalog-trip-model.js');
 const TripModel = require('../models/trip-model.js')
+const PhotobankPhoto = require('../models/photobank-photo-model')
 
 const ApiError = require('../exceptions/api-error.js')
 const multer = require('../middleware/multer-middleware')
+
+// Учёт использования фото из фотобанка (публикация/счётчики использования)
+const {
+    PUBLIC_PHOTOBANK_FILTER,
+    incrementPhotobankUsage,
+    decrementPhotobankUsage,
+    syncPhotobankUsageDiff,
+} = require('./photos-service')
 
 const { sendMail } = require('../middleware/mailer');
 
@@ -44,11 +53,132 @@ module.exports = {
             if (!deletedCatalog) {
                 return { success: false, message: 'Каталог не найден' }
             }
+            // Уменьшаем счётчики использования фотобанка: прямые ссылки в images
+            // и использованные (обрезанные) фото из фотобанка
+            await decrementPhotobankUsage([
+                ...(deletedCatalog.images || []),
+                ...(deletedCatalog.usedPhotobankUrls || []),
+            ])
             return { success: true, data: deletedCatalog }
         } catch (error) {
             console.error('Ошибка при удалении каталога:', error)
             return { success: false, message: 'Ошибка при удалении', error }
         }
+    },
+
+    /**
+     * Добавить к каталожному туру готовые URL из фотобанка (должны существовать
+     * в коллекции photobankphotos и быть опубликованы). Проверяется автор.
+     * @param {string} catalogTripId
+     * @param {string[]} urls
+     * @param {string} userId
+     */
+    async pushPhotobankImageUrlsIfOwned(catalogTripId, urls, userId) {
+        // Нормализуем и дедуплицируем входящие URL
+        const uniq = [
+            ...new Set(
+                (urls || [])
+                    .filter((u) => typeof u === 'string')
+                    .map((u) => u.trim())
+                    .filter(Boolean)
+            ),
+        ];
+        if (!uniq.length) {
+            return { count: 0 };
+        }
+
+        // Все переданные URL должны быть опубликованными фото из фотобанка
+        const n = await PhotobankPhoto.countDocuments({
+            $and: [PUBLIC_PHOTOBANK_FILTER, { url: { $in: uniq } }],
+        });
+        if (n !== uniq.length) {
+            const err = new Error(
+                'Можно использовать только опубликованные фото из фотобанка'
+            );
+            err.statusCode = 400;
+            throw err;
+        }
+
+        // Проверяем существование каталожного тура и права автора
+        const catalogTrip = await CatalogTripModel.findById(catalogTripId).select('author images').lean();
+        if (!catalogTrip) {
+            const err = new Error('Тур не найден');
+            err.statusCode = 404;
+            throw err;
+        }
+        if (String(catalogTrip.author) !== String(userId)) {
+            const err = new Error('Нет прав на редактирование');
+            err.statusCode = 403;
+            throw err;
+        }
+
+        // Вычисляем реально новые URL (которых ещё нет в изображениях каталога)
+        const existing = new Set((catalogTrip.images || []).map(String));
+        const newUrls = uniq.filter((u) => !existing.has(u));
+
+        // Дедуплицирующее добавление в массив images
+        if (newUrls.length) {
+            await CatalogTripModel.updateOne(
+                { _id: catalogTripId },
+                { $push: { images: { $each: newUrls } } }
+            );
+            await incrementPhotobankUsage(newUrls);
+        }
+        return { count: uniq.length };
+    },
+
+    /**
+     * Отмечает фото из фотобанка как использованные в каталожном туре (usageCount++),
+     * НЕ добавляя URL в images (в тур попадает обрезанная копия как обычное изображение).
+     */
+    async markPhotobankUsedIfOwned(catalogTripId, urls, userId) {
+        const uniq = [
+            ...new Set(
+                (urls || [])
+                    .filter((u) => typeof u === 'string')
+                    .map((u) => u.trim())
+                    .filter(Boolean)
+            ),
+        ];
+        if (!uniq.length) {
+            return { count: 0 };
+        }
+
+        const n = await PhotobankPhoto.countDocuments({
+            $and: [PUBLIC_PHOTOBANK_FILTER, { url: { $in: uniq } }],
+        });
+        if (n !== uniq.length) {
+            const err = new Error(
+                'Можно использовать только опубликованные фото из фотобанка'
+            );
+            err.statusCode = 400;
+            throw err;
+        }
+
+        const catalogTrip = await CatalogTripModel.findById(catalogTripId)
+            .select('author usedPhotobankUrls')
+            .lean();
+        if (!catalogTrip) {
+            const err = new Error('Тур не найден');
+            err.statusCode = 404;
+            throw err;
+        }
+        if (String(catalogTrip.author) !== String(userId)) {
+            const err = new Error('Нет прав на редактирование');
+            err.statusCode = 403;
+            throw err;
+        }
+
+        const existing = new Set((catalogTrip.usedPhotobankUrls || []).map(String));
+        const newUrls = uniq.filter((u) => !existing.has(u));
+        if (newUrls.length) {
+            await CatalogTripModel.updateOne(
+                { _id: catalogTripId },
+                { $addToSet: { usedPhotobankUrls: { $each: newUrls } } }
+            );
+            await incrementPhotobankUsage(newUrls);
+        }
+        return { count: newUrls.length };
     },
     async hideCatalog(_id, v) {
         return CatalogTripModel.findByIdAndUpdate(_id, { isHidden: v })
@@ -61,6 +191,13 @@ module.exports = {
         }
         trip.description = sanitize(trip.description)
         let location = await LocationService.createLocation(startLocation)
+
+        // Синхронизируем счётчики использования фотобанка при изменении images
+        if (trip.images !== undefined) {
+            const prev = await CatalogTripModel.findById(_id).select('images').lean()
+            await syncPhotobankUsageDiff(prev?.images || [], trip.images || [])
+        }
+
         return CatalogTripModel.findByIdAndUpdate(
             _id,
             {

@@ -65,4 +65,7 @@ router.post('/add-additional-service', tripController.addAdditionalService)
 router.post('/delete-additional-service', tripController.deleteAdditionalService)
 router.post('/find-author-trips', tripController.findAuthorTrips)
 
+router.post('/push-photobank-urls', authMiddleware, tripController.pushPhotobankUrls)
+router.post('/mark-photobank-used', authMiddleware, tripController.markPhotobankUsed)
+
 module.exports = router
