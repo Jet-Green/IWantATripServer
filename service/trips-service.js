@@ -45,6 +45,15 @@ function sanitize(input) {
   })
 }
 
+function assertValidTripDates(start, end) {
+  if (typeof start !== 'number' || typeof end !== 'number' || isNaN(start) || isNaN(end)) {
+    throw ApiError.BadRequest('Не заданы даты начала и окончания тура');
+  }
+  if (end < start) {
+    throw ApiError.BadRequest('Дата окончания тура не может быть раньше даты начала');
+  }
+}
+
 // Подсчёт фактических участников по всем датам тура
 async function getActualParticipants(trip) {
   const tripIds = [trip._id]
@@ -299,6 +308,9 @@ async function applyLoyaltyDiscountFixation(trip) {
 
 module.exports = {
   async createManyByDates({ dates, parentId }) {
+    for (let d of dates) {
+      assertValidTripDates(d.start, d.end);
+    }
     let parent = await TripModel.findById(parentId);
 
     let createdIds = [];
@@ -525,6 +537,7 @@ module.exports = {
     return BillModel.findByIdAndUpdate(billId, { tinkoff: tinkoffData });
   },
   async insertOne(trip) {
+    assertValidTripDates(trip.start, trip.end);
     trip.slug = await generateUniqueSlug(trip.name);
     if (trip.calculatorData) {
       const calc = await TripCalcModel.create(trip.calculatorData)
@@ -534,6 +547,7 @@ module.exports = {
     return TripModel.create(trip);
   },
   async updateOne(trip) {
+    assertValidTripDates(trip.start, trip.end);
     let _id = trip._id;
     delete trip._id;
 
