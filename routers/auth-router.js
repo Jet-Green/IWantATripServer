@@ -23,6 +23,8 @@ router.post('/buy-trip', userController.buyTrip)
 
 router.post('/registration', userController.registration)
 router.post('/login', limiter, userController.login)
+router.post('/vk', limiter, userController.loginVk)
+router.post('/set-email', authMiddleware, userController.setEmail)
 router.get('/refresh', userController.refresh)
 router.post('/logout', userController.logout)
 router.post('/update', userController.update)

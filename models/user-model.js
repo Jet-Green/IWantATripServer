@@ -3,6 +3,8 @@ const { Schema, model, SchemaType } = require('mongoose');
 const UserSchema = new Schema({
     email: { type: String, unique: true, required: true },
     password: { type: String, required: true },
+    // id пользователя во ВКонтакте (вход через VK ID)
+    vkId: { type: Number, unique: true, sparse: true },
     fullname: { type: String, required: true },
     fullinfo: {
         type: Object,

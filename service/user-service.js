@@ -148,6 +148,83 @@ module.exports = {
             user
         }
     },
+    // Вход/регистрация через VK ID (OAuth 2.1 + PKCE): обмениваем код на токен VK,
+    // получаем профиль и находим/создаём пользователя
+    async loginVk({ code, deviceId, codeVerifier, redirectUri }) {
+        if (!code || !deviceId || !codeVerifier) {
+            throw ApiError.BadRequest('Некорректные параметры авторизации VK')
+        }
+
+        const tokenParams = new URLSearchParams({
+            grant_type: 'authorization_code',
+            code,
+            code_verifier: codeVerifier,
+            client_id: process.env.VK_CLIENT_ID,
+            device_id: deviceId,
+            redirect_uri: redirectUri,
+        })
+        const tokenResponse = await fetch('https://id.vk.com/oauth2/auth', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: tokenParams,
+        })
+        const tokenData = await tokenResponse.json()
+        if (!tokenData.access_token) {
+            throw ApiError.BadRequest(`Не удалось авторизоваться через VK: ${tokenData.error_description || tokenData.error || 'нет ответа'}`)
+        }
+
+        const infoResponse = await fetch('https://id.vk.com/oauth2/user_info', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+                access_token: tokenData.access_token,
+                client_id: process.env.VK_CLIENT_ID,
+            }),
+        })
+        const info = (await infoResponse.json())?.user
+        if (!info?.user_id) {
+            throw ApiError.BadRequest('Не удалось получить данные пользователя VK')
+        }
+
+        const vkId = Number(info.user_id)
+        const vkEmail = info.email || null
+        const fullname = [info.first_name, info.last_name].filter(Boolean).join(' ') || `VK-пользователь ${vkId}`
+
+        let user = await UserModel.findOne({ vkId }).populate('tripCalc').populate('tinkoffContract').exec()
+
+        // привязываем VK к существующему аккаунту с той же почтой
+        if (!user && vkEmail) {
+            user = await UserModel.findOne({ email: vkEmail }).populate('tripCalc').populate('tinkoffContract').exec()
+            if (user) {
+                user.vkId = vkId
+                await user.save()
+            }
+        }
+
+        if (!user) {
+            let candidateUser = await RoleModel.findOne({ value: 'user' })
+            if (!candidateUser) {
+                candidateUser = await RoleModel.create({ value: 'user' })
+            }
+            // пароль недоступен для входа — задаём случайный, сменить можно через восстановление
+            const hashPassword = await bcrypt.hash(require('crypto').randomBytes(32).toString('hex'), 3)
+            user = await UserModel.create({
+                email: vkEmail || `vk${vkId}@id.vk.com`,
+                password: hashPassword,
+                fullname,
+                vkId,
+                roles: [candidateUser.value],
+                date: Date.now(),
+            })
+        }
+
+        const tokens = TokenService.generateTokens({ email: user.email, password: user.password, _id: user._id })
+        await TokenService.saveToken(user._id, tokens.refreshToken)
+        return {
+            ...tokens,
+            user
+        }
+    },
     async refresh(refreshToken) {
         if (!refreshToken) {
             throw ApiError.UnauthorizedError();
@@ -177,6 +254,28 @@ module.exports = {
         const token = await TokenService.removeToken(refreshToken);
 
         return token;
+    },
+    // Указание настоящей почты пользователем, зарегистрированным через VK
+    // (у таких стоит заглушка vk<id>@id.vk.com)
+    async setEmail({ userId, email }) {
+        email = String(email || '').trim().toLowerCase()
+        if (!/^\S+@\S+\.\S+$/.test(email)) {
+            throw ApiError.BadRequest('Некорректный email')
+        }
+        const user = await UserModel.findById(userId).populate('tripCalc').populate('tinkoffContract').exec()
+        if (!user) {
+            throw ApiError.BadRequest('Пользователь не найден')
+        }
+        if (!user.email.endsWith('@id.vk.com')) {
+            throw ApiError.BadRequest('Почта уже указана. Для её смены обратитесь в поддержку')
+        }
+        const busy = await UserModel.findOne({ email })
+        if (busy) {
+            throw ApiError.BadRequest(`Пользователь с почтой ${email} уже существует`)
+        }
+        user.email = email
+        await user.save()
+        return user
     },
     async update(user) {
         let email = user.email;

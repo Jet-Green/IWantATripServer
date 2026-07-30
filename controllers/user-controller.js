@@ -67,6 +67,27 @@ module.exports = {
             next(error)
         }
     },
+    async loginVk(req, res, next) {
+        try {
+            const { code, deviceId, codeVerifier, redirectUri } = req.body;
+
+            const userData = await UserService.loginVk({ code, deviceId, codeVerifier, redirectUri })
+
+            res.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, secure: true });
+
+            return res.json(userData)
+        } catch (error) {
+            next(error)
+        }
+    },
+    async setEmail(req, res, next) {
+        try {
+            const user = await UserService.setEmail({ userId: req.user._id, email: req.body.email })
+            return res.json(user)
+        } catch (error) {
+            next(error)
+        }
+    },
     async refresh(req, res, next) {
         try {
             const { refreshToken } = req.cookies;
