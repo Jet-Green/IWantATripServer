@@ -6,6 +6,7 @@ const tripController = require('../controllers/trip-controller')
 
 const authMiddleware = require('../middleware/auth-middleware')
 const permissionMiddleware = require('../middleware/permission-middleware')
+const realEmailMiddleware = require('../middleware/real-email-middleware')
 
 const MULTER = require('multer')
 const multer = require('../middleware/multer-middleware')
@@ -15,8 +16,8 @@ const router = Router()
 
 // here all routes
 router.post('/get-customers', tripController.getCustomers)
-router.post('/buy-trip', authMiddleware, tripController.buyTrip)
-router.post('/pay-tinkoff', authMiddleware, tripController.payTinkoffBill)
+router.post('/buy-trip', authMiddleware, realEmailMiddleware, tripController.buyTrip)
+router.post('/pay-tinkoff', authMiddleware, realEmailMiddleware, tripController.payTinkoffBill)
 
 router.get('/get-all', tripController.getAll)
 router.post('/search', tripController.search)

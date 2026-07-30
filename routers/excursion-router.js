@@ -1,5 +1,6 @@
 const Router = require('express').Router
 const authMiddleware = require('../middleware/auth-middleware')
+const realEmailMiddleware = require('../middleware/real-email-middleware')
 const MULTER = require('multer')
 
 const ExcursionController = require('../controllers/excursion-controller.js')
@@ -31,15 +32,15 @@ router.post('/delete-by-id', ExcursionController.deleteById)
 router.post('/hide-by-id', ExcursionController.hideById)
 router.post('/comment', ExcursionController.comment)
 
-router.post('/buy', authMiddleware, ExcursionController.buy)
-router.post('/buy-with-tinkoff', authMiddleware, ExcursionController.buyWithTinkoff)
-router.post('/buy-from-cabinet', authMiddleware, ExcursionController.buyFromCabinet)
+router.post('/buy', authMiddleware, realEmailMiddleware, ExcursionController.buy)
+router.post('/buy-with-tinkoff', authMiddleware, realEmailMiddleware, ExcursionController.buyWithTinkoff)
+router.post('/buy-from-cabinet', authMiddleware, realEmailMiddleware, ExcursionController.buyFromCabinet)
 
 router.post('/book', authMiddleware, ExcursionController.book)
 router.post('/book-from-cabinet', authMiddleware, ExcursionController.bookFromCabinet)
 router.get('/get-on-moderation', ExcursionController.getExcursionsOnModeration)
 
-router.post('/order', authMiddleware, ExcursionController.order)
+router.post('/order', authMiddleware, realEmailMiddleware, ExcursionController.order)
 
 router.post('/delete-excursion',ExcursionController.deleteExcursion ) 
 router.post('/approv-excursion',ExcursionController.approvExcursion ) 
