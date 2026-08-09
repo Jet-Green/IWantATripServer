@@ -205,7 +205,7 @@ module.exports = {
                     name: trip.name,
                     duration: trip.duration,
                     tripRoute: trip.tripRoute,
-                    offer: trip.tripOffer,
+                    offer: trip.offer,
                     description: trip.description,
                     rejected: trip.rejected,
                     tripType: trip.tripType,
@@ -288,7 +288,10 @@ module.exports = {
             })
         }
 
-        const cursor = CatalogTripModel.find(query, null, { sort: 'start' }).skip(skip).limit(limit).cursor();
+        // сортировка обязана быть по существующим полям, иначе постраничная
+        // выдача нестабильна и при подгрузке туры дублируются или теряются
+        // (у каталожного тура нет поля start — даты выбираются при переносе в активные)
+        const cursor = CatalogTripModel.find(query, null, { sort: { createdDay: -1, _id: -1 } }).skip(skip).limit(limit).cursor();
         const results = [];
         for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
             results.push(doc);
