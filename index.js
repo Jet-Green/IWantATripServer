@@ -64,6 +64,34 @@ app.get('/robots.txt', (req, res) => {
   }));
 // Статичные файлы и sitemap
 app.use('/assets', express.static(path.join(__dirname, 'dist/assets')));
+
+// Спасение «залипших» клиентов после смены сборки.
+// PWA-worker, установленный до переезда, отдаёт из кэша старый index.html,
+// который тянет бандл с прежним хешем. На новой сборке такого файла нет —
+// раньше это был 404, приложение не стартовало и человек видел пустую страницу.
+// Теперь вместо 404 отдаём скрипт, который снимает worker, чистит кэш и
+// перезагружает страницу — дальше приходит актуальный index.html.
+app.get(/^\/assets\/index\..+\.js$/, (req, res) => {
+    res.type('application/javascript').send(
+        `(async () => {
+  try {
+    // Защита от петли: чиним один раз за вкладку.
+    if (sessionStorage.getItem('sw-recovered')) return;
+    sessionStorage.setItem('sw-recovered', '1');
+    if ('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map((r) => r.unregister()));
+    }
+    if (window.caches) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((k) => caches.delete(k)));
+    }
+  } catch (e) {}
+  location.reload();
+})();`
+    );
+});
+
 app.use('/favicon.ico', express.static(path.join(__dirname, 'dist/favicon.ico')));
 
 
