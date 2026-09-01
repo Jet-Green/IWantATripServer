@@ -10,6 +10,26 @@ const ApiError = require('../exceptions/api-error.js')
 
 const { sendMail } = require('../middleware/mailer')
 const logger = require('../logger.js');
+
+/**
+ * Настоящее ли это изображение — проверяем по сигнатуре в начале файла,
+ * а не по расширению: имя файла форма назначает сама, ему верить нельзя.
+ * Поддержаны форматы, которые реально приходят с форм: JPEG, PNG, WebP, GIF.
+ */
+function isRealImage(buffer) {
+    if (!Buffer.isBuffer(buffer) || buffer.length < 12) return false
+
+    // JPEG: FF D8 FF
+    if (buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) return true
+    // PNG: 89 50 4E 47 0D 0A 1A 0A
+    if (buffer.slice(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return true
+    // GIF87a / GIF89a
+    if (buffer.slice(0, 6).toString('ascii').match(/^GIF8[79]a$/)) return true
+    // WebP: RIFF....WEBP
+    if (buffer.slice(0, 4).toString('ascii') === 'RIFF' && buffer.slice(8, 12).toString('ascii') === 'WEBP') return true
+
+    return false
+}
 const { default: mongoose } = require('mongoose');
 const s3 = require('../yandex-cloud.js')
 const billModel = require('../models/bill-model.js');
@@ -394,8 +414,24 @@ module.exports = {
 
             let filenames = []
             let buffers = []
+            let rejected = []
             for (let file of req.files) {
+                // Заслон от «фотографий», которые фотографиями не являются.
+                // Форма умела прислать вместо снимка текст blob-ссылки или
+                // "[object Object]" — такая подделка уходила в облако и
+                // навсегда занимала место настоящей фотографии тура.
+                if (!isRealImage(file.buffer)) {
+                    rejected.push(file.originalname)
+                    continue
+                }
                 buffers.push({ buffer: file.buffer, name: file.originalname, });    // Буфер загруженного файла
+            }
+
+            if (rejected.length) {
+                logger.error({ rejected, logType: 'trip error', brokenMethod: 'uploadImages' }, 'not an image, upload rejected')
+                return next(ApiError.BadRequest(
+                    'Часть файлов не является изображением — фотографии не сохранены. Добавьте снимки заново и повторите сохранение.'
+                ))
             }
 
             if (buffers.length) {
