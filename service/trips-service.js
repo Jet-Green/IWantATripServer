@@ -321,11 +321,9 @@ module.exports = {
         parent: parentId,
         author: d.author,
         isModerated: parent.isModerated,
-        // Оплата идёт по идентификатору выбранной даты, то есть дочернего выезда.
-        // Без переноса решения по акции оплата такого выезда была бы отклонена,
-        // хотя сам тур модератор уже одобрил.
-        privetMirYookassaRequested: parent.privetMirYookassaRequested,
-        privetMirYookassaEnabled: parent.privetMirYookassaEnabled,
+        // Акцию в выезд не копируем: при оплате она читается у основного тура
+        // (см. yookassa-trip-payment-service). Копия устаревала бы при каждом
+        // новом решении модератора.
         slug: await generateUniqueSlug(parent.name),
       });
       parent.children.push({ _id: r._id, start: d.start, end: d.end });

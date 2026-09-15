@@ -119,13 +119,19 @@ async function createTripPayment({ billId, tripId, returnUrl, clientEmail }) {
     throw err
   }
 
-  if (!trip.privetMirYookassaEnabled) {
+  // Платят за выбранную дату, а это часто дополнительный выезд (дочерний тур).
+  // У выезда нет ни флага акции, ни договора, ни названия — всё это живёт
+  // у основного тура. Акцию модератор разрешает туру целиком, а не каждой дате,
+  // поэтому флаг, договор и название берём у основного.
+  const tour = trip.parent ? ((await TripModel.findById(trip.parent)) || trip) : trip
+
+  if (!tour.privetMirYookassaEnabled) {
     const err = new Error('Для этого тура оплата через ЮKassa не включена')
     err.statusCode = 400
     throw err
   }
 
-  ensureAllowedInn(trip)
+  ensureAllowedInn(tour)
 
   if (bill.yookassa?.paymentId && bill.yookassa?.status === 'pending') {
     return {
@@ -154,8 +160,8 @@ async function createTripPayment({ billId, tripId, returnUrl, clientEmail }) {
       type: 'redirect',
       return_url: returnUrl || process.env.CLIENT_URL || 'https://gorodaivesi.ru',
     },
-    description: `Оплата тура: ${String(trip.name || 'Тур').slice(0, 90)}`,
-    receipt: buildReceipt(bill, trip, clientEmail),
+    description: `Оплата тура: ${String(tour.name || 'Тур').slice(0, 90)}`,
+    receipt: buildReceipt(bill, tour, clientEmail),
     metadata: {
       billId: String(billId),
       tripId: String(tripId),
