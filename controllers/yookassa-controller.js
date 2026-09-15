@@ -1,6 +1,6 @@
 const logger = require('../logger')
 const { createTripPayment } = require('../service/yookassa-trip-payment-service')
-const { applyYookassaNotification, verifyYookassaPayment } = require('../service/yookassa-notification-service')
+const { applyYookassaNotification } = require('../service/yookassa-notification-service')
 
 module.exports = {
   async createTripPayment(req, res, next) {
@@ -18,8 +18,6 @@ module.exports = {
       })
       return res.json(result)
     } catch (error) {
-      console.log(error);
-
       if (error.statusCode) return res.status(error.statusCode).json({ message: error.message })
       logger.fatal({ error, logType: 'yookassa-payment' }, 'ошибка создания платежа')
       next(error)
@@ -33,15 +31,14 @@ module.exports = {
         return res.status(400).json({ message: 'Некорректное уведомление' })
       }
 
-      const applied = await applyYookassaNotification(body)
-      if (applied?.status && body.object?.id) {
-        await verifyYookassaPayment(body.object.id)
-      }
+      await applyYookassaNotification(body)
 
+      // Всегда отвечаем 200: подлинность платежа проверена запросом к ЮKassa,
+      // а 5xx заставил бы её повторять уведомление по кругу.
       return res.status(200).send()
     } catch (error) {
       logger.fatal({ error, logType: 'yookassa-notification' }, 'ошибка webhook')
-      next(error)
+      return res.status(200).send()
     }
   },
 }
