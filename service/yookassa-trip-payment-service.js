@@ -145,6 +145,10 @@ async function createTripPayment({ billId, tripId, returnUrl, clientEmail }) {
   const amount = amountRub.toFixed(2)
   const payload = {
     amount: { value: amount, currency: 'RUB' },
+    // Акция идёт только через СБП: без payment_method_data ЮKassa показала бы
+    // страницу выбора со всеми подключёнными способами, включая карты.
+    // На десктопе покупатель увидит QR-код, на телефоне — список банков.
+    payment_method_data: { type: 'sbp' },
     capture: true,
     confirmation: {
       type: 'redirect',
@@ -155,7 +159,7 @@ async function createTripPayment({ billId, tripId, returnUrl, clientEmail }) {
     metadata: {
       billId: String(billId),
       tripId: String(tripId),
-      flow: 'trip-yookassa-basic',
+      flow: 'trip-yookassa-sbp',
     },
   }
 
