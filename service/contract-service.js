@@ -61,10 +61,27 @@ module.exports = {
         return ContractModel.findById(_id)
     },
     getByShopCode(shopCode) {
-       
+
         let result = ContractModel.findOne({'shopInfo.shopCode':Number(shopCode)});
-    
+
         return result
+    },
+
+    /**
+     * Публичные сведения о продавце — для страницы «Тур предоставляется
+     * компанией», которую открывают и без входа в аккаунт.
+     *
+     * Только то, что покупатель вправе знать о продавце и что и так открыто
+     * в ЕГРЮЛ: наименование, ИНН, КПП, ОГРН, ОКВЭД, адреса, сайт.
+     * Полная запись договора (руководитель с личным телефоном, учредители,
+     * банковские реквизиты) остаётся в getByShopCode — она нужна для печати
+     * договора в кабинете и отдаётся только авторизованным.
+     */
+    getPublicByShopCode(shopCode) {
+        return ContractModel.findOne(
+            { 'shopInfo.shopCode': Number(shopCode) },
+            { name: 1, fullName: 1, inn: 1, kpp: 1, ogrn: 1, okved: 1, addresses: 1, siteUrl: 1 }
+        ).lean()
     }
 
 

@@ -62,5 +62,17 @@ module.exports = {
             next(error)
         }
     },
+    /** Открытые сведения о продавце — доступны без входа */
+    async getPublicByShopCode(req, res, next) {
+        try {
+            const shopCode = Number(req.query.shopCode)
+            if (!Number.isFinite(shopCode)) {
+                return res.status(400).json({ message: 'Не указан код магазина' })
+            }
+            return res.json(await ContractService.getPublicByShopCode(shopCode))
+        } catch (error) {
+            next(error)
+        }
+    },
     
 }

@@ -13,5 +13,8 @@ router.post('/get-all', adminMiddleware, ContractController.getAll)
 router.put('/contract-email', adminMiddleware, ContractController.addContractEmail)
 router.delete('/contract-email', adminMiddleware, ContractController.deleteContractEmail)
 router.get ('/byShopCode',authMiddleware, ContractController.getByShopCode)
+// Без authMiddleware намеренно: страницу продавца открывают и гости.
+// Отдаёт только открытые сведения — см. ContractService.getPublicByShopCode.
+router.get ('/public-by-shop-code', ContractController.getPublicByShopCode)
 
 module.exports = router
