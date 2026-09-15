@@ -321,6 +321,11 @@ module.exports = {
         parent: parentId,
         author: d.author,
         isModerated: parent.isModerated,
+        // Оплата идёт по идентификатору выбранной даты, то есть дочернего выезда.
+        // Без переноса решения по акции оплата такого выезда была бы отклонена,
+        // хотя сам тур модератор уже одобрил.
+        privetMirYookassaRequested: parent.privetMirYookassaRequested,
+        privetMirYookassaEnabled: parent.privetMirYookassaEnabled,
         slug: await generateUniqueSlug(parent.name),
       });
       parent.children.push({ _id: r._id, start: d.start, end: d.end });
@@ -1071,6 +1076,21 @@ module.exports = {
   },
   async sendModerationMessage(tripId, msg) {
     return TripModel.findByIdAndUpdate(tripId, { isModerated: false, moderationMessage: msg, rejected: true })
+  },
+  /**
+   * Решение модератора по акции «оплата по СБП».
+   * Отдельно от moderate: тур может быть одобрен к публикации, но без акции —
+   * это независимые решения, и отказ в акции не должен снимать тур с публикации.
+   */
+  async decidePrivetMirYookassa({ tripId, approved, comment, decidedBy }) {
+    return TripModel.findByIdAndUpdate(tripId, {
+      privetMirYookassaEnabled: !!approved,
+      privetMirYookassaDecision: {
+        decidedAt: new Date(),
+        decidedBy: decidedBy ? String(decidedBy) : undefined,
+        comment: comment || undefined,
+      },
+    }, { new: true })
   },
   async findById(_id) {
       const trip = await TripModel.findById(_id).populate('author').populate('places', { name: 1 }).populate('calculator')

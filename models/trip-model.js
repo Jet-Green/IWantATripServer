@@ -113,8 +113,22 @@ const TripSchema = new Schema({
         required: false
     },
     tripRegion: String,
-    /** Оплата через ЮKassa включена (чекбокс «Оплата ЮKassa» в форме тура) */
+
+    /**
+     * Акция «оплата по СБП через ЮKassa».
+     * Запрос и решение разведены намеренно: раньше автор включал акцию сам,
+     * а модератор её только видел. Теперь автор может лишь попросить.
+     */
+    /** Автор запросил акцию — меняется из формы тура */
+    privetMirYookassaRequested: { type: Boolean, default: false },
+    /** Акция разрешена. Ставится ТОЛЬКО модератором, из формы тура не принимается */
     privetMirYookassaEnabled: { type: Boolean, default: false },
+    /** Кто и когда решил, и что ответил автору при отказе */
+    privetMirYookassaDecision: {
+        decidedAt: Date,
+        decidedBy: String,
+        comment: String,
+    },
 })
 TripSchema.index({ start: 1 });
 module.exports = model('Trip', TripSchema);

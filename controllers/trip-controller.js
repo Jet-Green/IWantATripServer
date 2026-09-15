@@ -36,6 +36,18 @@ const billModel = require('../models/bill-model.js');
 
 const sanitizeHtml = require('sanitize-html');
 
+/**
+ * Решение по акции «оплата по СБП» принимает только модератор.
+ * Форма тура может прислать что угодно, поэтому чужие поля выбрасываем:
+ * автору оставлено единственное — privetMirYookassaRequested.
+ */
+function stripPromoDecision(trip) {
+    if (!trip || typeof trip !== 'object') return trip
+    delete trip.privetMirYookassaEnabled
+    delete trip.privetMirYookassaDecision
+    return trip
+}
+
 function toNumberOrNull(value) {
     if (value === '' || value === null || value === undefined) {
         return null
@@ -351,6 +363,8 @@ module.exports = {
 
             req.body.trip.loyalty = normalizeLoyalty(req.body.trip.loyalty, req.body.trip.start)
 
+            stripPromoDecision(req.body.trip)
+
             const tripFromDB = await TripService.insertOne(req.body.trip)
 
             logger.info({ _id: tripFromDB._id.toString(), logType: 'trip' }, 'trip created')
@@ -388,6 +402,8 @@ module.exports = {
     },
     async update(req, res, next) {
         try {
+            stripPromoDecision(req.body)
+
             const tripCb = await TripService.updateOne(req.body)
 
             await PlaceService.updateWithTrips(req.body.places, tripCb._id)

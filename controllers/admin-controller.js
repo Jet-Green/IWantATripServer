@@ -44,6 +44,36 @@ module.exports = {
             next(error)
         }
     },
+    /** Разрешить или запретить туру акцию «оплата по СБП» */
+    async decideTripPromo(req, res, next) {
+        try {
+            const { tripId, approved, comment } = req.body
+
+            if (!tripId) {
+                return res.status(400).json({ message: 'Не указан тур' })
+            }
+
+            const tripFromDb = await tripsService.decidePrivetMirYookassa({
+                tripId,
+                approved,
+                comment,
+                decidedBy: req.user?._id,
+            })
+
+            if (!tripFromDb) {
+                return res.status(404).json({ message: 'Тур не найден' })
+            }
+
+            logger.info(
+                { _id: String(tripFromDb._id), approved: !!approved, logType: 'trip' },
+                'privet mir yookassa promo decided'
+            )
+
+            return res.json(tripFromDb)
+        } catch (error) {
+            next(error)
+        }
+    },
     async moderateCatalogTrip(req, res, next) {
         try {
             let catalogFromDb = await catalogService.moderateCatalog(req.query._id, true)
