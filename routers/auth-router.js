@@ -1,6 +1,7 @@
 const Router = require('express').Router
 const userController = require('../controllers/user-controller')
 const authMiddleware = require('../middleware/auth-middleware')
+const managerMiddleware = require('../middleware/manager-middleware')
 
 const { rateLimit } = require('express-rate-limit')
 
@@ -40,7 +41,8 @@ router.get('/my-bills', authMiddleware, userController.getMyBills)
 
 router.post('/cancel-trip', userController.cancelTrip)
 
-router.get('/determine-winner', userController.determineTheWinner)
+// Розыгрыш видят только менеджеры — и отдаёт он имя с почтой, наружу такое нельзя
+router.get('/determine-winner', managerMiddleware, userController.determineTheWinner)
 
 // router.post('/show-tour', userController.showTour)
 // router.get('/get-tour', userController.getTour)

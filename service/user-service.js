@@ -434,9 +434,15 @@ module.exports = {
             return Math.floor(Math.random() * max);
         }
 
+        // «Сегодня» — по времени Ижевска (UTC+4), а не по UTC сервера: иначе те,
+        // кто зарегистрировался ночью до четырёх утра, попадали во вчерашний день.
+        const offsetMs = (Number(process.env.RAFFLE_TZ_OFFSET_HOURS) || 4) * 3600 * 1000
+        const localNow = new Date(Date.now() + offsetMs)
+        const startOfLocalDay = Date.UTC(localNow.getUTCFullYear(), localNow.getUTCMonth(), localNow.getUTCDate()) - offsetMs
+
         let users_registered_today = await UserModel.find(
             {
-                date: { $gte: new Date().setHours(0, 0, 0, 0) }
+                date: { $gte: startOfLocalDay }
             },
             { fullname: 1, email: 1 }
         )
