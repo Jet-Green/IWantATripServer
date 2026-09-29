@@ -250,7 +250,7 @@ module.exports = {
         query = {
             $and: [
 
-                { isHidden: false, rejected: false },
+                { isHidden: false, rejected: false, isModerated: true },
                 { "parent": { $exists: false } },
             ]
         }
