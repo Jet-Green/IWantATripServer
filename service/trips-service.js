@@ -562,6 +562,8 @@ module.exports = {
     } else {
       trip.slug = oldTrip.slug;
     }
+    // Сохраняем дополнительные адреса при перезаписи тура из формы редактирования.
+    trip.slugAliases = oldTrip.slugAliases;
 
     if (trip.calculatorData) {
       if (oldTrip.calculator) {
@@ -1097,7 +1099,8 @@ module.exports = {
   },
   // slug -> _id, дальше та же богатая загрузка, что и у getTripById
   async getTripBySlug(slug) {
-    const found = await TripModel.findOne({ slug }, { _id: 1 });
+    let found = await TripModel.findOne({ slug }, { _id: 1 });
+    if (!found) found = await TripModel.findOne({ slugAliases: slug }, { _id: 1 });
     if (!found) return null;
     return module.exports.getTripById(found._id);
   },

@@ -94,12 +94,6 @@ app.get(/^\/assets\/index\..+\.js$/, (req, res) => {
 
 app.use('/favicon.ico', express.static(path.join(__dirname, 'dist/favicon.ico')));
 
-// Сохраняем опубликованную ссылку на тур с пропущенным дефисом.
-app.get('/trip/natsionalnii-turisticheskiimarshrut-vlyubitsya-v-udmurtiyu-2', (req, res) => {
-    const queryString = req.originalUrl.slice(req.path.length);
-    res.redirect(301, `/trip/natsionalnii-turisticheskii-marshrut-vlyubitsya-v-udmurtiyu-2${queryString}`);
-});
-
 
 // Playwright и SPA fallback
 app.use(playwrightMiddleware);

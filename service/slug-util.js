@@ -18,7 +18,10 @@ async function generateUniqueSlug(name, excludeId = null) {
     const base = baseSlug(name)
     let slug = base
     let n = 2
-    const buildQuery = (s) => (excludeId ? { slug: s, _id: { $ne: excludeId } } : { slug: s })
+    const buildQuery = (s) => ({
+        $or: [{ slug: s }, { slugAliases: s }],
+        ...(excludeId ? { _id: { $ne: excludeId } } : {}),
+    })
     while (await TripModel.exists(buildQuery(slug))) {
         slug = `${base}-${n++}`
     }
