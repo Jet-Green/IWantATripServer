@@ -250,7 +250,10 @@ module.exports = {
         query = {
             $and: [
 
-                { isHidden: false, rejected: false, isModerated: true },
+                // В публичный каталог попадают и туры, ещё не прошедшие модерацию:
+                // так решили 08.10.2026, откатив правку от 29.09. Прячем только
+                // скрытые автором и отклонённые модератором.
+                { isHidden: false, rejected: false },
                 { "parent": { $exists: false } },
             ]
         }
