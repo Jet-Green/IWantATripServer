@@ -207,13 +207,14 @@ module.exports = {
                     tripRoute: trip.tripRoute,
                     offer: trip.offer,
                     description: trip.description,
-                    rejected: trip.rejected,
                     tripType: trip.tripType,
                     fromAge: trip.fromAge,
                     isHidden: trip.isHidden,
-                    isModerated: trip.isModerated,
                     author: trip.author,
-                    moderationMessage: trip.moderationMessage,
+                    // Флаги модерации (isModerated, rejected, moderationMessage) здесь
+                    // не трогаем: их меняет только модератор через /admin. Раньше они
+                    // приходили с клиента, и любая правка автора — даже замена фото —
+                    // сбрасывала одобрение, тур молча пропадал из каталога.
                     "startLocation._id": location._id,
                     "startLocation.name": location.name,
                     "startLocation.shortName": location.shortName,
@@ -250,10 +251,7 @@ module.exports = {
         query = {
             $and: [
 
-                // В публичный каталог попадают и туры, ещё не прошедшие модерацию:
-                // так решили 08.10.2026, откатив правку от 29.09. Прячем только
-                // скрытые автором и отклонённые модератором.
-                { isHidden: false, rejected: false },
+                { isHidden: false, rejected: false, isModerated: true },
                 { "parent": { $exists: false } },
             ]
         }
