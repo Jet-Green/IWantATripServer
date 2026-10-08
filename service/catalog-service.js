@@ -211,10 +211,11 @@ module.exports = {
                     fromAge: trip.fromAge,
                     isHidden: trip.isHidden,
                     author: trip.author,
-                    // Флаги модерации (isModerated, rejected, moderationMessage) здесь
-                    // не трогаем: их меняет только модератор через /admin. Раньше они
-                    // приходили с клиента, и любая правка автора — даже замена фото —
-                    // сбрасывала одобрение, тур молча пропадал из каталога.
+                    // Любая правка возвращает тур на модерацию — так задумано.
+                    // Решает это сервер, а не флаги, присланные клиентом:
+                    // иначе автор мог бы одобрить тур сам, подменив isModerated.
+                    isModerated: false,
+                    rejected: false,
                     "startLocation._id": location._id,
                     "startLocation.name": location.name,
                     "startLocation.shortName": location.shortName,
