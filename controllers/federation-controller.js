@@ -30,7 +30,11 @@ const core = new FederationCore({
 const cookieOptions = { httpOnly: true, secure: true, sameSite: 'lax', path: '/auth/federation' }
 const handler = operation => async (req, res, next) => {
   res.set('Cache-Control', 'no-store')
-  try { await operation(req, res) } catch (error) {
+  try {
+    // unique is an index, not a validator: await its creation before first use.
+    await Promise.all([Flow.init(), Link.init()])
+    await operation(req, res)
+  } catch (error) {
     if (error.status) return res.status(error.status).json({ message: error.message, ...(error.code ? { code: error.code } : {}) })
     next(error)
   }
