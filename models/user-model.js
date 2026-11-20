@@ -1,6 +1,8 @@
 const { Schema, model, SchemaType } = require('mongoose');
 
 const UserSchema = new Schema({
+    federationOnly: { type: Boolean, default: false },
+    federationRemoteId: { type: String, unique: true, sparse: true },
     email: { type: String, unique: true, required: true },
     password: { type: String, required: true },
     // id пользователя во ВКонтакте (вход через VK ID)

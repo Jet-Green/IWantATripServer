@@ -18,6 +18,13 @@ const limiter = rateLimit({
 })
 
 const router = Router()
+const handoff = require('../controllers/rental-handoff-controller')
+const federation = require('../controllers/federation-controller')
+const federationLimiter = rateLimit({ windowMs: 60000, limit: 30, standardHeaders: 'draft-7', legacyHeaders: false })
+for (const action of ['start', 'issue', 'complete', 'link']) router.post(`/federation/${action}`, federationLimiter, federation[action])
+for (const action of ['exchange', 'confirm']) router.post(`/federation/${action}`, federation[action])
+router.post('/rental-handoff', rateLimit({ windowMs: 60000, limit: 30, standardHeaders: 'draft-7', legacyHeaders: false }), authMiddleware, handoff.issue)
+router.post('/rental-handoff/exchange', handoff.exchange)
 
 router.post('/buy-trip', userController.buyTrip)
 
