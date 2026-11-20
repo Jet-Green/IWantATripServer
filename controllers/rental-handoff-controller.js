@@ -17,7 +17,8 @@ exports.issue = async (req, res, next) => {
     const { listingId, state } = req.body || {}
     if (!validId(listingId) || !validToken(state)) return res.status(400).json({ message: 'Некорректный переход' })
     // A refresh cookie is accepted only while its server-side session still exists.
-    if (!req.headers.authorization && !(await tokenService.findToken(req.cookies?.refreshToken)))
+    const bearerAuthenticated = typeof req.headers.authorization === 'string' && req.headers.authorization.startsWith('Bearer ') && req.headers.authorization.slice(7).trim().length > 0
+    if (!bearerAuthenticated && !(await tokenService.findToken(req.cookies?.refreshToken)))
       return res.status(401).json({ message: 'Требуется вход' })
     const user = await User.findById(req.user._id).select('_id').lean()
     if (!user) return res.status(401).json({ message: 'Требуется вход' })

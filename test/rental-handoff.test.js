@@ -38,7 +38,16 @@ test('one-time exchange is state-bound, secret-bound and returns stable identity
 test('expired code rejected even before Mongo TTL cleanup; invalid destination rejected', async () => {
   const f = fixture(), res = f.response()
   await f.exports.issue({ body: { listingId: 'https://evil.test', state: f.state }, headers: {} }, res, assert.fail); assert.equal(res.statusCode, 400)
-  const issued = f.response(); await f.exports.issue({ body: { listingId: f.id, state: f.state }, headers: { authorization: 'fixture' }, user: { _id: f.id } }, issued, assert.fail)
+  const issued = f.response(); await f.exports.issue({ body: { listingId: f.id, state: f.state }, headers: { authorization: 'Bearer fixture' }, user: { _id: f.id } }, issued, assert.fail)
   const code = new URLSearchParams(new URL(issued.body.url).hash.slice(1)).get('code'); f.expire()
   const expired = f.response(); await f.exports.exchange({ body: { code, state: f.state }, headers: { 'x-rental-handoff-secret': 'test-secret-'.repeat(4) } }, expired, assert.fail); assert.equal(expired.statusCode, 401)
+})
+
+test('non-Bearer authorization header cannot bypass refresh-session revocation check', async () => {
+  const f = fixture();
+  for (const authorization of ['Basic fixture', 'Bearer ', 'invalid']) {
+    const res = f.response();
+    await f.exports.issue({ body: { listingId: f.id, state: f.state }, headers: { authorization }, cookies: { refreshToken: 'revoked-fixture' }, user: { _id: f.id } }, res, assert.fail);
+    assert.equal(res.statusCode, 401);
+  }
 })
