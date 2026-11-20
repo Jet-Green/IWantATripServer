@@ -45,7 +45,11 @@ const requireSession = async req => {
   if (!payload?._id || (!bearer && !await tokens.findToken(req.cookies?.refreshToken))) throw Object.assign(new Error('Требуется вход'), { status: 401 })
   return User.findById(payload._id)
 }
-const respond = (res, data) => { res.clearCookie('givFederation', cookieOptions); res.cookie('refreshToken', data.refreshToken, { maxAge: 30 * 86400000, secure: true, httpOnly: true, sameSite: 'lax' }); return res.json(data) }
+const respond = (res, { refreshToken, accessToken, user, path }) => {
+  res.clearCookie('givFederation', cookieOptions)
+  res.cookie('refreshToken', refreshToken, { maxAge: 30 * 86400000, secure: true, httpOnly: true, sameSite: 'lax' })
+  return res.json({ accessToken, user, path })
+}
 exports.start = handler(async (req, res) => { const data = await core.start(req.body?.returnPath); res.cookie('givFederation', data.browser, { ...cookieOptions, maxAge: 300000 }); res.json({ url: data.url }) })
 exports.issue = handler(async (req, res) => res.json(await core.issue(req.body?.state, await requireSession(req))))
 exports.exchange = handler(async (req, res) => res.json(await core.exchange(req.body?.code, req.body?.state, req.headers['x-rental-handoff-secret'])))
