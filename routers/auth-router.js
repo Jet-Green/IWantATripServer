@@ -18,6 +18,9 @@ const limiter = rateLimit({
 })
 
 const router = Router()
+const handoff = require('../controllers/rental-handoff-controller')
+router.post('/rental-handoff', rateLimit({ windowMs: 60000, limit: 30, standardHeaders: 'draft-7', legacyHeaders: false }), authMiddleware, handoff.issue)
+router.post('/rental-handoff/exchange', handoff.exchange)
 
 router.post('/buy-trip', userController.buyTrip)
 
