@@ -20,6 +20,8 @@ module.exports = {
         } catch (error) { }
 
         if (result) {
+            const account = await UserModel.findById(user_id)
+            if (account?.federationOnly) throw ApiError.BadRequest('Войдите через Аренду')
             const hashPassword = await bcrypt.hash(password, 3)
             const user = await UserModel.findOneAndUpdate({ _id: user_id }, { password: hashPassword })
 
@@ -49,7 +51,7 @@ module.exports = {
     async sendResetLink(email) {
         let candidate = await UserModel.findOne({ email: email })
 
-        if (!candidate)
+        if (!candidate || candidate.federationOnly)
             throw ApiError.BadRequest('Пользователь с таким email не найден')
 
         // ну вот так
@@ -128,7 +130,7 @@ module.exports = {
     async login(email, password) {
         const user = await UserModel.findOne({ email }).populate('tripCalc').populate('tinkoffContract').exec()
 
-        if (!user) {
+        if (!user || user.federationOnly) {
 
             throw ApiError.BadRequest('Пользователь с таким email не найден')
         }
@@ -195,6 +197,7 @@ module.exports = {
         // привязываем VK к существующему аккаунту с той же почтой
         if (!user && vkEmail) {
             user = await UserModel.findOne({ email: vkEmail }).populate('tripCalc').populate('tinkoffContract').exec()
+            if (user?.federationOnly) throw ApiError.BadRequest('Войдите через Аренду')
             if (user) {
                 user.vkId = vkId
                 await user.save()
@@ -278,14 +281,10 @@ module.exports = {
         return user
     },
     async update(user) {
-        let email = user.email;
-        delete user.email
-        delete user.tinkoffContract
-        delete user.roles
-        delete user.password
-        delete user.fullinfo
-        delete user.fullname
-        return await UserModel.findOneAndUpdate({ email }, user, {
+        if (typeof user?.email !== 'string' || !user.email.trim()) throw ApiError.BadRequest('Некорректный email')
+        const allowed = ['trips', 'catalogTrips', 'guideElements', 'createdCompanions', 'boughtTrips', 'excursions', 'excursionDates', 'userLocation', 'tripCalc', 'notifications', 'date']
+        const editable = Object.fromEntries(allowed.filter(key => Object.hasOwn(user, key)).map(key => [key, user[key]]))
+        return await UserModel.findOneAndUpdate({ email: user.email }, { $set: editable }, {
             new: true
         }).populate('tripCalc').exec()
     },

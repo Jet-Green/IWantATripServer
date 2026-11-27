@@ -127,6 +127,7 @@ app.use('/admin', adminRouter);
 app.use('/photos', photosRouter);
 app.use('/places', placesRouter);
 app.use('/partners', partnersRouter);
+app.use('/rental', require('./routers/rental-router'));
 app.use('/tasks', tasksRouter);
 app.use('/tracks', trackRouter);
 app.use('/service-functions', serviceFunctionsRouter);
